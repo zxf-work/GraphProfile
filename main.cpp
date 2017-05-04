@@ -6,6 +6,7 @@
 #include "bfs_print_visitor.hpp"
 #include <boost/graph/breadth_first_search.hpp>
 #include "edge_list_print.hpp"
+#include "graph_diameter.hpp"
 
 using namespace std;
 using namespace boost;
@@ -21,11 +22,15 @@ int main()
     cout << "File: " << filename << endl;
     if (adjacency_list_read(g, filename.c_str()))
     {
-        edge_list_print(g);
 
-        graph_traits<Graph>::vertex_descriptor u = boost::vertex(1158, g);
-        bfs_print_visitor vis;
-        breadth_first_search(g, u, visitor(vis));
+
+        int t = approx_graph_diameter(g);
+        cout << t << endl;
+        //edge_list_print(g);
+
+        //graph_traits<Graph>::vertex_descriptor u = boost::vertex(1158, g);
+        //bfs_print_visitor vis;
+        //breadth_first_search(g, u, visitor(vis));
     }
 
     /**

@@ -11,7 +11,6 @@ using namespace boost;
 
 // expects file to be an adjecency list that is separated by only whitespace, no punctuation
 // ex. 1 2 2 3 4 5 is a graph with edges 1-2, 2-3, 4-5.
-// isNumber asks is the vertices are labeled as positive integers
 bool adjacency_list_read(Graph& g, const char* filename)
 {
     std::ifstream datafile;
@@ -23,9 +22,10 @@ bool adjacency_list_read(Graph& g, const char* filename)
         return false;
     }
     else {
-        //int numVertex = 0;
+        size_t edgeCounter = 0;
         while (!datafile.eof())
         {
+
 
             std::string edgeStart;
             datafile >> edgeStart;
@@ -36,8 +36,11 @@ bool adjacency_list_read(Graph& g, const char* filename)
             //std::cout << "Adding Edge (" << std::stoi(edgeStart) << "," << std::stoi(edgeEnd)<< ")" << std::endl;
             add_edge(std::stoi(edgeStart), std::stoi(edgeEnd), g);
 
+            ++edgeCounter;
+            if (edgeCounter % 10000 == 0) { std::cout << "Adding edge #" << edgeCounter << std::endl; }
     /**
             //vertex counting
+            //int numVertex = 0;
             if(isNumber)
             {
                 int largerVertex = std::stoi(edgeStart) > std::stoi(edgeEnd) ? std::stoi(edgeStart):std::stoi(edgeEnd);

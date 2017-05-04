@@ -5,6 +5,8 @@
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/graph_traits.hpp>
 
+//prints edges 1 line at a time
+//formatted EDGENAME To EDGENAME
 void edge_list_print(const Graph &g)
 {
     std::pair<EdgeIterator, EdgeIterator> gEdgeIt = edges(g);

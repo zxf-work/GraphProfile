@@ -6,6 +6,7 @@
 #include <boost/graph/breadth_first_search.hpp>
 #include <iostream>
 
+//prints the vertex when visited via BFS
 struct bfs_print_visitor : boost::default_bfs_visitor
 {
     void examine_vertex(const Graph::vertex_descriptor &s, const Graph &g) const {
