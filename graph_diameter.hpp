@@ -2,17 +2,15 @@
 #define GRAPH_DIAMETER_HPP_INCLUDED
 
 #include "common.h"
-#include <boost/graph/adjacency_list.hpp>
-#include "diameter_bfs_visitor.hpp"
-#include <boost/graph/breadth_first_search.hpp>
 #include <utility>
 #include <boost/graph/graph_traits.hpp>
-#include <boost/graph/visitors.hpp>
-#include <vector>
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>       /* time */
 #include <algorithm>
 #include "bfs_furthest_vertex.hpp"
+#include <boost/graph/johnson_all_pairs_shortest.hpp>
+#include <boost/graph/floyd_warshall_shortest.hpp>
+
 
 //testing includes
 #include <iostream>
@@ -55,5 +53,30 @@ int approx_graph_diameter(const Graph &g)
 
 
 }
+
+//computes all pairs shortest path problem
+//uses either johnson's method or floyd's method
+//space complexity O(V^2)
+//time complextity O(E V logV) for johnson or O(V^3) for floyd
+//uses johnson if dense is set to true
+int simple_graph_diameter(const Graph &g, bool dense = false)
+{
+    int V = num_vertices(g);
+    std::vector< std::vector<int> > D(V, std::vector<int>(V, -1));
+    if (num_edges(g) == 0) return -1;
+    //std::vector<int> weights(num_edges(g), 1);
+
+
+    if(dense) floyd_warshall_all_pairs_shortest_paths(g, D);
+    else johnson_all_pairs_shortest_paths(g, D);
+    std::cout<< "Finished all pairs shortest paths." << std::endl;
+    int shortestPath[V];
+    for (int i = 0; i < V; ++i)
+    {
+        shortestPath[i] = *std::max_element(&D[i][0], &D[i][V] + 1);
+    }
+    return *std::max_element(shortestPath, shortestPath+V);
+}
+
 
 #endif // GRAPH_DIAMETER_HPP_INCLUDED

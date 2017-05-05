@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include "adjacency_list_read.hpp"
 #include <utility>
 #include <boost/graph/graph_traits.hpp>
@@ -7,44 +8,68 @@
 #include <boost/graph/breadth_first_search.hpp>
 #include "edge_list_print.hpp"
 #include "graph_diameter.hpp"
+#include "connected_comp.hpp"
 
 using namespace std;
-using namespace boost;
 
 int main()
 {
-    Graph g;
-
-
     string filename;// = "C:\\Users\\Eric\\Documents\\Vincent Work\\Graph data\\facebook_combined.txt";
-    cout << "Enter Adjacency List Filename:" << endl;
-    getline(cin, filename);
-    cout << "File: " << filename << endl;
-    if (adjacency_list_read(g, filename.c_str()))
+    cout << "Enter Adjacency List Filename: (type exit to quit)" << endl;
+
+    ofstream outFile;
+    outFile.open("Graph Properties.txt");
+
+    while (true)
     {
+        getline(cin, filename);
+
+        if (filename == "stop" || filename == "exit") break;
+        if (filename == "default") filename = "C:\\Users\\Eric\\Documents\\Vincent Work\\Graph data\\facebook_combined.txt";
+
+        Graph g;
+
+        outFile << "File: " << filename << endl;
 
 
-        int t = approx_graph_diameter(g);
-        cout << t << endl;
-        //edge_list_print(g);
+        if (adjacency_list_read(g, filename.c_str()))
+        {
+            cout << "Select modes available: cc, adiam, ediam, exit" << endl;
 
-        //graph_traits<Graph>::vertex_descriptor u = boost::vertex(1158, g);
-        //bfs_print_visitor vis;
-        //breadth_first_search(g, u, visitor(vis));
+            bool runComputations = true;
+            while (runComputations)
+            {
+                string command;
+                getline(cin, command);
+
+                switch(command) {
+                    case "cc":
+                        {
+                            std::vector<int> connectedCompCount = connected_comp(g);
+                            outFile << "Connected Components: " << connectedCompCount.at(0) << endl;
+
+                            outFile << "Largest Component Sizes:";
+                            for(std::vector<int>::iterator i = connectedCompCount.begin() + 1; i != connectedCompCount.end(); ++i)
+                            {
+                                outFile << " " << *i;
+                            }
+                            outFile << endl;
+                            breakl
+                        }
+                    case "adiam": outFile << "Approx Diameter :" << approx_graph_diameter(g) << endl; break;
+                    case "ediam": outFile << "Exact Diameter :" << simple_graph_diameter(g) << endl; break;
+
+                    case "exit": runComputations = false; break;
+                }
+                //edge_list_print(g);
+            }
+
+
+
+        cout << endl << "Enter Adjacency List Filename: (type exit to quit)" <<endl;
     }
 
-    /**
-    boost::graph_traits<Graph>::vertex_descriptor u, v;
-    u = boost::vertex(1158, g);
-    v = boost::vertex(1159, g);
+    outFile.close();
 
-
-    boost::property_map<Graph, boost::edge_weight_t>::type weight = get(edge_weight, g);
-    cout << "Weight of 1159: " << get(weight, v) << endl;
-    **/
-
-
-    //cout << "Num Edges: ";
-    //cout << boost::num_edges(g) << endl;
     return 0;
 }

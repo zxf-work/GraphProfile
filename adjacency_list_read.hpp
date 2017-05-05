@@ -34,7 +34,7 @@ bool adjacency_list_read(Graph& g, const char* filename)
 
             //add the edge
             //std::cout << "Adding Edge (" << std::stoi(edgeStart) << "," << std::stoi(edgeEnd)<< ")" << std::endl;
-            add_edge(std::stoi(edgeStart), std::stoi(edgeEnd), g);
+            add_edge(std::stoi(edgeStart), std::stoi(edgeEnd), EdgeWeightProperty(1), g);
 
             ++edgeCounter;
             if (edgeCounter % 10000 == 0) { std::cout << "Adding edge #" << edgeCounter << std::endl; }
