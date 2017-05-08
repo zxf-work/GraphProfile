@@ -31,35 +31,31 @@ int main()
 
         outFile << "File: " << filename << endl;
 
-
         if (adjacency_list_read(g, filename.c_str()))
         {
             cout << "Select modes available: cc, adiam, ediam, exit" << endl;
 
-            bool runComputations = true;
-            while (runComputations)
+            while (true)
             {
                 string command;
                 getline(cin, command);
 
-                switch(command) {
-                    case "cc":
-                        {
-                            std::vector<int> connectedCompCount = connected_comp(g);
-                            outFile << "Connected Components: " << connectedCompCount.at(0) << endl;
+                if(command == "cc")
+                {
+                    std::vector<int> connectedCompCount = connected_comp(g);
+                    outFile << "Connected Components: " << connectedCompCount.at(0) << endl;
 
-                            outFile << "Largest Component Sizes:";
-                            for(std::vector<int>::iterator i = connectedCompCount.begin() + 1; i != connectedCompCount.end(); ++i)
-                            {
-                                outFile << " " << *i;
-                            }
-                            outFile << endl;
-                            breakl
-                        }
-                    case "adiam": outFile << "Approx Diameter :" << approx_graph_diameter(g) << endl; break;
-                    case "ediam": outFile << "Exact Diameter :" << simple_graph_diameter(g) << endl; break;
-
-                    case "exit": runComputations = false; break;
+                    outFile << "Largest Component Sizes:";
+                    for(std::vector<int>::iterator i = connectedCompCount.begin() + 1; i != connectedCompCount.end(); ++i)
+                    {
+                        outFile << " " << *i;
+                    }
+                    outFile << endl;
+                }
+                else if (command == "adiam") outFile << "Approx Diameter :" << approx_graph_diameter(g) << endl;
+                else if (command == "ediam") outFile << "Exact Diameter :" << simple_graph_diameter(g) << endl;
+                else if (command == "exit") break;
+                cout << "Select modes available: cc, adiam, ediam, exit" << endl;
                 }
                 //edge_list_print(g);
             }
