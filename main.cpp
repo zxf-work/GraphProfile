@@ -9,6 +9,7 @@
 #include "edge_list_print.hpp"
 #include "graph_diameter.hpp"
 #include "connected_comp.hpp"
+#include "triangle_count.hpp"
 
 using namespace std;
 
@@ -25,7 +26,8 @@ int main()
         getline(cin, filename);
 
         if (filename == "stop" || filename == "exit") break;
-        if (filename == "default") filename = "C:\\Users\\Eric\\Documents\\Vincent Work\\Graph data\\facebook_combined.txt";
+        if (filename == "default") filename = "C:\\Users\\Vincent Luong\\Documents\\Git\\GraphProfile\\Graph Data\\facebook_combined.txt";
+        if (filename == "small") filename == "C:\\Users\\Vincent Luong\\Documents\\Git\\GraphProfile\\Graph Data\\small test.txt";
 
         Graph g;
 
@@ -33,7 +35,7 @@ int main()
 
         if (adjacency_list_read(g, filename.c_str()))
         {
-            cout << "Select modes available: cc, adiam, ediam, exit" << endl;
+            cout << "Select modes available: cc, adiam, ediam, etri (type exit to quit)" << endl;
 
             while (true)
             {
@@ -54,14 +56,15 @@ int main()
                 }
                 else if (command == "adiam") outFile << "Approx Diameter :" << approx_graph_diameter(g) << endl;
                 else if (command == "ediam") outFile << "Exact Diameter :" << simple_graph_diameter(g) << endl;
+                else if (command == "etri") cout << "Exact Triangle Count: "  << exact_triangle_count(g) << endl;
+                else if (command == "vert") cout << "Num Vert: " << boost::num_vertices(g) << endl;
+                else if (command == "edge") cout << "Num Edge: " << boost::num_edges(g) << endl;
                 else if (command == "exit") break;
-                cout << "Select modes available: cc, adiam, ediam, exit" << endl;
+
+                else cout << "Did not recognize command." << endl;
+                cout << "Select modes available: cc, adiam, ediam, etri (type exit to quit)" << endl;
                 }
-                //edge_list_print(g);
             }
-
-
-
         cout << endl << "Enter Adjacency List Filename: (type exit to quit)" <<endl;
     }
 
