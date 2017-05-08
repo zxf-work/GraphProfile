@@ -20,7 +20,6 @@ int exact_triangle_count(const Graph &g)
     for(VertexIterator vi = vertexIter.first; vi != vertexIter.second; ++vi)
     {
         Vertex v = *vi;
-        outFile << "Checking vertex " << v << std::endl;
         std::pair<AdjacencyIterator, AdjacencyIterator> neighbourIter = adjacent_vertices(v, g);
         for(AdjacencyIterator ni1 = neighbourIter.first; ni1 != neighbourIter.second; ++ni1)
         {
