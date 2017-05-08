@@ -34,7 +34,7 @@ int approx_graph_diameter(const Graph &g)
     //main loop
     for (int i = 0; i < 1000; i++)
     {
-        if (i % 50 == 0) { std::cout << "2BFS #" << i+1 << std::endl; }
+        if (i % 200 == 0) { std::cout << "2BFS #" << i+1 << std::endl; }
         //start at random vertex
         Vertex v = vertex(rand() % num_vertices(g), g);
 

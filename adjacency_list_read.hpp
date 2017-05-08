@@ -37,7 +37,7 @@ bool adjacency_list_read(Graph& g, const char* filename)
             add_edge(std::stoi(edgeStart), std::stoi(edgeEnd), EdgeWeightProperty(1), g);
 
             ++edgeCounter;
-            if (edgeCounter % 10000 == 0) { std::cout << "Adding edge #" << edgeCounter << std::endl; }
+            if (edgeCounter % 50000 == 0) { std::cout << "Adding edge #" << edgeCounter << std::endl; }
     /**
             //vertex counting
             //int numVertex = 0;
