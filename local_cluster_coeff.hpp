@@ -12,7 +12,8 @@ double local_cluster_coeff(const Vertex &v, const Graph &g)
 {
     int localTriCount = 0;
 
-    if (out_degree(v, g) != 0)
+    int deg = degree(v, g);
+    if (deg != 0)
     {
         std::pair<AdjacencyIterator, AdjacencyIterator> neighbourIter = adjacent_vertices(v, g);
         for(AdjacencyIterator ni1 = neighbourIter.first; ni1 != neighbourIter.second - 1; ++ni1)
@@ -24,9 +25,20 @@ double local_cluster_coeff(const Vertex &v, const Graph &g)
             }
         }
     }
-    double maxTriangle = out_degree(v,g)*out_degree(v,g) / 2;
+    else return 0;
+    double maxTriangle = (double)deg * deg / 2;
     return localTriCount / maxTriangle;
 
+}
+
+double average_cluster_coeff(const Graph &g)
+{
+    double sum = 0;
+    for(VertexIterator vi = vertices(g).first; vi != vertices(g).second; ++vi)
+    {
+        sum = sum + local_cluster_coeff(*vi, g);
+    }
+    return sum / num_vertices(g);
 }
 
 #endif // LOCAL_CLUSTERING_COEFF_HPP_INCLUDED
