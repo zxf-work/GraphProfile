@@ -24,7 +24,7 @@ template<class graph>
 void readCommand(const graph &g, string filename)
 {
     ofstream outFile;
-    outFile.open("Graph Properties.txt");
+    outFile.open("Graph Properties.txt", ios_base::out | ios_base::app );
     outFile << "File: " << filename << endl;
 
     bool b = true;
@@ -48,7 +48,7 @@ void readCommand(const graph &g, string filename)
         }
         else if (command == "lcc") //local cluster coeff
         {
-            cout << "Select a vertex from " << boost::num_vertices(g) << " vertices." << endl;
+            cout << "Select a vertex from " << boost::num_vertices(g) << " vertices. (-1 for average)" << endl;
             int v;
             cin >> v;
             outFile.precision(4);
@@ -62,7 +62,9 @@ void readCommand(const graph &g, string filename)
             pRankFile.open("Page Rank.txt", ios_base::out | ios_base::app);
             pRankFile.precision(10);
             pRankFile << filename << endl;
-            vector<double> pageRank = page_rank(g);
+
+            vector<double> pageRank;
+            page_rank(g, pageRank);
             for(auto it = pageRank.begin(); it != pageRank.end(); ++it)
             {
                 pRankFile << *it << endl;

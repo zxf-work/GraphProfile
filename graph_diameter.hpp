@@ -25,7 +25,7 @@ using namespace boost;
 //use BFS at vertex u0, find vertex w0 that is furthest away from u0, with distance d0
 //repeat with another random vertex v1 != v0
 //possible TODO: disallow repeated vertices as v
-int approx_graph_diameter(const Graph &g)
+unsigned approx_graph_diameter(const Graph &g)
 {
     srand(time(NULL));
 
@@ -62,7 +62,7 @@ int approx_graph_diameter(const Graph &g)
 int simple_graph_diameter(const Graph &g, bool dense = false)
 {
     int V = num_vertices(g);
-    std::vector< std::vector<int> > D(V, std::vector<int>(V, -1));
+    std::vector< std::vector<int> > D(V, std::vector<int>(V, 0));
     if (num_edges(g) == 0) return -1;
     //std::vector<int> weights(num_edges(g), 1);
 

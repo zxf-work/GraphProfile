@@ -10,7 +10,7 @@ using namespace boost;
 
 //for each vertex v, examines every pair of neighbours u w
 //if index of v < u, w, check if there is a uw edge, forming a triangle
-int exact_triangle_count(const Graph &g)
+unsigned long exact_triangle_count(const Graph &g)
 {
     std::ofstream outFile;
     outFile.open("triangleCount.txt");

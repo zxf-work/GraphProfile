@@ -10,10 +10,10 @@ using namespace boost;
 //LCC is the proportion of pair of neighbours that form a triangle
 double local_cluster_coeff(const Vertex &v, const Graph &g)
 {
-    int localTriCount = 0;
+    double localTriCount = 0;
 
     int deg = degree(v, g);
-    if (deg != 0)
+    if (deg != 0 && deg != 1)
     {
         std::pair<AdjacencyIterator, AdjacencyIterator> neighbourIter = adjacent_vertices(v, g);
         for(AdjacencyIterator ni1 = neighbourIter.first; ni1 != neighbourIter.second - 1; ++ni1)
@@ -26,7 +26,7 @@ double local_cluster_coeff(const Vertex &v, const Graph &g)
         }
     }
     else return 0;
-    double maxTriangle = (double)deg * deg / 2;
+    double maxTriangle = (double)deg * (deg-1) / 2;
     return localTriCount / maxTriangle;
 
 }
