@@ -9,7 +9,7 @@
 //prints the vertex when visited via BFS
 struct bfs_print_visitor : boost::default_bfs_visitor
 {
-    void examine_vertex(const Graph::vertex_descriptor &s, const Graph &g) const {
+    void examine_vertex(const Graph::vertex_descriptor &s, const Graph &g) {
       std::cout << "Examine vertex: " << s << std::endl;
     }
 };

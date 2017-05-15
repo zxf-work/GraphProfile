@@ -14,6 +14,13 @@
 #include <iomanip>
 #include <vector>
 #include "page_rank.hpp"
+#include "betweenness_centrality.hpp"
+
+
+//testing
+#include "centrality_bfs_visitor.hpp"
+#include <boost/graph/breadth_first_search.hpp>
+#include "bfs_print_visitor.hpp"
 
 using namespace std;
 
@@ -78,6 +85,15 @@ void readCommand(const graph &g, string filename)
         else if (command == "vert") cout << "Num Vert: " << boost::num_vertices(g) << endl;
         else if (command == "edge") cout << "Num Edge: " << boost::num_edges(g) << endl;
         else if (command == "exit") break;
+
+        else if (command == "test")
+        {
+            bfs_print_visitor vis;
+            centrality_bfs_visitor centVis = centrality_bfs_visitor(g);
+            boost::breadth_first_search(g, boost::vertex(0, g), boost::visitor(centVis));
+            //centVis.print_shortest_paths();
+        }
+
 
         else cout << "Did not recognize command." << endl;
     }
