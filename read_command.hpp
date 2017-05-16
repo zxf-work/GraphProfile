@@ -21,6 +21,7 @@
 #include "centrality_bfs_visitor.hpp"
 #include <boost/graph/breadth_first_search.hpp>
 #include "bfs_print_visitor.hpp"
+#include <map>
 
 using namespace std;
 
@@ -88,10 +89,20 @@ void readCommand(const graph &g, string filename)
 
         else if (command == "test")
         {
-            bfs_print_visitor vis;
-            centrality_bfs_visitor centVis = centrality_bfs_visitor(g);
-            boost::breadth_first_search(g, boost::vertex(0, g), boost::visitor(centVis));
-            //centVis.print_shortest_paths();
+            vector<float> centralityVector(boost::num_vertices(g), 0);
+            betweenness_centrality(g, centralityVector);
+            cout<<"Centralities:";
+            for(auto it = centralityVector.begin(); it != centralityVector.end(); ++it)
+            {
+                cout << " " << *it;
+            }
+            cout<<endl;
+
+            boost::shared_array_property_map<double, boost::property_map<Graph, vertex_index_t>::const_type>
+            centrality_map(num_vertices(g), get(boost::vertex_index, g));
+            std::map<Vertex, float>centralityMap;
+            boost::brandes_betweenness_centrality(g, centrality_map);
+
         }
 
 

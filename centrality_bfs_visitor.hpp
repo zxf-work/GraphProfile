@@ -15,18 +15,17 @@
 
 using namespace boost;
 
+typedef std::vector<Vertex> Path;
+typedef std::vector<Path> PathList;
 //when performing BFS with source s
 //need to record all shortest paths (the paths themselves) from s to v, for all v != s
 
 struct centrality_bfs_visitor : boost::default_bfs_visitor
 {
-    typedef std::vector<Vertex> Path;
-    typedef std::vector<Path> PathList;
-
 private:
 
-    std::vector<unsigned> shortestDistanceMap; //length of shortest path from s to Vertex
-    std::vector<PathList> shortestPathsMap; //shortest paths from s to Vertex. shortestPath[v] contains a vector of all shortest paths from s to v.
+    std::vector<unsigned>* shortestDistanceMap; //length of shortest path from s to Vertex
+    std::vector<PathList>* shortestPathsMap; //shortest paths from s to Vertex. shortestPath[v] contains a vector of all shortest paths from s to v.
 
     std::queue<Path> pathQueue;
 
@@ -37,7 +36,7 @@ public:
     ///visitor fuctions start
     void initialize_vertex(const Vertex &u, const Graph &g)
     {
-        shortestDistanceMap.at(u) = 0;
+        shortestDistanceMap->at(u) = 0;
     }
 
     //when discovering a new vertex, following is done:
@@ -46,7 +45,6 @@ public:
     //3. update shortest distance
     void discover_vertex(const Vertex &u, const Graph &g)
     {
-        std::cout<< u << std::endl;
         Path path;
         if(pathQueue.size() == 0) //if initial vertex
         {
@@ -57,10 +55,11 @@ public:
             path = pathQueue.front();
             path.push_back(u);
         }
+        PathList pathList(1, path);
 
         pathQueue.emplace(path);  //1
-        shortestPathsMap.emplace(shortestPathsMap.begin() + u, 1, path); //2
-        shortestDistanceMap.at(u) = path.size() - 1; //3
+        shortestPathsMap->at(u) = pathList; //2
+        shortestDistanceMap->at(u) = path.size() - 1; //3
     }
 
     //when finding a vertex v that has already been discovered,
@@ -69,14 +68,13 @@ public:
     void gray_target(const Edge &e, const Graph &g)
     {
         Vertex v = target(e, g);
-
         //check if the path is same length as shortest
         //if so, then it is anotehr shortest path for u
-        if(pathQueue.front().size() == shortestDistanceMap.at(v))
+        if(pathQueue.front().size() == shortestDistanceMap->at(v))
         {
-            shortestPathsMap.at(v).emplace_back(pathQueue.front());
-            shortestPathsMap.at(v).back().push_back(v);
-            print_shortest_paths();
+            shortestPathsMap->at(v).emplace_back(pathQueue.front());
+            shortestPathsMap->at(v).back().push_back(v);
+            //print_shortest_paths();
         }
     }
 
@@ -88,33 +86,28 @@ public:
     ///visitor fuctions end
 
     ///getters start
-    std::vector< std::vector<Path> >& getShortestPathsMap(){
+    std::vector< std::vector<Path> >* getShortestPathsMap(){
         return shortestPathsMap;
     }
 
-    std::vector<unsigned> getShortestDistanceMap(){
+    std::vector<unsigned>* getShortestDistanceMap(){
         return shortestDistanceMap;
     }
     ///getters end
 
     ///ctors start
-    centrality_bfs_visitor(const Graph &g)
+    centrality_bfs_visitor(std::vector<unsigned>* ShortestDistanceMap, std::vector<PathList>* ShortestPathsMap)
     {
-        shortestDistanceMap.resize(num_vertices(g));
-        shortestPathsMap.resize(num_vertices(g));
+        shortestDistanceMap = ShortestDistanceMap;
+        shortestPathsMap = ShortestPathsMap;
     }
 
-    centrality_bfs_visitor(unsigned numVertices)
-    {
-        shortestDistanceMap.resize(numVertices);
-        shortestPathsMap.resize(numVertices);
-    }
     ///ctors end
 
     void print_shortest_paths()
     {
         int counter = -1;
-        for(auto it = shortestPathsMap.begin(); it != shortestPathsMap.end(); ++it)
+        for(auto it = shortestPathsMap->begin(); it != shortestPathsMap->end(); ++it)
         {
             counter++;
             std::cout << "Shortest Paths for vertex " << counter << std::endl;
@@ -129,6 +122,17 @@ public:
                 }
                 std::cout << std::endl;
             }
+        }
+    }
+
+    void print_shortest_distances()
+    {
+        int counter = -1;
+        for(auto it = shortestDistanceMap->begin(); it != shortestDistanceMap->end(); ++it)
+        {
+            counter++;
+            std::cout << "Length of shortest path from 0 to vertex " << counter << " is " << *it << std::endl;
+
         }
     }
 
