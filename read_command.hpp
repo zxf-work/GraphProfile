@@ -57,7 +57,7 @@ void readCommand(const graph &g, string filename)
         else if (command == "lcc") //local cluster coeff
         {
             cout << "Select a vertex from " << boost::num_vertices(g) << " vertices. (-1 for average)" << endl;
-            int v;
+            unsigned v;
             cin >> v;
             outFile.precision(4);
             if (v == -1) outFile << "Average LCC: " << average_cluster_coeff(g) << endl;
@@ -79,6 +79,15 @@ void readCommand(const graph &g, string filename)
             }
             pRankFile.close();
             outFile << "Page Rank computed." << endl;
+        }
+        else if (command == "abc")
+        {
+            cout << "Select a vertex from " << boost::num_vertices(g) << "vertices." << endl;
+            unsigned v;
+            cin >> v;
+            outFile.precision(8);
+            outFile << "Approx Betweenness Centrality " << approx_betweenness_centrality(g, boost::vertex(v, g)) << endl;
+            getline(cin, command); //to clear up the whitespace
         }
         else if (command == "adiam") outFile << "Approx Diameter: " << approx_graph_diameter(g) << endl;
         else if (command == "ediam") outFile << "Exact Diameter: " << simple_graph_diameter(g) << endl;
