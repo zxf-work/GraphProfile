@@ -72,17 +72,18 @@ void betweenness_centrality(const Graph &g, std::vector<float> &centralityVector
     {
         float centralitySum = 0;
 
-        unsigned betweenPathCount = 0;
-        unsigned totalPathCount = 0;
         for(unsigned s = 0 ; s < num_vertices(g) - 1; ++s)
         {
             for(unsigned t = s + 1; t < num_vertices(g); ++t)
             {
                 if(s != i && t != i)
                 {
-                    betweenPathCount = betweenPathCount + centralityMap[i][s][t];
-                    totalPathCount = totalPathCount + shortestPathsCount[s][t];
-                    centralitySum = (float)betweenPathCount / totalPathCount;
+                    unsigned betweenPathCount = 0;
+                    unsigned totalPathCount = 0;
+
+                    betweenPathCount = centralityMap[i][s][t];
+                    totalPathCount = shortestPathsCount[s][t];
+                    if (totalPathCount != 0) centralitySum = centralitySum + (float)betweenPathCount / totalPathCount;
                 }
             }
         }

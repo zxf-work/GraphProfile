@@ -38,7 +38,7 @@ void readCommand(const graph &g, string filename)
     bool b = true;
     while (b)
     {
-        cout << "Select modes available: cc, adiam, ediam, etri, lcc, prank (type exit to quit)" << endl;
+        cout << "Select modes available: cc, adiam, ediam, etri, lcc, prank, ebc, abc (type exit to quit)" << endl;
         string command;
         getline(cin, command);
 
@@ -80,7 +80,7 @@ void readCommand(const graph &g, string filename)
             pRankFile.close();
             outFile << "Page Rank computed." << endl;
         }
-        else if (command == "abc")
+        else if (command == "abc") //aprox betwenness centrality
         {
             cout << "Select a vertex from " << boost::num_vertices(g) << "vertices." << endl;
             unsigned v;
@@ -88,6 +88,23 @@ void readCommand(const graph &g, string filename)
             outFile.precision(8);
             outFile << "Approx Betweenness Centrality " << approx_betweenness_centrality(g, boost::vertex(v, g)) << endl;
             getline(cin, command); //to clear up the whitespace
+        }
+        else if (command == "ebc") //betweenness centrality, outputs to separate file
+        {
+            ofstream bcFile;
+            bcFile.open("Betweenness Centrality.txt", ios_base::out | ios_base::app);
+            bcFile.precision(4);
+            bcFile << filename << endl;
+
+            vector<float> centralityVector(boost::num_vertices(g), 0);
+            betweenness_centrality(g, centralityVector);
+            for(auto it = centralityVector.begin(); it != centralityVector.end(); ++it)
+            {
+                bcFile << *it << endl;
+            }
+
+            bcFile.close();
+            outFile << "Page Rank computed." << endl;
         }
         else if (command == "adiam") outFile << "Approx Diameter: " << approx_graph_diameter(g) << endl;
         else if (command == "ediam") outFile << "Exact Diameter: " << simple_graph_diameter(g) << endl;
@@ -98,19 +115,28 @@ void readCommand(const graph &g, string filename)
 
         else if (command == "test")
         {
-            vector<float> centralityVector(boost::num_vertices(g), 0);
-            betweenness_centrality(g, centralityVector);
+            vector<float> centralityVector2(boost::num_vertices(g), 0);
+            betweenness_centrality(g, centralityVector2);
             cout<<"Centralities:";
-            for(auto it = centralityVector.begin(); it != centralityVector.end(); ++it)
+            for(auto it = centralityVector2.begin(); it != centralityVector2.end(); ++it)
             {
                 cout << " " << *it;
             }
             cout<<endl;
 
-            boost::shared_array_property_map<double, boost::property_map<Graph, vertex_index_t>::const_type>
-            centrality_map(num_vertices(g), get(boost::vertex_index, g));
             std::map<Vertex, float>centralityMap;
-            boost::brandes_betweenness_centrality(g, centrality_map);
+            boost::associative_property_map< std::map<Vertex, float> >centralityPropMap(centralityMap);
+
+            boost::shared_array_property_map<double, boost::property_map<Graph, vertex_index_t>::const_type>
+                centrality_map(num_vertices(g), get(boost::vertex_index, g));
+
+            boost::brandes_betweenness_centrality(g, centralityPropMap);
+            cout<<"Centralities:";
+            for(auto it = centralityMap.begin(); it != centralityMap.end(); ++it)
+            {
+                cout << " " << it->second;
+            }
+            cout<<endl;
 
         }
 
