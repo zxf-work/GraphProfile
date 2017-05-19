@@ -17,12 +17,6 @@
 #include "betweenness_centrality.hpp"
 
 
-//testing
-#include "centrality_bfs_visitor.hpp"
-#include <boost/graph/breadth_first_search.hpp>
-#include "bfs_print_visitor.hpp"
-#include <map>
-
 using namespace std;
 
 //reads cin for a command, prints to file
@@ -79,6 +73,22 @@ void readCommand(const graph &g, string filename)
             }
             pRankFile.close();
             outFile << "Page Rank computed." << endl;
+        }
+        else if (command == "aprank") //approx page rank, outputs to separate file
+        {
+            ofstream pRankFile;
+            pRankFile.open("Approximate Page Rank.txt", ios_base::out | ios_base::app);
+            pRankFile.precision(10);
+            pRankFile << filename << endl;
+
+            vector<double> pageRank;
+            approx_page_rank(g, pageRank);
+            for(auto it = pageRank.begin(); it != pageRank.end(); ++it)
+            {
+                pRankFile << *it << endl;
+            }
+            pRankFile.close();
+            outFile << "Approx Page Rank computed." << endl;
         }
         else if (command == "abc") //aprox betwenness centrality
         {
