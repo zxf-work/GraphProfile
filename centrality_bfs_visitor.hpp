@@ -9,7 +9,6 @@
 #include <map>
 #include <queue>
 
-//testing
 #include <iostream>
 #include <string>
 
@@ -28,8 +27,6 @@ private:
     std::vector<PathList>* shortestPathsMap; //shortest paths from s to Vertex. shortestPath[v] contains a vector of all shortest paths from s to v.
 
     std::queue<Path> pathQueue;
-
-    //centrality_bfs_visitor() {};
 
 public:
 
@@ -109,7 +106,7 @@ public:
         int counter = -1;
         for(auto it = shortestPathsMap->begin(); it != shortestPathsMap->end(); ++it)
         {
-            counter++;
+            ++counter;
             std::cout << "Shortest Paths for vertex " << counter << std::endl;
             int innerCounter = 0;
             for(auto it2 = it->begin(); it2 != it->end(); ++it2)
@@ -138,25 +135,5 @@ public:
 
 };
 
-
-void bfs(const Graph &g, const Vertex &v)
-{
-    typedef std::vector<Vertex> Path;
-    typedef std::pair<Vertex, Path> VertexPathPair;
-
-    std::queue<VertexPathPair> bfsQueue;
-
-
-}
-
-
-/* pseudocode
-    start at vertex s
-    q = {}. will contain 2 element pairs
-    pair [v, p]. the vertex v along wiht the path p used to traverse
-    enqueue( [s, s], q)
-
-
-*/
 
 #endif // CENTRALITY_BFS_VISITOR_HPP_INCLUDED

@@ -32,7 +32,7 @@ void readCommand(const graph &g, string filename)
     bool b = true;
     while (b)
     {
-        cout << "Select modes available: cc, adiam, ediam, etri, lcc, prank, ebc, abc (type exit to quit)" << endl;
+        cout << "Select modes available: cc, adiam, ediam, etri, lcc, prank, bc, abc (type exit to quit)" << endl;
         string command;
         getline(cin, command);
 
@@ -99,7 +99,7 @@ void readCommand(const graph &g, string filename)
             outFile << "Approx Betweenness Centrality " << approx_betweenness_centrality(g, boost::vertex(v, g)) << endl;
             getline(cin, command); //to clear up the whitespace
         }
-        else if (command == "ebc") //betweenness centrality, outputs to separate file
+        else if (command == "bc") //betweenness centrality, outputs to separate file
         {
             ofstream bcFile;
             bcFile.open("Betweenness Centrality.txt", ios_base::out | ios_base::app);
@@ -114,7 +114,26 @@ void readCommand(const graph &g, string filename)
             }
 
             bcFile.close();
-            outFile << "Page Rank computed." << endl;
+            outFile << "Betweenness Centrality computed." << endl;
+        }
+        else if (command == "bbc")
+        {
+            std::map<Vertex, float>centralityMap;
+            boost::associative_property_map< std::map<Vertex, float> >centralityPropMap(centralityMap);
+
+            boost::brandes_betweenness_centrality(g, centralityPropMap);
+
+            ofstream bcFile;
+            bcFile.open("Brandes BC.txt", ios_base::out | ios_base::app);
+            bcFile.precision(4);
+            bcFile << filename << endl;
+
+            for(auto it = centralityMap.begin(); it != centralityMap.end(); ++it)
+            {
+                bcFile << " " << it->second;
+            }
+            bcFile.close();
+            outFile << "Brandes BC computed." << endl;
         }
         else if (command == "adiam") outFile << "Approx Diameter: " << approx_graph_diameter(g) << endl;
         else if (command == "ediam") outFile << "Exact Diameter: " << simple_graph_diameter(g) << endl;
@@ -122,34 +141,6 @@ void readCommand(const graph &g, string filename)
         else if (command == "vert") cout << "Num Vert: " << boost::num_vertices(g) << endl;
         else if (command == "edge") cout << "Num Edge: " << boost::num_edges(g) << endl;
         else if (command == "exit") break;
-
-        else if (command == "test")
-        {
-            vector<float> centralityVector2(boost::num_vertices(g), 0);
-            betweenness_centrality(g, centralityVector2);
-            cout<<"Centralities:";
-            for(auto it = centralityVector2.begin(); it != centralityVector2.end(); ++it)
-            {
-                cout << " " << *it;
-            }
-            cout<<endl;
-
-            std::map<Vertex, float>centralityMap;
-            boost::associative_property_map< std::map<Vertex, float> >centralityPropMap(centralityMap);
-
-            boost::shared_array_property_map<double, boost::property_map<Graph, vertex_index_t>::const_type>
-                centrality_map(num_vertices(g), get(boost::vertex_index, g));
-
-            boost::brandes_betweenness_centrality(g, centralityPropMap);
-            cout<<"Centralities:";
-            for(auto it = centralityMap.begin(); it != centralityMap.end(); ++it)
-            {
-                cout << " " << it->second;
-            }
-            cout<<endl;
-
-        }
-
 
         else cout << "Did not recognize command." << endl;
     }

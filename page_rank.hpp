@@ -54,7 +54,7 @@ void page_rank(const Graph &g, std::vector<double> &pageRankVector)
 
 }
 
-//perform 1000 random walks
+//perform N random walks, 1 starting from each vertex
 void approx_page_rank(const Graph &g, std::vector<double> &pageRankVector)
 {
     unsigned n = num_vertices(g);
