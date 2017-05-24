@@ -15,6 +15,7 @@
 #include <vector>
 #include "page_rank.hpp"
 #include "betweenness_centrality.hpp"
+#include "graph_reduction.hpp"
 
 
 using namespace std;
@@ -32,7 +33,7 @@ void readCommand(const graph &g, string filename)
     bool b = true;
     while (b)
     {
-        cout << "Select modes available: cc, adiam, ediam, etri, lcc, prank, bc, abc (type exit to quit)" << endl;
+        cout << "Select modes available: cc, adiam, ediam, etri, lcc, prank, bc, abc, bbc, reduce (type exit to quit)" << endl;
         string command;
         getline(cin, command);
 
@@ -116,7 +117,7 @@ void readCommand(const graph &g, string filename)
             bcFile.close();
             outFile << "Betweenness Centrality computed." << endl;
         }
-        else if (command == "bbc")
+        else if (command == "bbc") //brandes bc
         {
             std::map<Vertex, float>centralityMap;
             boost::associative_property_map< std::map<Vertex, float> >centralityPropMap(centralityMap);
@@ -135,6 +136,13 @@ void readCommand(const graph &g, string filename)
             bcFile.close();
             outFile << "Brandes BC computed." << endl;
         }
+        else if (command == "reduce") //create reduced graph
+        {
+            Graph h;
+            graph_reduction(g, h);
+            edge_list_print_file(h, "Reduced Graph.txt");
+
+        }
         else if (command == "adiam") outFile << "Approx Diameter: " << approx_graph_diameter(g) << endl;
         else if (command == "ediam") outFile << "Exact Diameter: " << simple_graph_diameter(g) << endl;
         else if (command == "etri") outFile << "Exact Triangle Count: "  << exact_triangle_count(g) << endl;
@@ -142,6 +150,13 @@ void readCommand(const graph &g, string filename)
         else if (command == "edge") cout << "Num Edge: " << boost::num_edges(g) << endl;
         else if (command == "exit") break;
 
+        /*
+        else if (command == "test")
+        {
+            Graph h;
+            graph_reduction(g, h);
+        }
+*/
         else cout << "Did not recognize command." << endl;
     }
     outFile.close();

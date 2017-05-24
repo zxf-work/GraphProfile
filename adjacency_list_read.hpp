@@ -28,30 +28,16 @@ bool adjacency_list_read(Graph& g, const char* filename)
 
 
             std::string edgeStart;
-            datafile >> edgeStart;
             std::string edgeEnd;
-            datafile >> edgeEnd;
 
-            //add the edge
-            //std::cout << "Adding Edge (" << std::stoi(edgeStart) << "," << std::stoi(edgeEnd)<< ")" << std::endl;
-            add_edge(std::stoi(edgeStart), std::stoi(edgeEnd), EdgeWeightProperty(1), g);
+            if(datafile >> edgeStart && datafile >> edgeEnd)
+            {
+                add_edge(std::stoi(edgeStart), std::stoi(edgeEnd), EdgeWeightProperty(1), g);
+            }
+
 
             ++edgeCounter;
             if (edgeCounter % 50000 == 0) { std::cout << "Adding edge #" << edgeCounter << std::endl; }
-    /**
-            //vertex counting
-            //int numVertex = 0;
-            if(isNumber)
-            {
-                int largerVertex = std::stoi(edgeStart) > std::stoi(edgeEnd) ? std::stoi(edgeStart):std::stoi(edgeEnd);
-                if (numVertex < largerVertex) numVertex  = largerVertex;
-            }
-            else {
-                numVertex++;
-            }
-
-    **/
-
         }
         return true;
     }
