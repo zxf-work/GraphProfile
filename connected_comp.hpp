@@ -7,6 +7,7 @@
 #include <vector>
 #include <algorithm>
 
+
 using namespace boost;
 
 //returns (# of CC, percentiles of largest CC's)
@@ -31,7 +32,7 @@ std::vector<int> connected_comp(const Graph &g)
     std::vector<int> retVal;
     retVal.push_back(numComp);
 
-    while(sum * 100 / V <= 90)
+    while(((sum * 100) / V )<= 90)
     {
         int* largest = std::max_element(&componentCount[0], &componentCount[0] + componentCount.size());
         sum = sum + *largest;
