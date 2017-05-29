@@ -22,6 +22,21 @@ int main()
 
         Graph g;
 
+/*
+        Graph t1;
+        Graph t2;
+        adjacency_list_read(t1, "C:\\Users\\Vincent Luong\\Documents\\Git\\GraphProfile\\Graph Data\\Reduced Graph3.txt");
+        adjacency_list_read(t2, "C:\\Users\\Vincent Luong\\Documents\\Git\\GraphProfile\\Graph Data\\Reduced Graph5.txt");
+        std::pair<EdgeIterator, EdgeIterator> gEdgeIt = boost::edges(t1);
+
+        for(auto it = gEdgeIt.first; it != gEdgeIt.second; ++it)
+        {
+            if (! boost::edge(boost::source(*it, t1), boost::target(*it, t1), t2).second)
+            {
+                cout << boost::source(*it, t1) << " " << boost::target(*it, t1) << endl;
+            }
+        }
+*/
         if (adjacency_list_read(g, filename.c_str()))
         {
             readCommand(g, filename);

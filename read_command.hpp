@@ -52,7 +52,7 @@ void readCommand(const graph &g, string filename)
         else if (command == "lcc") //local cluster coeff
         {
             cout << "Select a vertex from " << boost::num_vertices(g) << " vertices. (-1 for average)" << endl;
-            unsigned v;
+            long v;
             cin >> v;
             outFile.precision(4);
             if (v == -1) outFile << "Average LCC: " << average_cluster_coeff(g) << endl;
@@ -141,7 +141,14 @@ void readCommand(const graph &g, string filename)
             Graph h;
             graph_reduction(g, h);
             edge_list_print_file(h, "Reduced Graph.txt");
-
+            //cout << boost::edge(98, 1, h).second << endl;
+            //cout << boost::edge(98, 1, g).second << endl;
+        }
+        else if (command == "reduce5") //create reduced graph
+        {
+            Graph h;
+            graph_reduction(g, h, 5);
+            edge_list_print_file(h, "Reduced Graph5.txt");
         }
         else if (command == "adiam") outFile << "Approx Diameter: " << approx_graph_diameter(g) << endl;
         else if (command == "ediam") outFile << "Exact Diameter: " << simple_graph_diameter(g) << endl;
@@ -150,13 +157,15 @@ void readCommand(const graph &g, string filename)
         else if (command == "edge") cout << "Num Edge: " << boost::num_edges(g) << endl;
         else if (command == "exit") break;
 
-        /*
+
         else if (command == "test")
         {
-            Graph h;
-            graph_reduction(g, h);
+            int a, b;
+            cin >> a;
+            cin >> b;
+            outFile << "Approx Diam " << a << " " << b << ": " << approx_graph_diameter_bfs(g, a, b)<< endl;
         }
-*/
+
         else cout << "Did not recognize command." << endl;
     }
     outFile.close();
