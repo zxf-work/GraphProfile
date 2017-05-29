@@ -12,10 +12,6 @@
 #include <boost/graph/floyd_warshall_shortest.hpp>
 
 
-//testing includes
-#include <iostream>
-#include <boost/array.hpp>
-#include <array>
 
 
 
@@ -37,7 +33,6 @@ unsigned approx_graph_diameter(const Graph &g)
         if (i % 200 == 0) { std::cout << "2BFS #" << i+1 << std::endl; }
         //start at random vertex
         Vertex v = vertex(rand() % num_vertices(g), g);
-
         //find next vertex u
         std::pair<Vertex, vertices_size_type> uPair = bfs_furthest_vertex(g, v);
         if (uPair.second > diameter) diameter = uPair.second;
@@ -47,11 +42,35 @@ unsigned approx_graph_diameter(const Graph &g)
         if (wPair.second > diameter) diameter = wPair.second;
 
     }
-
-
     return diameter;
 
 
+}
+
+//if bfs_count = 2, iterations = 1000, same as above.
+unsigned approx_graph_diameter_bfs(const Graph &g, int bfs_count, int iterations)
+{
+    srand(time(NULL));
+
+    vertices_size_type diameter = 0;
+
+    //iteration loop
+    for (int i = 0; i < iterations; ++i)
+    {
+        //start at random vertex
+        Vertex v = vertex(rand() % num_vertices(g), g);
+
+        for(int j = 0; j < bfs_count; ++j)
+        {
+            //find next vertex u
+            std::pair<Vertex, vertices_size_type> uPair = bfs_furthest_vertex(g, v);
+            v = uPair.first;
+            if (uPair.second > diameter) diameter = uPair.second;
+        }
+
+    }
+
+    return diameter;
 }
 
 //computes all pairs shortest path problem
