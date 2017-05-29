@@ -6,7 +6,7 @@
 
 
 typedef boost::property<boost::edge_weight_t, int> EdgeWeightProperty;
-typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS, boost::no_property, EdgeWeightProperty> Graph;
+typedef boost::adjacency_list<boost::setS, boost::vecS, boost::undirectedS, boost::no_property, EdgeWeightProperty> Graph;
 typedef boost::graph_traits<Graph>::edge_iterator EdgeIterator;
 typedef boost::graph_traits<Graph>::vertex_iterator VertexIterator;
 typedef boost::graph_traits<Graph>::adjacency_iterator AdjacencyIterator;

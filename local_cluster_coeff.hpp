@@ -15,10 +15,11 @@ double local_cluster_coeff(const Vertex &v, const Graph &g)
     int deg = degree(v, g);
     if (deg != 0 && deg != 1)
     {
+        //check every pair of neighbours
         std::pair<AdjacencyIterator, AdjacencyIterator> neighbourIter = adjacent_vertices(v, g);
-        for(AdjacencyIterator ni1 = neighbourIter.first; ni1 != neighbourIter.second - 1; ++ni1)
+        for(AdjacencyIterator ni1 = neighbourIter.first; ni1 != --neighbourIter.second; ++ni1)
         {
-            for(AdjacencyIterator ni2 = ni1 + 1; ni2 != neighbourIter.second; ++ni2)
+            for(AdjacencyIterator ni2 = ++ni1; ni2 != neighbourIter.second; ++ni2)
             {
                 std::pair<Edge, bool> e = edge(*ni1, *ni2, g);
                 if(e.second) localTriCount++;
