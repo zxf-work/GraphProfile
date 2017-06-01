@@ -41,4 +41,25 @@ void min_spanning_tree(const Graph& g, Vertex v, std::map<Vertex, Vertex>& tree)
     }
 }
 
+//returns the highest x degree vertices
+std::vector<Vertex> high_degree_vertices(const Graph &g, int x = 5)
+{
+    std::multimap<unsigned, Vertex> vertexList;
+
+    std::pair<VertexIterator, VertexIterator> vertexIter = vertices(g);
+    for(auto it = vertexIter.first; it != vertexIter.second; ++it)
+    {
+        vertexList.emplace(degree(*it, g), *it);
+    }
+
+    std::vector<Vertex> retVal;
+    for(int i = 0; i < x; ++i)
+    {
+        auto it = vertexList.begin();
+        std::advance(it, i);
+        retVal.push_back(it->second);
+    }
+
+    return retVal;
+}
 #endif // MIN_SPANNING_TREE_HPP_INCLUDED

@@ -16,6 +16,9 @@
 #include "page_rank.hpp"
 #include "betweenness_centrality.hpp"
 #include "graph_reduction.hpp"
+#include <stdlib.h>     /* srand, rand */
+#include <time.h>       /* time */
+
 
 
 using namespace std;
@@ -150,6 +153,26 @@ void readCommand(const graph &g, string filename)
             graph_reduction(g, h, 5);
             edge_list_print_file(h, "Reduced Graph5.txt");
         }
+        else if (command == "reducet")
+        {
+            Graph h;
+            //cout << "Select Vertices as roots. (" << boost::num_vertices(g) << ")" << endl;
+            srand(time(NULL));
+            std::vector<Vertex> roots;
+            for(int i = 0; i < 5; ++i)
+            {
+                roots.push_back(rand() % boost::num_vertices(g));
+            }
+            graph_reduction_spanning_tree(g, h, roots);
+            edge_list_print_file(h, "Reduced Graph Tree.txt");
+
+        }
+        else if (command == "reducetri")
+        {
+            Graph h;
+            graph_reduction_triangle_avoid(g, h, 3);
+            edge_list_print_file(h, "Reduced Graph Triangle.txt");
+        }
         else if (command == "adiam") outFile << "Approx Diameter: " << approx_graph_diameter(g) << endl;
         else if (command == "ediam") outFile << "Exact Diameter: " << simple_graph_diameter(g) << endl;
         else if (command == "etri") outFile << "Exact Triangle Count: "  << exact_triangle_count(g) << endl;
@@ -160,10 +183,7 @@ void readCommand(const graph &g, string filename)
 
         else if (command == "test")
         {
-            int a, b;
-            cin >> a;
-            cin >> b;
-            outFile << "Approx Diam " << a << " " << b << ": " << approx_graph_diameter_bfs(g, a, b)<< endl;
+            cout << boost::edge(0,0, g).second <<endl;
         }
 
         else cout << "Did not recognize command." << endl;

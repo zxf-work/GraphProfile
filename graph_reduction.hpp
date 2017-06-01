@@ -22,8 +22,8 @@ void graph_reduction(const Graph &g, Graph &h, unsigned x = 3)
     //add the vertices
     if(n != 0)
     {
-        add_edge(0, (unsigned)num_vertices(g), h);
-        remove_edge(0, (unsigned)num_vertices(g), h);
+        add_edge(0, num_vertices(g), h);
+        remove_edge(0, num_vertices(g), h);
     }
 
     //for each vertex g, go through its neighbours and keep x edges, to the highest degree neighbours
@@ -60,8 +60,8 @@ void graph_reduction_percentage(const Graph &g, Graph &h, unsigned cutoff = 20, 
     //add the vertices
     if(n != 0)
     {
-        add_edge(0, (unsigned)num_vertices(g), h);
-        remove_edge(0, (unsigned)num_vertices(g), h);
+        add_edge(0, num_vertices(g), h);
+        remove_edge(0, num_vertices(g), h);
     }
 
     for(unsigned i = 0; i < num_vertices(g); ++i)
@@ -98,8 +98,8 @@ void graph_reduction_spanning_tree(const Graph& g, Graph &h, const std::vector<V
     //add vertices
     if (n != 0)
     {
-        add_edge(0, (unsigned)num_vertices(g), h);
-        remove_edge(0, (unsigned)num_vertices(g), h);
+        add_edge(0, num_vertices(g), h);
+        remove_edge(0, num_vertices(g), h);
     }
 
     for(auto it = roots.begin(); it != roots.end(); ++it)
@@ -116,6 +116,84 @@ void graph_reduction_spanning_tree(const Graph& g, Graph &h, const std::vector<V
         }
 
     }
+}
+
+
+//expcets graph g, empty graph h, positive integer x
+//creates a graph by selecting the highest degree neighbours of each vertex
+//for each vertex v, each neighbour is set to priority 1 first
+//when edge vu is chosen as an edge to add, set all vertex pairs w, y to priority 2
+//if y, z are neighbours of v, and u, w, y form a triangle
+void graph_reduction_triangle_avoid(const Graph& g, Graph &h, unsigned x = 3)
+{
+    unsigned n = num_vertices(g);
+
+    //add the vertices
+    if (n != 0)
+    {
+        add_edge(0, num_vertices(g), h);
+        remove_edge(0, num_vertices(g), h);
+    }
+
+    if (x != 0)
+    {
+        for(unsigned i = 0; i < num_vertices(g); ++i)
+        {
+            unsigned d = degree(i, g);
+
+            if(d <= x) //when degree <= # edges to add, add all
+            {
+                for(auto it = adjacent_vertices(i, g).first; it != adjacent_vertices(i, g).second; ++it)
+                {
+                    add_edge(i, *it, h);
+                }
+            }
+            else
+            {
+                std::multimap<unsigned, Vertex> neighbourDegreeMap;
+                std::map<Vertex, int> priorityMap;
+                for(auto it = adjacent_vertices(i, g).first; it != adjacent_vertices(i, g).second; ++it)
+                {
+                    neighbourDegreeMap.emplace(degree(*it, g), *it);
+                    priorityMap.emplace(*it, 1);
+                }
+
+                unsigned edgesAdded = 0;
+                int priorityCount = 1; //when adding edges, only add edges with priority set to this number
+                //edge adding loop, loop until sufficient number added
+                while(edgesAdded < x)
+                {
+                    //check highest degree neighbours first
+                    for(auto it = neighbourDegreeMap.begin(); it != neighbourDegreeMap.end(); ++it)
+                    {
+                        if(edgesAdded >= x) break;
+                        if(priorityMap.at(it->second) <= priorityCount)
+                        {
+                            add_edge(i, it->second, h);
+                            ++edgesAdded;
+
+                            //increase priority of other vertices that form triangle, need to check all other pairs of neighbours
+                            for(auto n1 = neighbourDegreeMap.begin(); n1 != --neighbourDegreeMap.end(); ++n1)
+                            {
+                                auto n1copy = n1;
+                                for(auto n2 = ++n1copy; n2 != neighbourDegreeMap.end(); ++n2)
+                                {
+                                    if(edge(it->second, n1->second, g).second && edge(it->second, n2->second, g).second && edge(n1->second, n2->second, g).second) //if there is triangle
+                                    {
+                                        ++priorityMap.at(n1->second);
+                                        ++priorityMap.at(n2->second);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    ++priorityCount; //move on to next priority setting
+                }
+            }
+        }
+    }
+
 }
 
 #endif // GRAPH_REDUCTION_HPP_INCLUDED

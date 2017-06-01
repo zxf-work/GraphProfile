@@ -4,6 +4,7 @@
 #include <utility>
 #include <string>
 #include "read_command.hpp"
+#include "suite_test.hpp"
 
 using namespace std;
 
@@ -18,7 +19,16 @@ int main()
 
         if (filename == "stop" || filename == "exit") break;
         if (filename == "default") filename = "C:\\Users\\Vincent Luong\\Documents\\Git\\GraphProfile\\Graph Data\\facebook_combined.txt";
-        if (filename == "small") filename == "C:\\Users\\Vincent Luong\\Documents\\Git\\GraphProfile\\Graph Data\\small test.txt";
+        if (filename == "small") filename = "C:\\Users\\Vincent Luong\\Documents\\Git\\GraphProfile\\Graph Data\\small test.txt";
+        if (filename == "enron") filename = "C:\\Users\\Vincent Luong\\Documents\\Git\\GraphProfile\\Graph Data\\enron.txt";
+
+        if (filename == "suitemode")
+        {
+            vector<string>filenames;
+            filenames.push_back("C:\\Users\\Vincent Luong\\Documents\\Git\\GraphProfile\\Graph Data\\facebook_combined.txt");
+
+            suite_test(filenames);
+        }
 
         Graph g;
 
