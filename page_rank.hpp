@@ -20,7 +20,7 @@ void page_rank(const Graph &g, std::vector<double> &pageRankVector)
 
     double maxDifference = 1; //max difference between the iterations, pageRankVector, and nextPageRanks
     int timeCount = 0;
-    while(maxDifference > 0.01) //this loop is for calculating the entire PR matrix multiple times.
+    while(maxDifference > 0.001) //this loop is for calculating the entire PR matrix multiple times.
     { //criterion is stop is that all page ranks have not differed by more than 0.01
         double difference = 0;
 
