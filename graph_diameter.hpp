@@ -80,8 +80,8 @@ unsigned approx_graph_diameter_bfs(const Graph &g, int bfs_count, int iterations
 //uses johnson if dense is set to true
 int simple_graph_diameter(const Graph &g, bool dense = false)
 {
-    int V = num_vertices(g);
-    std::vector< std::vector<int> > D(V, std::vector<int>(V, 0));
+    unsigned V = num_vertices(g);
+    std::vector< std::vector<int> > D(V, std::vector<int>(V, std::numeric_limits<int>::max()));
     if (num_edges(g) == 0) return -1;
     //std::vector<int> weights(num_edges(g), 1);
 
@@ -92,7 +92,13 @@ int simple_graph_diameter(const Graph &g, bool dense = false)
     int shortestPath[V];
     for (int i = 0; i < V; ++i)
     {
-        shortestPath[i] = *std::max_element(&D[i][0], &D[i][V] + 1);
+        shortestPath[i] = 0;
+        for(unsigned j = 0; j < V; ++j)
+        {
+            if (shortestPath[i] < D[i][j] && D[i][j] != std::numeric_limits<int>::max()) shortestPath[i] = D[i][j];
+                //shortestPath[i] = *std::max_element(&D[i][0], &D[i][V] + 1);
+        }
+
     }
     return *std::max_element(shortestPath, shortestPath+V);
 }

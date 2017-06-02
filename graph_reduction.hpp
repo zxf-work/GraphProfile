@@ -37,7 +37,6 @@ void graph_reduction(const Graph &g, Graph &h, unsigned x = 3)
         for(AdjacencyIterator ni1 = neighbourIter.first; ni1 != neighbourIter.second; ++ni1)
         {
             neighbourMap.emplace((unsigned)degree(*ni1, g), *ni1);
-            if(i == 98) std::cout << i << " " << *ni1 << std::endl;
         }
         //add edges to up to d/up to x neighbours
         for(int y = 0; y < x && y < d; ++y)
@@ -53,7 +52,7 @@ void graph_reduction(const Graph &g, Graph &h, unsigned x = 3)
 //expects graph g, empty graph h
 //takes graph g, creates reduced graph h
 //for each vertex v, if the degree of v > cutoff, then randomly select percentage of its edges
-void graph_reduction_percentage(const Graph &g, Graph &h, unsigned cutoff = 20, unsigned percentage = 5)
+void graph_reduction_percentage(const Graph &g, Graph &h, unsigned cutoff = 10, unsigned percentage = 4)
 {
     unsigned n = num_vertices(g);
 

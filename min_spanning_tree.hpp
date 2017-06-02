@@ -6,6 +6,7 @@
 #include <vector>
 #include <boost/graph/breadth_first_search.hpp>
 
+
 using namespace boost;
 
 struct spanning_tree_bfs_visitor : default_bfs_visitor
@@ -16,7 +17,7 @@ private:
 public:
     void tree_edge(const Edge& e, const Graph &g)
     {
-        predMap->at(source(e, g)) = target(e, g);
+        predMap->at(target(e, g)) = source(e, g);
     }
 
 
