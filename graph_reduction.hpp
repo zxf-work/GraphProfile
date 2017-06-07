@@ -14,16 +14,16 @@ using namespace boost;
 
 //expects graph g, and empty graph h, integer x
 //takes graph g, and creates a reduced graph h
-//for each vertex of g, keep x edges, to the highest degree neighbours
-void graph_reduction(const Graph &g, Graph &h, unsigned x = 3)
+//for each vertex of g, keep x edges, to the lowest degree neighbours
+void graph_reduction_reverse(const Graph &g, Graph &h, unsigned x = 3)
 {
     unsigned n = num_vertices(g);
 
     //add the vertices
     if(n != 0)
     {
-        add_edge(0, num_vertices(g), h);
-        remove_edge(0, num_vertices(g), h);
+        add_edge(0, num_vertices(g) - 1, h);
+        remove_edge(0, num_vertices(g) - 1, h);
     }
 
     //for each vertex g, go through its neighbours and keep x edges, to the highest degree neighbours
@@ -48,6 +48,42 @@ void graph_reduction(const Graph &g, Graph &h, unsigned x = 3)
     }
 }
 
+//expects graph g, and empty graph h, integer x
+//takes graph g, and creates a reduced graph h
+//for each vertex of g, keep x edges, to the highest degree neighbours
+void graph_reduction(const Graph &g, Graph &h, unsigned x = 3)
+{
+    unsigned n = num_vertices(g);
+
+    //add the vertices
+    if(n != 0)
+    {
+        add_edge(0, num_vertices(g) - 1, h);
+        remove_edge(0, num_vertices(g) - 1, h);
+    }
+
+    //for each vertex g, go through its neighbours and keep x edges, to the highest degree neighbours
+    for(unsigned i = 0; i < num_vertices(g); ++i)
+    {
+        unsigned d = degree(i, g);
+
+        std::multimap<unsigned, Vertex> neighbourMap;
+        //std::vector< std::pair<unsigned, Vertex> > neighbourMap; //this vector stores the neighbour and the neighbour's degrees
+        std::pair<AdjacencyIterator, AdjacencyIterator> neighbourIter = adjacent_vertices(i, g);
+        for(AdjacencyIterator ni1 = neighbourIter.first; ni1 != neighbourIter.second; ++ni1)
+        {
+            neighbourMap.emplace((unsigned)degree(*ni1, g), *ni1);
+        }
+        //add edges to up to d/up to x neighbours
+        for(int y = 0; y < x && y < d; ++y)
+        {
+            auto it = neighbourMap.begin();
+            std::advance(it, d - 1 - y);
+            add_edge(i, it->second, h);
+        }
+    }
+}
+
 
 //expects graph g, empty graph h
 //takes graph g, creates reduced graph h
@@ -59,8 +95,8 @@ void graph_reduction_percentage(const Graph &g, Graph &h, unsigned cutoff = 10, 
     //add the vertices
     if(n != 0)
     {
-        add_edge(0, num_vertices(g), h);
-        remove_edge(0, num_vertices(g), h);
+        add_edge(0, num_vertices(g) - 1, h);
+        remove_edge(0, num_vertices(g) - 1, h);
     }
 
     for(unsigned i = 0; i < num_vertices(g); ++i)
@@ -97,8 +133,8 @@ void graph_reduction_spanning_tree(const Graph& g, Graph &h, const std::vector<V
     //add vertices
     if (n != 0)
     {
-        add_edge(0, num_vertices(g), h);
-        remove_edge(0, num_vertices(g), h);
+        add_edge(0, num_vertices(g) - 1, h);
+        remove_edge(0, num_vertices(g) - 1, h);
     }
 
     for(auto it = roots.begin(); it != roots.end(); ++it)
@@ -130,8 +166,8 @@ void graph_reduction_triangle_avoid(const Graph& g, Graph &h, unsigned x = 3)
     //add the vertices
     if (n != 0)
     {
-        add_edge(0, num_vertices(g), h);
-        remove_edge(0, num_vertices(g), h);
+        add_edge(0, num_vertices(g) - 1, h);
+        remove_edge(0, num_vertices(g) - 1, h);
     }
 
     if (x != 0)
@@ -163,7 +199,7 @@ void graph_reduction_triangle_avoid(const Graph& g, Graph &h, unsigned x = 3)
                 while(edgesAdded < x)
                 {
                     //check highest degree neighbours first
-                    for(auto it = neighbourDegreeMap.begin(); it != neighbourDegreeMap.end(); ++it)
+                    for(auto it = neighbourDegreeMap.rbegin(); it != neighbourDegreeMap.rend(); ++it)
                     {
                         if(edgesAdded >= x) break;
                         if(priorityMap.at(it->second) <= priorityCount)

@@ -12,13 +12,17 @@
 #include "edge_list_print.hpp"
 #include <map>
 #include "reachability.hpp"
+#include <math.h>
+#include "shortest_path.hpp"
 
 using namespace std;
 
-void testing_funcs(const Graph &g, ofstream& outFile)
+void testing_funcs(const Graph &g, ofstream& outFile, std::multimap<Vertex, Vertex>& ReachabilityPairs,
+                    std::map<std::pair<Vertex, Vertex>, unsigned> distanceMap, bool original = false)
 {
 
     outFile << "Edges: " << boost::num_edges(g) << endl;
+    outFile << "Vertices: " << boost::num_vertices(g) << endl;;
     //outFile << "Exact Diameter: " << simple_graph_diameter(g) << endl;
     outFile << "Approx Diamter: " << approx_graph_diameter(g) << endl;
 
@@ -37,23 +41,173 @@ void testing_funcs(const Graph &g, ofstream& outFile)
     std::vector<double> pageRanks;
     page_rank(g, pageRanks);
 
-    map<double, Vertex> pageRankMap;
+    multimap<double, Vertex> pageRankMap;
     for(unsigned i = 0; i < boost::num_vertices(g); ++i)
     {
         pageRankMap.emplace(pageRanks.at(i), i);
     }
-    outFile << "Top 15 Page Rank vertices:";
-    for (int i = 0; i < 15 && i < boost::num_vertices(g); ++i)
+    double p = (boost::num_vertices(g) * 0.0015) > 15 ? boost::num_vertices(g) * 0.0015 : 15;
+    outFile << "Top "<<p<<" Page Rank vertices:";
+    for (int i = 0; i < p && i < boost::num_vertices(g); ++i)
     {
         auto it = pageRankMap.begin();
-        advance(it, i);
+        advance(it, boost::num_vertices(g) - 1 - i);
         outFile << " " << it->second;
     }
     outFile << endl;
+    //reachability
+    if(!original)
+    {
+        outFile << "Reachability Testing Pairs: ";
+        for(auto it = ReachabilityPairs.begin(); it != ReachabilityPairs.end(); ++it)
+        {
+            if(!reachability(g, it->first, it->second)) outFile << "(" << it->first << ", " << it->second << ") ";
+        }
+        outFile << endl;
+
+    //distance
+    //NOTE: if original distance is close to int::max, and then the pair becomes disconnected, could result in false result
+        outFile << "Distance Deltas: ";
+        std::vector<unsigned>distanceRecorder(10, 0);
+        for(auto it = ReachabilityPairs.begin(); it != ReachabilityPairs.end(); ++it)
+        {
+            unsigned dist = graph_distance(g, it->first, it->second);
+            unsigned distDelta = dist > distanceMap.at(*it) ? dist - distanceMap.at(*it) : distanceMap.at(*it) - dist;
+            if(distanceRecorder.size() < (distDelta+1)  && distDelta <= 100) distanceRecorder.resize(distDelta+1);
+            if (dist <= 100) ++distanceRecorder.at(distDelta);
+        }
+        for(int j = 0; j < 10; ++j)
+        {
+            outFile << j << " - " << distanceRecorder.at(j) << " ";
+        }
+        outFile<<endl;
+
+    }
+    outFile<<endl;
+
+
 
 }
 
+//uses teh testing_func test suite to computete data on a bunch of graphs, and their reduced versions
+//the reduced versions are computed with top k degree neighbours alg., where k = 2,4,8,16
+//testing functions are: approx diam, page rank, reachability, shortest path, cc
+void suite_test_top_k(vector<string> filenames)
+{
+    ofstream outFile;
+    outFile.open("Top K Test Results.txt");
+    for(auto it = filenames.begin(); it != filenames.end(); ++it)
+    {
+        Graph g;
+        if (adjacency_list_read(g, it->c_str()))
+        {
+            //set up pairs for reachability and shortest path
+            unsigned n = num_vertices(g);
+            int reachabilityTestSize = 1000;
+            int loopsize = 0;
+            std::multimap<Vertex, Vertex> VertexPairMap;
+            while(VertexPairMap.size() < reachabilityTestSize)
+            {
+                if (loopsize == 1000000) {cout << "Long Loop for pairs."<< endl; break;}
+                Vertex v = vertex(rand() % n, g);
+                Vertex u = vertex(rand() % n, g);
+                if(reachability(g, v, u)) VertexPairMap.emplace(v, u);
+                ++loopsize;
+            }
+            std::map<pair<Vertex, Vertex>, unsigned> distanceMap;
+            for(auto pairIt = VertexPairMap.begin(); pairIt != VertexPairMap.end(); ++pairIt)
+            {
+                distanceMap.emplace(*pairIt, graph_distance(g, pairIt->first, pairIt->second));
+            }
+            //testing original graph
+            outFile << *it << endl;
+            testing_funcs(g, outFile, VertexPairMap, distanceMap, true);
+            outFile << "Reachability Testing Pairs: ";
+            for(auto it = VertexPairMap.begin(); it != VertexPairMap.end(); ++it)
+            {
+                outFile << "(" << it->first << ", " << it->second << ") ";
+            }
+            outFile << endl << endl;
 
+            //testing reduced graphs
+            for(int i = 1; i < 5; ++i)
+            {
+                int k = pow(2, i);
+                Graph h;
+                graph_reduction(g, h, k);
+                outFile << "Keep top " << k << " neighbours." << endl;
+                testing_funcs(h, outFile, VertexPairMap, distanceMap);
+            }
+        }
+
+
+    }
+    outFile.close();
+
+
+}
+
+//uses teh testing_func test suite to computete data on a bunch of graphs, and their reduced versions
+//the reduced versions are computed with triangle avoid alg., where k = 2,4,8,16
+//testing functions are: approx diam, page rank, reachability, shortest path, cc
+void suite_test_triangle_top_k(vector<string> filenames)
+{
+    ofstream outFile;
+    outFile.open("Triangle Top K Test Results.txt");
+    for(auto it = filenames.begin(); it != filenames.end(); ++it)
+    {
+        Graph g;
+        if (adjacency_list_read(g, it->c_str()))
+        {
+            //set up pairs for reachability and shortest path
+            unsigned n = num_vertices(g);
+            int reachabilityTestSize = 1000;
+            int loopsize = 0;
+            std::multimap<Vertex, Vertex> VertexPairMap;
+            while(VertexPairMap.size() < reachabilityTestSize)
+            {
+                if (loopsize == 1000000) {cout << "Long Loop for pairs."<< endl; break;}
+                Vertex v = vertex(rand() % n, g);
+                Vertex u = vertex(rand() % n, g);
+                if(reachability(g, v, u)) VertexPairMap.emplace(v, u);
+                ++loopsize;
+            }
+            std::map<pair<Vertex, Vertex>, unsigned> distanceMap;
+            for(auto pairIt = VertexPairMap.begin(); pairIt != VertexPairMap.end(); ++pairIt)
+            {
+                distanceMap.emplace(*pairIt, graph_distance(g, pairIt->first, pairIt->second));
+            }
+            //testing original graph
+            outFile << *it << endl;
+            testing_funcs(g, outFile, VertexPairMap, distanceMap, true);
+            outFile << "Reachability Testing Pairs: ";
+            for(auto it = VertexPairMap.begin(); it != VertexPairMap.end(); ++it)
+            {
+                outFile << "(" << it->first << ", " << it->second << ") ";
+            }
+            outFile << endl << endl;
+
+            //testing reduced graphs
+            for(int i = 1; i < 5; ++i)
+            {
+                int k = pow(2, i);
+                Graph h;
+                graph_reduction_triangle_avoid(g, h, k);
+                outFile << "Keep triangle top " << k << " neighbours." << endl;
+                testing_funcs(h, outFile, VertexPairMap, distanceMap);
+            }
+        }
+
+
+    }
+    outFile.close();
+
+
+}
+
+//uses teh testing_func test suite to computete data on a bunch of graphs, and their reduced versions
+//the reduced versions are computed with highest degree neighbours, spanning tree, triangle avoid, and proportional neighbour alg
+//testing functions are: approx diam, page rank, reachability, shortest path, cc
 void suite_test(vector<string> filenames)
 {
     ofstream outFile;
@@ -65,8 +219,9 @@ void suite_test(vector<string> filenames)
 
         if (adjacency_list_read(g, it->c_str()))
         {
+            //set up reachability pairs
             unsigned n = num_vertices(g);
-            int reachabilityTestSize = 100;
+            int reachabilityTestSize = 1000;
             int loopsize = 0;
             std::multimap<Vertex, Vertex> VertexPairMap;
             while(VertexPairMap.size() < reachabilityTestSize)
@@ -79,7 +234,13 @@ void suite_test(vector<string> filenames)
             }
 
             outFile << *it << endl;
-            testing_funcs(g, outFile);
+            std::map<pair<Vertex, Vertex>, unsigned> distanceMap;
+            for(auto pairIt = VertexPairMap.begin(); pairIt != VertexPairMap.end(); ++pairIt)
+            {
+                distanceMap.emplace(*pairIt, graph_distance(g, pairIt->first, pairIt->second));
+            }
+            //test original
+            testing_funcs(g, outFile, VertexPairMap, distanceMap, true);
             outFile << "Reachability Testing Pairs: ";
             for(auto it = VertexPairMap.begin(); it != VertexPairMap.end(); ++it)
             {
@@ -92,13 +253,7 @@ void suite_test(vector<string> filenames)
             graph_reduction(g, *h1, 5);
 
             outFile << "Reduction 1: keep top 5 neighbours" << endl;
-            testing_funcs(*h1, outFile);
-            outFile << "Reachability Testing Pairs: ";
-            for(auto it = VertexPairMap.begin(); it != VertexPairMap.end(); ++it)
-            {
-                if(!reachability(*h1, it->first, it->second)) outFile << "(" << it->first << ", " << it->second << ") ";
-            }
-            outFile << endl << endl;
+            testing_funcs(*h1, outFile, VertexPairMap, distanceMap);
             delete h1;
 
             //graph reduction 2
@@ -106,13 +261,7 @@ void suite_test(vector<string> filenames)
             graph_reduction_percentage(g, *h2);
 
             outFile << "Reduction 2: keep 1 of 4 neighbours (cutoff 10)" << endl;
-            testing_funcs(*h2, outFile);
-            outFile << "Reachability Testing Pairs: ";
-            for(auto it = VertexPairMap.begin(); it != VertexPairMap.end(); ++it)
-            {
-                if(!reachability(*h2, it->first, it->second)) outFile << "(" << it->first << ", " << it->second << ") ";
-            }
-            outFile << endl << endl;
+            testing_funcs(*h2, outFile, VertexPairMap, distanceMap);
             delete h2;
 
             //graph reduction 3
@@ -120,13 +269,7 @@ void suite_test(vector<string> filenames)
             graph_reduction_spanning_tree(g, *h3, high_degree_vertices(g, 5));
 
             outFile << "Reduction 3: spanning tree of top 5 deg. vertices" << endl;
-            testing_funcs(*h3, outFile);
-            outFile << "Reachability Testing Pairs: ";
-            for(auto it = VertexPairMap.begin(); it != VertexPairMap.end(); ++it)
-            {
-                if(!reachability(*h3, it->first, it->second)) outFile << "(" << it->first << ", " << it->second << ") ";
-            }
-            outFile << endl << endl;
+            testing_funcs(*h3, outFile, VertexPairMap, distanceMap);
             delete h3;
 
             //graph reduction 4
@@ -134,13 +277,7 @@ void suite_test(vector<string> filenames)
             graph_reduction_triangle_avoid(g, *h4, 5);
 
             outFile << "Reduction 4: keep top 5 deg neighbours, prioritizing non triangles" << endl;
-            testing_funcs(*h4, outFile);
-            outFile << "Reachability Testing Pairs: ";
-            for(auto it = VertexPairMap.begin(); it != VertexPairMap.end(); ++it)
-            {
-                if(!reachability(*h4, it->first, it->second)) outFile << "(" << it->first << ", " << it->second << ") ";
-            }
-            outFile << endl << endl;
+            testing_funcs(*h4, outFile, VertexPairMap, distanceMap);
             delete h4;
 
         }
