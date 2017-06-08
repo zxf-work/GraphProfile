@@ -153,6 +153,32 @@ void graph_reduction_spanning_tree(const Graph& g, Graph &h, const std::vector<V
     }
 }
 
+void graph_reduction_high_degree_tree(const Graph &g, Graph &h, const std::vector<Vertex>& roots)
+{
+    unsigned n = num_vertices(g);
+
+    //add vertices
+    if (n != 0)
+    {
+        add_edge(0, num_vertices(g) - 1, h);
+        remove_edge(0, num_vertices(g) - 1, h);
+    }
+
+    for(auto it = roots.begin(); it != roots.end(); ++it)
+    {
+        Vertex root = *it;
+        std::multimap<Vertex, Vertex> tree;
+
+        high_degree_bfs(g, root, tree); //creates tree
+
+        //add edges to graph
+        for(auto treeIt = tree.begin(); treeIt != tree.end(); ++treeIt)
+        {
+            add_edge(treeIt->first, treeIt->second, h);
+        }
+    }
+}
+
 
 //expcets graph g, empty graph h, positive integer x
 //creates a graph by selecting the highest degree neighbours of each vertex

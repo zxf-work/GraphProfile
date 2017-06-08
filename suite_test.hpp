@@ -18,7 +18,8 @@
 using namespace std;
 
 void testing_funcs(const Graph &g, ofstream& outFile, std::multimap<Vertex, Vertex>& ReachabilityPairs,
-                    std::map<std::pair<Vertex, Vertex>, unsigned> distanceMap, bool original = false)
+                    const std::map<std::pair<Vertex, Vertex>, unsigned>& distanceMap,
+                    const std::vector<double>& originalPageRank, bool original = false)
 {
 
     outFile << "Edges: " << boost::num_edges(g) << endl;
@@ -38,13 +39,19 @@ void testing_funcs(const Graph &g, ofstream& outFile, std::multimap<Vertex, Vert
     outFile << endl;
 
     //page rank
-    std::vector<double> pageRanks;
-    page_rank(g, pageRanks);
-
+    if(!original)
+    {
+        std::pair<unsigned, unsigned> pageRankResults = page_rank_test(g, originalPageRank);
+        outFile << "Page Rank Count: # in top 0.15% of original - " << pageRankResults.first;
+        outFile << ", # in top 1% of original - " << pageRankResults.second << endl;
+    }
+    std::vector<double>newPageRanks;
+    page_rank(g, newPageRanks);
     multimap<double, Vertex> pageRankMap;
     for(unsigned i = 0; i < boost::num_vertices(g); ++i)
     {
-        pageRankMap.emplace(pageRanks.at(i), i);
+        if(!original) pageRankMap.emplace(newPageRanks.at(i), i);
+        else pageRankMap.emplace(originalPageRank.at(i), i);
     }
     double p = (boost::num_vertices(g) * 0.0015) > 15 ? boost::num_vertices(g) * 0.0015 : 15;
     outFile << "Top "<<p<<" Page Rank vertices:";
@@ -101,7 +108,9 @@ void suite_test_top_k(vector<string> filenames)
         Graph g;
         if (adjacency_list_read(g, it->c_str()))
         {
-            //set up pairs for reachability and shortest path
+            //set up pairs for reachability and shortest path, and page rank
+            std::vector<double> pageRankVector;
+            page_rank(g, pageRankVector);
             unsigned n = num_vertices(g);
             int reachabilityTestSize = 1000;
             int loopsize = 0;
@@ -121,7 +130,7 @@ void suite_test_top_k(vector<string> filenames)
             }
             //testing original graph
             outFile << *it << endl;
-            testing_funcs(g, outFile, VertexPairMap, distanceMap, true);
+            testing_funcs(g, outFile, VertexPairMap, distanceMap, pageRankVector, true);
             outFile << "Reachability Testing Pairs: ";
             for(auto it = VertexPairMap.begin(); it != VertexPairMap.end(); ++it)
             {
@@ -136,7 +145,7 @@ void suite_test_top_k(vector<string> filenames)
                 Graph h;
                 graph_reduction(g, h, k);
                 outFile << "Keep top " << k << " neighbours." << endl;
-                testing_funcs(h, outFile, VertexPairMap, distanceMap);
+                testing_funcs(h, outFile, VertexPairMap, distanceMap, pageRankVector);
             }
         }
 
@@ -159,7 +168,9 @@ void suite_test_triangle_top_k(vector<string> filenames)
         Graph g;
         if (adjacency_list_read(g, it->c_str()))
         {
-            //set up pairs for reachability and shortest path
+            //set up pairs for reachability and shortest path, and page rank
+            std::vector<double> pageRankVector;
+            page_rank(g, pageRankVector);
             unsigned n = num_vertices(g);
             int reachabilityTestSize = 1000;
             int loopsize = 0;
@@ -179,7 +190,7 @@ void suite_test_triangle_top_k(vector<string> filenames)
             }
             //testing original graph
             outFile << *it << endl;
-            testing_funcs(g, outFile, VertexPairMap, distanceMap, true);
+            testing_funcs(g, outFile, VertexPairMap, distanceMap, pageRankVector, true);
             outFile << "Reachability Testing Pairs: ";
             for(auto it = VertexPairMap.begin(); it != VertexPairMap.end(); ++it)
             {
@@ -194,7 +205,7 @@ void suite_test_triangle_top_k(vector<string> filenames)
                 Graph h;
                 graph_reduction_triangle_avoid(g, h, k);
                 outFile << "Keep triangle top " << k << " neighbours." << endl;
-                testing_funcs(h, outFile, VertexPairMap, distanceMap);
+                testing_funcs(h, outFile, VertexPairMap, distanceMap, pageRankVector);
             }
         }
 
@@ -202,6 +213,83 @@ void suite_test_triangle_top_k(vector<string> filenames)
     }
     outFile.close();
 
+
+}
+
+void suite_test_spanning_tree(vector<string>filenames)
+{
+    ofstream outFile;
+    outFile.open("Spanning Tree Test Results.txt");
+
+    for(auto it = filenames.begin(); it != filenames.end(); ++it)
+    {
+        Graph g;
+        if(adjacency_list_read(g, it->c_str()))
+        {
+            //set up pairs for reachability and shortest path, and page rank
+            std::vector<double> pageRankVector;
+            page_rank(g, pageRankVector);
+            unsigned n = num_vertices(g);
+            int reachabilityTestSize = 1000;
+            int loopsize = 0;
+            std::multimap<Vertex, Vertex> VertexPairMap;
+            while(VertexPairMap.size() < reachabilityTestSize)
+            {
+                if (loopsize == 1000000) {cout << "Long Loop for pairs."<< endl; break;}
+                Vertex v = vertex(rand() % n, g);
+                Vertex u = vertex(rand() % n, g);
+                if(reachability(g, v, u)) VertexPairMap.emplace(v, u);
+                ++loopsize;
+            }
+            std::map<pair<Vertex, Vertex>, unsigned> distanceMap;
+            for(auto pairIt = VertexPairMap.begin(); pairIt != VertexPairMap.end(); ++pairIt)
+            {
+                distanceMap.emplace(*pairIt, graph_distance(g, pairIt->first, pairIt->second));
+            }
+            //testing original graph
+            outFile << *it << endl;
+            testing_funcs(g, outFile, VertexPairMap, distanceMap, pageRankVector, true);
+            outFile << "Reachability Testing Pairs: ";
+            for(auto it = VertexPairMap.begin(); it != VertexPairMap.end(); ++it)
+            {
+                outFile << "(" << it->first << ", " << it->second << ") ";
+            }
+            outFile << endl << endl;
+
+            //testing reduced graphs
+            //start the spanning trees with the vertices in the middle when sorted by degree
+            for(int i = 0; i < 2; ++i)
+            {
+                //create reduced graph before testing
+                int k = i * 2 + 3;
+
+                //sort vertices by degree
+                std::multimap<unsigned, Vertex> vertexDegreeMap;
+                for(auto vi = boost::vertices(g).first; vi != boost::vertices(g).second; ++vi)
+                {
+                    vertexDegreeMap.emplace(boost::degree(*vi, g), *vi);
+                }
+                //pick the vertices as roots
+                std::vector<Vertex> roots;
+                for(int j = 0; j < k; ++j)
+                {
+                    auto it = vertexDegreeMap.begin();
+                    advance(it, (vertexDegreeMap.size() / 2) - i - 1 + j);
+                    roots.push_back(it->second);
+                }
+                for(auto it = roots.begin(); it != roots.end(); ++it)
+                {
+                    cout << *it << " ";
+                }
+                cout <<endl;
+                //actually create reduced graph
+                Graph h;
+                graph_reduction_high_degree_tree(g, h, roots);
+                outFile << "Spanning tree with middle " << k << " vertices as roots." << endl;
+                testing_funcs(h, outFile, VertexPairMap, distanceMap, pageRankVector);
+            }
+        }
+    }
 
 }
 
@@ -219,7 +307,9 @@ void suite_test(vector<string> filenames)
 
         if (adjacency_list_read(g, it->c_str()))
         {
-            //set up reachability pairs
+            //set up pairs for reachability and shortest path, and page rank
+            std::vector<double> pageRankVector;
+            page_rank(g, pageRankVector);
             unsigned n = num_vertices(g);
             int reachabilityTestSize = 1000;
             int loopsize = 0;
@@ -240,7 +330,7 @@ void suite_test(vector<string> filenames)
                 distanceMap.emplace(*pairIt, graph_distance(g, pairIt->first, pairIt->second));
             }
             //test original
-            testing_funcs(g, outFile, VertexPairMap, distanceMap, true);
+            testing_funcs(g, outFile, VertexPairMap, distanceMap, pageRankVector, true);
             outFile << "Reachability Testing Pairs: ";
             for(auto it = VertexPairMap.begin(); it != VertexPairMap.end(); ++it)
             {
@@ -253,7 +343,7 @@ void suite_test(vector<string> filenames)
             graph_reduction(g, *h1, 5);
 
             outFile << "Reduction 1: keep top 5 neighbours" << endl;
-            testing_funcs(*h1, outFile, VertexPairMap, distanceMap);
+            testing_funcs(*h1, outFile, VertexPairMap, distanceMap, pageRankVector);
             delete h1;
 
             //graph reduction 2
@@ -261,7 +351,7 @@ void suite_test(vector<string> filenames)
             graph_reduction_percentage(g, *h2);
 
             outFile << "Reduction 2: keep 1 of 4 neighbours (cutoff 10)" << endl;
-            testing_funcs(*h2, outFile, VertexPairMap, distanceMap);
+            testing_funcs(*h2, outFile, VertexPairMap, distanceMap, pageRankVector);
             delete h2;
 
             //graph reduction 3
@@ -269,7 +359,7 @@ void suite_test(vector<string> filenames)
             graph_reduction_spanning_tree(g, *h3, high_degree_vertices(g, 5));
 
             outFile << "Reduction 3: spanning tree of top 5 deg. vertices" << endl;
-            testing_funcs(*h3, outFile, VertexPairMap, distanceMap);
+            testing_funcs(*h3, outFile, VertexPairMap, distanceMap, pageRankVector);
             delete h3;
 
             //graph reduction 4
@@ -277,7 +367,7 @@ void suite_test(vector<string> filenames)
             graph_reduction_triangle_avoid(g, *h4, 5);
 
             outFile << "Reduction 4: keep top 5 deg neighbours, prioritizing non triangles" << endl;
-            testing_funcs(*h4, outFile, VertexPairMap, distanceMap);
+            testing_funcs(*h4, outFile, VertexPairMap, distanceMap, pageRankVector);
             delete h4;
 
         }
