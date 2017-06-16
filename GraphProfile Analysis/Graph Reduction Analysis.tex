@@ -1,0 +1,16 @@
+\documentclass[11pt]{article}
+
+\begin{document}
+
+\section{Introduction}
+This article will be looking at different methods at approximating graph metrics, and analysing the results the approximations give.  There are two approximation methods that this article will go through.  The first is using approximation algorithms; these are algorithms that do not calculate the exact value of a metric, but a similar value that can be used to estimate the exact value.  The second method is to compute the graph metric on a \textit{reduced} graph. In this article, a reduced graph of a graph $G$ is a graph with the same number of vertices as $G$, but with less edges.  The goal of these approximation methods is to decrease the run time of graph algorithms, while still getting good results in the graph metrics.
+
+\section{Approximation Algorithms}
+This section will cover some approximation algorithms used to compute several graph metrics.\\
+\subsection{Approximate Diameter} 
+The diameter of a graph is the maximal distance between a pair of vertices.  That is, the shortest path between any two vertices is at least as small as the graph's diameter.  The algorithm that will be analysed in this article for approximating graph diameter will be based on iterations of "2-BFS".  Each iteration performs breadth-first search twice.  The first BFS is performed starting at a random vertex $v$, to find a vertex $u$ that is of maximal distance from $v$.  The distance from $u$ to $v$, $d_v$ is recorded.  Then, the second BFS is performed starting at $u$.  The maximal distance from $u$ to another vertex, $d_u$ is recorded. (this is not necessarily the distance from $u$ to $v$).  Then an iteration of "2-BFS" will return $max(d_u, d_v)$.  The approximate diameter algorithm runs "2-BFS" 1000 times, and returns the maximum value of the 1000 "2-BFS" iterations.
+
+The "BFS" part of this algorithm performs a breadth-first search starting at a vertex $v$ to find a vertex $u$ that is as of maximal distance from $v$. This "BFS" is performed a second time, instead starting at vertex $u$
+
+
+\end{document}
