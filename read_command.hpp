@@ -180,13 +180,13 @@ void readCommand(const graph &g, string filename)
                 cin >> x;
                 if(x >= 0) roots.push_back(x);
             }
-            cout << "Roots: "
+            cout << "Roots: ";
             for(auto it = roots.begin(); it != roots.end(); ++it)
             {
                 cout << *it << " " << endl;
             }
             graph_reduction_spanning_tree(g, h, roots);
-            edge_list_print(h, "Reduced Graph Tree.txt");
+            edge_list_print_file(h, "Reduced Graph Tree.txt");
         }
         else if (command == "reducetree2")
         {

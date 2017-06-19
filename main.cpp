@@ -30,7 +30,7 @@ int main()
             cin >> filename;
             while(filename != "exit")
             {
-                filenames.push_back(filename)
+                filenames.push_back(filename);
                 cin >> filename;
             }
             suite_test_top_k(filenames);
@@ -43,7 +43,7 @@ int main()
             cin >> filename;
             while(filename != "exit")
             {
-                filenames.push_back(filename)
+                filenames.push_back(filename);
                 cin >> filename;
             }
             suite_test_triangle_top_k(filenames);
@@ -56,7 +56,7 @@ int main()
             cin >> filename;
             while(filename != "exit")
             {
-                filenames.push_back(filename)
+                filenames.push_back(filename);
                 cin >> filename;
             }
             suite_test_spanning_tree(filenames);
