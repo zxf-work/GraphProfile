@@ -14,8 +14,24 @@
 #include "reachability.hpp"
 #include <math.h>
 #include "shortest_path.hpp"
+#include "betweenness_centrality.hpp"
 
 using namespace std;
+
+//returns median value of degree
+unsigned median_cutoff(const Graph &g)
+{
+    multimap<unsigned, Vertex> degreeMap;
+    for(VertexIterator vi = boost::vertices(g).first; vi != boost::vertices(g).second; ++vi)
+    {
+        degreeMap.emplace(boost::degree(*vi, g), *vi);
+    }
+    auto it = degreeMap.begin();
+    advance(it, (degreeMap.size() / 2));
+
+    unsigned median = it->first;
+    return median;
+}
 
 void testing_funcs(const Graph &g, ofstream& outFile, std::multimap<Vertex, Vertex>& ReachabilityPairs,
                     const std::map<std::pair<Vertex, Vertex>, unsigned>& distanceMap,
@@ -28,11 +44,11 @@ void testing_funcs(const Graph &g, ofstream& outFile, std::multimap<Vertex, Vert
     outFile << "Approx Diamter: " << approx_graph_diameter(g) << endl;
 
     //cc
-    std::vector<int> connectedCompCount = connected_comp(g);
+    std::vector<unsigned> connectedCompCount = connected_comp(g);
     outFile << "Connected Components: " << connectedCompCount.at(0) << endl;
 
     outFile << "Largest Component Sizes: ";
-    for(std::vector<int>::iterator i = connectedCompCount.begin() + 1; i != connectedCompCount.end(); ++i)
+    for(std::vector<unsigned>::iterator i = connectedCompCount.begin() + 1; i != connectedCompCount.end(); ++i)
     {
         outFile << " " << *i;
     }
@@ -62,6 +78,8 @@ void testing_funcs(const Graph &g, ofstream& outFile, std::multimap<Vertex, Vert
         outFile << " " << it->second;
     }
     outFile << endl;
+
+
     //reachability
     if(!original)
     {
@@ -90,10 +108,17 @@ void testing_funcs(const Graph &g, ofstream& outFile, std::multimap<Vertex, Vert
         outFile<<endl;
 
     }
+
     outFile<<endl;
 
 
 
+}
+
+void betweenness_print(const Graph& g, const Graph &h, ofstream& outFile)
+{
+    std::pair<unsigned, unsigned> betweennessPair = betweenness_centrality_test(g, h);
+        outFile << "Betweenness Centrality: " << betweennessPair.first << ", " << betweennessPair.second <<endl;
 }
 
 //uses teh testing_func test suite to computete data on a bunch of graphs, and their reduced versions
@@ -139,13 +164,14 @@ void suite_test_top_k(vector<string> filenames)
             outFile << endl << endl;
 
             //testing reduced graphs
-            for(int i = 1; i < 5; ++i)
+            for(int i = 1 ; i < 5; ++i)
             {
                 int k = pow(2, i);
                 Graph h;
                 graph_reduction(g, h, k);
                 outFile << "Keep top " << k << " neighbours." << endl;
                 testing_funcs(h, outFile, VertexPairMap, distanceMap, pageRankVector);
+//                betweenness_print(g, h, outFile);
             }
         }
 
@@ -206,6 +232,7 @@ void suite_test_triangle_top_k(vector<string> filenames)
                 graph_reduction_triangle_avoid(g, h, k);
                 outFile << "Keep triangle top " << k << " neighbours." << endl;
                 testing_funcs(h, outFile, VertexPairMap, distanceMap, pageRankVector);
+//                betweenness_print(g, h, outFile);
             }
         }
 
@@ -216,6 +243,10 @@ void suite_test_triangle_top_k(vector<string> filenames)
 
 }
 
+
+//uses teh testing_func test suite to computete data on a bunch of graphs, and their reduced versions
+//the reduced versions are computed with combined spanning trees
+//testing functions are: approx diam, page rank, reachability, shortest path, cc
 void suite_test_spanning_tree(vector<string>filenames)
 {
     ofstream outFile;
@@ -274,7 +305,8 @@ void suite_test_spanning_tree(vector<string>filenames)
                 for(int j = 0; j < k; ++j)
                 {
                     auto it = vertexDegreeMap.begin();
-                    advance(it, (vertexDegreeMap.size() / 2) - i - 1 + j);
+                    //advance(it, (vertexDegreeMap.size() / 2) - i - 1 + j); //pick the ones in the middle
+                    advance(it, vertexDegreeMap.size() - 1 - j); //largest degree
                     roots.push_back(it->second);
                 }
                 for(auto it = roots.begin(); it != roots.end(); ++it)
@@ -286,7 +318,9 @@ void suite_test_spanning_tree(vector<string>filenames)
                 Graph h;
                 graph_reduction_high_degree_tree(g, h, roots);
                 outFile << "Spanning tree with middle " << k << " vertices as roots." << endl;
+                //t est reduced graph
                 testing_funcs(h, outFile, VertexPairMap, distanceMap, pageRankVector);
+//                betweenness_print(g, h, outFile);
             }
         }
     }
@@ -330,30 +364,30 @@ void suite_test(vector<string> filenames)
                 distanceMap.emplace(*pairIt, graph_distance(g, pairIt->first, pairIt->second));
             }
             //test original
-            testing_funcs(g, outFile, VertexPairMap, distanceMap, pageRankVector, true);
+            //testing_funcs(g, outFile, VertexPairMap, distanceMap, pageRankVector, true);
             outFile << "Reachability Testing Pairs: ";
             for(auto it = VertexPairMap.begin(); it != VertexPairMap.end(); ++it)
             {
                 outFile << "(" << it->first << ", " << it->second << ") ";
             }
             outFile << endl << endl;
-
+/*
             //graph reduction 1
             Graph* h1 = new Graph;
-            graph_reduction(g, *h1, 5);
+            graph_reduction(g, *h1, 8);
 
-            outFile << "Reduction 1: keep top 5 neighbours" << endl;
+            outFile << "Reduction 1: keep top 8 neighbours" << endl;
             testing_funcs(*h1, outFile, VertexPairMap, distanceMap, pageRankVector);
             delete h1;
-
+*/
             //graph reduction 2
             Graph* h2 = new Graph;
-            graph_reduction_percentage(g, *h2);
+            graph_reduction_percentage(g, *h2, median_cutoff(g), 4);
 
-            outFile << "Reduction 2: keep 1 of 4 neighbours (cutoff 10)" << endl;
+            outFile << "Reduction 2: keep 1 of 4 neighbours (cutoff 8)" << endl;
             testing_funcs(*h2, outFile, VertexPairMap, distanceMap, pageRankVector);
             delete h2;
-
+/*
             //graph reduction 3
             Graph* h3 = new Graph;
             graph_reduction_spanning_tree(g, *h3, high_degree_vertices(g, 5));
@@ -369,7 +403,7 @@ void suite_test(vector<string> filenames)
             outFile << "Reduction 4: keep top 5 deg neighbours, prioritizing non triangles" << endl;
             testing_funcs(*h4, outFile, VertexPairMap, distanceMap, pageRankVector);
             delete h4;
-
+*/
         }
 
 

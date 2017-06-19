@@ -18,7 +18,7 @@
 #include "graph_reduction.hpp"
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>       /* time */
-
+#include "shortest_path.hpp"
 
 
 using namespace std;
@@ -42,11 +42,11 @@ void readCommand(const graph &g, string filename)
 
         if(command == "cc") //connected components
         {
-            std::vector<int> connectedCompCount = connected_comp(g);
+            std::vector<unsigned> connectedCompCount = connected_comp(g);
             outFile << "Connected Components: " << connectedCompCount.at(0) << endl;
 
             outFile << "Largest Component Sizes: ";
-            for(std::vector<int>::iterator i = connectedCompCount.begin() + 1; i != connectedCompCount.end(); ++i)
+            for(std::vector<unsigned>::iterator i = connectedCompCount.begin() + 1; i != connectedCompCount.end(); ++i)
             {
                 outFile << " " << *i;
             }
@@ -120,6 +120,15 @@ void readCommand(const graph &g, string filename)
             bcFile.close();
             outFile << "Betweenness Centrality computed." << endl;
         }
+        else if (command == "abc") //approximate betweenness centrality, for a single vertex
+        {
+            cout << "Select a vertex from " << boost::num_vertices(g) << " vertices." << endl;
+            unsigned v;
+            cin >> v;
+            outFile.precision(4);
+            outFile << "BC of vertex " << v << ": " << approx_betweenness_centrality(g, v) << endl;
+            getline(cin, command); //to clear up the whitespace
+        }
         else if (command == "bbc") //brandes bc
         {
             std::map<Vertex, float>centralityMap;
@@ -142,10 +151,11 @@ void readCommand(const graph &g, string filename)
         else if (command == "reduce") //create reduced graph
         {
             Graph h;
-            graph_reduction(g, h);
+            int x;
+            cout << "Enter # Vertices to keep." << endl;
+            cin >> x;
+            graph_reduction(g, h, x);
             edge_list_print_file(h, "Reduced Graph.txt");
-            //cout << boost::edge(98, 1, h).second << endl;
-            //cout << boost::edge(98, 1, g).second << endl;
         }
         else if (command == "reduce5") //create reduced graph
         {
@@ -153,25 +163,60 @@ void readCommand(const graph &g, string filename)
             graph_reduction(g, h, 5);
             edge_list_print_file(h, "Reduced Graph5.txt");
         }
-        else if (command == "reducet")
+        else if (command == "reduce5r") //create reduced graph
         {
             Graph h;
-            //cout << "Select Vertices as roots. (" << boost::num_vertices(g) << ")" << endl;
-            srand(time(NULL));
-            std::vector<Vertex> roots;
-            for(int i = 0; i < 5; ++i)
+            graph_reduction_reverse(g, h, 5);
+            edge_list_print_file(h, "Reduced Graph5.txt");
+        }
+        else if (command == "reducetree")
+        {
+            Graph h;
+            cout << "Select Vertices as roots. (-1 to stop)" <<endl;
+            vector<Vertex> roots;
+            long x = 0;
+            while(x != -1)
             {
-                roots.push_back(rand() % boost::num_vertices(g));
+                cin >> x;
+                if(x >= 0) roots.push_back(x);
+            }
+            cout << "Roots: "
+            for(auto it = roots.begin(); it != roots.end(); ++it)
+            {
+                cout << *it << " " << endl;
             }
             graph_reduction_spanning_tree(g, h, roots);
-            edge_list_print_file(h, "Reduced Graph Tree.txt");
+            edge_list_print(h, "Reduced Graph Tree.txt");
+        }
+        else if (command == "reducetree2")
+        {
+            Graph h;
+            cout << "Select # Vertices as roots. " << endl;
+            int x;
+            cin >> x;
+            graph_reduction_spanning_tree(g, h, high_degree_vertices(g, x));
+            edge_list_print_file(h, "Reduced Graph Tree2.txt");
 
         }
         else if (command == "reducetri")
         {
             Graph h;
-            graph_reduction_triangle_avoid(g, h, 3);
+            cout << "Select # Vertices to keep. " << endl;
+            int x;
+            cin >> x;
+            graph_reduction_triangle_avoid(g, h, x);
             edge_list_print_file(h, "Reduced Graph Triangle.txt");
+        }
+        else if (command == "dist")
+        {
+            Vertex v;
+            Vertex u;
+            cout << "Selected first vertex" << endl;
+            cin >> v;
+            cout << "Selected second vertex" << endl;
+            cin >> u;
+            outFile << "Distance from " << u << " to " << v << ": " << graph_distance(g, v, u) << endl;
+
         }
         else if (command == "adiam") outFile << "Approx Diameter: " << approx_graph_diameter(g) << endl;
         else if (command == "ediam") outFile << "Exact Diameter: " << simple_graph_diameter(g) << endl;

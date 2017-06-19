@@ -37,7 +37,7 @@ void page_rank(const Graph &g, std::vector<double> &pageRankVector)
             std::pair<AdjacencyIterator, AdjacencyIterator> neighbourIter = adjacent_vertices(v, g);
             for(AdjacencyIterator ni = neighbourIter.first; ni != neighbourIter.second; ++ni)
             {
-                sum = sum + pageRankVector.at((int)*ni) / degree(*ni, g);
+                sum = sum + pageRankVector.at((unsigned)*ni) / degree(*ni, g);
             }
             *nextIter = ((1 - damp) / num_vertices(g)) + damp * sum;
 

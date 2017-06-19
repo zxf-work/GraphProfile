@@ -22,31 +22,68 @@ int main()
         if (filename == "small") filename = "C:\\Users\\Vincent Luong\\Documents\\Git\\GraphProfile\\Graph Data\\small test.txt";
         if (filename == "enron") filename = "C:\\Users\\Vincent Luong\\Documents\\Git\\GraphProfile\\Graph Data\\enron.txt";
 
+        if (filename == "suitemodetop")
+        {
+            vector<string>filenames;
+            string filename;
+            cout << "Enter Filenames (type exit to finish)" << endl;
+            cin >> filename;
+            while(filename != "exit")
+            {
+                filenames.push_back(filename)
+                cin >> filename;
+            }
+            suite_test_top_k(filenames);
+        }
+        if (filename == "suitemodetri")
+        {
+            vector<string>filenames;
+            string filename;
+            cout << "Enter Filenames (type exit to finish)" << endl;
+            cin >> filename;
+            while(filename != "exit")
+            {
+                filenames.push_back(filename)
+                cin >> filename;
+            }
+            suite_test_triangle_top_k(filenames);
+        }
+        if (filename == "suitemodetree")
+        {
+            vector<string>filenames;
+            string filename;
+            cout << "Enter Filenames (type exit to finish)" << endl;
+            cin >> filename;
+            while(filename != "exit")
+            {
+                filenames.push_back(filename)
+                cin >> filename;
+            }
+            suite_test_spanning_tree(filenames);
+        }
         if (filename == "suitemode")
         {
             vector<string>filenames;
+            vector<string>filenames2;
             filenames.push_back("C:\\Users\\Vincent Luong\\Documents\\Git\\GraphProfile\\Graph Data\\facebook_combined.txt");
+            filenames.push_back("C:\\Users\\Vincent Luong\\Documents\\Git\\GraphProfile\\Graph Data\\CondMat.txt");
+            filenames.push_back("C:\\Users\\Vincent Luong\\Documents\\Git\\GraphProfile\\Graph Data\\astroph.txt");
+            filenames.push_back("C:\\Users\\Vincent Luong\\Documents\\Git\\GraphProfile\\Graph Data\\enron.txt");
+            filenames.push_back("C:\\Users\\Vincent Luong\\Documents\\Git\\GraphProfile\\Graph Data\\epinions.txt");
+            filenames.push_back("C:\\Users\\Vincent Luong\\Documents\\Git\\GraphProfile\\Graph Data\\Autonomous.txt");
+            filenames.push_back("C:\\Users\\Vincent Luong\\Documents\\Git\\GraphProfile\\Graph Data\\youtube.txt");
+            //filenames.push_back("C:\\Users\\Vincent Luong\\Documents\\Git\\GraphProfile\\Graph Data\\skitter.txt");
+            //filenames2.push_back("C:\\Users\\Vincent Luong\\Documents\\Git\\GraphProfile\\Graph Data\\skitter.txt");
 
-            suite_test(filenames);
+            //suite_test(filenames);
+            //suite_test_spanning_tree(filenames);
+            suite_test_top_k(filenames);
+            suite_test_triangle_top_k(filenames);
+            //suite_test_top_k(filenames2);
         }
 
         Graph g;
 
-/*
-        Graph t1;
-        Graph t2;
-        adjacency_list_read(t1, "C:\\Users\\Vincent Luong\\Documents\\Git\\GraphProfile\\Graph Data\\Reduced Graph3.txt");
-        adjacency_list_read(t2, "C:\\Users\\Vincent Luong\\Documents\\Git\\GraphProfile\\Graph Data\\Reduced Graph5.txt");
-        std::pair<EdgeIterator, EdgeIterator> gEdgeIt = boost::edges(t1);
-
-        for(auto it = gEdgeIt.first; it != gEdgeIt.second; ++it)
-        {
-            if (! boost::edge(boost::source(*it, t1), boost::target(*it, t1), t2).second)
-            {
-                cout << boost::source(*it, t1) << " " << boost::target(*it, t1) << endl;
-            }
-        }
-*/
         if (adjacency_list_read(g, filename.c_str()))
         {
             readCommand(g, filename);
