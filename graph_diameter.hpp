@@ -21,7 +21,7 @@ using namespace boost;
 //use BFS at vertex u0, find vertex w0 that is furthest away from u0, with distance d0
 //repeat with another random vertex v1 != v0
 //possible TODO: disallow repeated vertices as v
-unsigned approx_graph_diameter(const Graph &g)
+vertices_size_type approx_graph_diameter(const Graph &g)
 {
     srand(time(NULL));
 
@@ -30,17 +30,20 @@ unsigned approx_graph_diameter(const Graph &g)
     //main loop
     for (int i = 0; i < 1000; i++)
     {
-        if (i % 200 == 0) { std::cout << "2BFS #" << i+1 << std::endl; }
+        std::cout << "2BFS #" << i+1 << " ";
         //start at random vertex
         Vertex v = vertex(rand() % num_vertices(g), g);
         //find next vertex u
+        std::cout << "Performing 1st BFS ";
         std::pair<Vertex, vertices_size_type> uPair = bfs_furthest_vertex(g, v);
         if (uPair.second > diameter) diameter = uPair.second;
 
+        std::cout << "Performing 2nd BFS ";
         //find next vertex w
         std::pair<Vertex, vertices_size_type> wPair = bfs_furthest_vertex(g, v);
         if (wPair.second > diameter) diameter = wPair.second;
 
+        std::cout << std::endl;
     }
     return diameter;
 
@@ -85,7 +88,7 @@ int simple_graph_diameter(const Graph &g, bool dense = false)
     if (num_edges(g) == 0) return -1;
     //std::vector<int> weights(num_edges(g), 1);
 
-
+    std::cout << "Starting all pairs shortest paths." << std::endl;
     if(dense) floyd_warshall_all_pairs_shortest_paths(g, D);
     else johnson_all_pairs_shortest_paths(g, D);
     std::cout<< "Finished all pairs shortest paths." << std::endl;
