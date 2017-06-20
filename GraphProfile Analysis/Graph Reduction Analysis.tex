@@ -23,13 +23,15 @@ The diameter of a graph is the maximal distance between a pair of vertices.  Tha
 Each iteration performs breadth-first search twice.  The first BFS is performed starting at a random vertex $v$, to find a vertex $u$ that is of maximal distance from $v$.  The distance from $u$ to $v$, $d_v$ is recorded.  Then, the second BFS is performed starting at $u$.  The maximal distance from $u$ to another vertex, $d_u$ is recorded. (this is not necessarily the distance from $u$ to $v$).  Then an iteration of "2-BFS" will return $max(d_u, d_v)$.  The approximate diameter algorithm runs "2-BFS" 1000 times, and returns the maximum value of the 1000 "2-BFS" iterations.
 
 \subsection{Graph Reductions}
-There are three main graph reductions used in the experiments below.  All the reductions keep the same number of vertices, but try to lower the number of edges in the graph.  Some of the graph metrics we want to measure characterize vertices in the graph, so there should be no loss of vertices.  
+There are four main graph reductions used in the experiments below.  All the reductions keep the same number of vertices, but try to lower the number of edges in the graph.  Some of the graph metrics we want to measure characterize vertices in the graph, so there should be no loss of vertices.  
 
-The first reduction algorithm iterates through each vertex, and keeps the edges to the highest $k$ degree neighbours.
+The first reduction algorithm iterates through each vertex, and keeps the edges to the highest $k_1$ degree neighbours.
 
-The second reduction iterates through each vertex $v$, and prioritizes its high degree neighbours, but also attempts to avoid any triangles formed by the neighbours.  On each vertex iteration, each neighbour is initially given a priority 1.  The algorithm will choose to keep the highest degree neighbour with priority 1.  Whenever an edge $vu$ is kept, the algorithm goes through each pair of remaining neighbours and checks if the pair forms a triangle with $u$.  If so, then the priority of the pair of neighbours increase by 1.  The algorithm continues by adding the next highest degree neighbour that still has priority 1.  If there are no more neighbours with priority 1, then neighbours of priority 2 will be added, and so on until $k$ edges are kept.  This reduction is detailed in Algorithm 1.
+The second reduction iterates through each vertex $v$, and prioritizes its high degree neighbours, but also attempts to avoid any triangles formed by the neighbours.  On each vertex iteration, each neighbour is initially given a priority 1.  The algorithm will choose to keep the highest degree neighbour with priority 1.  Whenever an edge $vu$ is kept, the algorithm goes through each pair of remaining neighbours and checks if the pair forms a triangle with $u$.  If so, then the priority of the pair of neighbours increase by 1.  The algorithm continues by adding the next highest degree neighbour that still has priority 1.  If there are no more neighbours with priority 1, then neighbours of priority 2 will be added, and so on until $k_2$ edges are kept.  This reduction is detailed in Algorithm 1.
 
-The third reduction combines the edges of several spanning trees to form a reduced graph.  In the experiments below, the spanning trees are rooted at the highest $k$ degree vertices of $G$.
+The third reduction combines the edges of several spanning trees to form a reduced graph.  In the experiments below, the spanning trees are rooted at the highest $k_3$ degree vertices of $G$.
+
+The last reduction keeps 1 out of $k_4$ neighbours for each vertex, if the degree of the vertex is above the median value of all vertex degrees.
 
 \begin{algorithm}
 \caption{Graph Reduction Avoiding Triangles}
@@ -60,7 +62,16 @@ The third reduction combines the edges of several spanning trees to form a reduc
 \end{algorithmic}
 \end{algorithm}
 
+\pagebreak
+
 \section{Analysis}
+Experiments were performed on graphs from Stanford's Large Network Collection.  Running time was not measured, but the change in the number edges was measured, which is a good indication on how much faster some algorithms will perform on the reduced versions.  For each graph, the first two reductions were running four times, with $k_1$, $k_2 = 2,4,8,16$.  This third reduction was run twice, with $k_3 = 3,5$.  And the last reduction was run once, with $k_4 = 4$.  For completeness, the experiments were done with undirected and directed graphs; however, the purpose for these experiments are for undirected graphs. 
+
+For each graph and reduced graph, in addition to diameter and number of connected components, one thousand reachable random pairs of vertices were picked from each original graph.  Then, for the reduced graphs, the distance of each pair was measured again, the difference in distance was recorded, if the pair was still reachable.  The Page Rank was computed for all vertices in each graph and reduced graph.  Since there are a lot of numbers to process, the top 0.15\% page rank vertices were examined in each reduced graph, and the number of those vertices in the top 0.15\% and top 1\% page rank in the original were recorded.  The results will be summarized below, and a full Excel spreadsheet is available with all results.
+
+\subsection{Analysis by Graph Metric}
+\textbf{Diameter} - Across all undirected reduced graphs, the diameter, using the approximation algorithm, was always within +/- 2 (within 15\%) of the diameter of the original graph.  The approximation typically had more error when only two or four edges were kept for each vertex in the top $k$ reductions. All in all, the approximate diameter measured in the reduced graphs were very close to the original graph's diameter in all reduced graph iterations for undirected graphs.
+
 
 
 \end{document}
