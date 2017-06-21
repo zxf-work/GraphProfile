@@ -30,6 +30,7 @@ vertices_size_type approx_graph_diameter(const Graph &g)
     //main loop
     for (int i = 0; i < 1000; i++)
     {
+
         std::cout << "2BFS #" << i+1 << " ";
         //start at random vertex
         Vertex v = vertex(rand() % num_vertices(g), g);
@@ -43,6 +44,7 @@ vertices_size_type approx_graph_diameter(const Graph &g)
         std::pair<Vertex, vertices_size_type> wPair = bfs_furthest_vertex(g, v);
         if (wPair.second > diameter) diameter = wPair.second;
 
+        std::cout << "Current Diameter: " << diameter;
         std::cout << std::endl;
     }
     return diameter;
