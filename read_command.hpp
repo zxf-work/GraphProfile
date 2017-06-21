@@ -215,7 +215,7 @@ void readCommand(const graph &g, string filename)
             cin >> v;
             cout << "Selected second vertex" << endl;
             cin >> u;
-            outFile << "Distance from " << u << " to " << v << ": " << graph_distance(g, v, u) << endl;
+            outFile << "Distance from " << v << " to " << u << ": " << graph_distance(g, v, u) << endl;
 
         }
         else if (command == "adiam") outFile << "Approx Diameter: " << approx_graph_diameter(g) << endl;

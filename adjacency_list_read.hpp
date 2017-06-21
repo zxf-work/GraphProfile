@@ -27,12 +27,12 @@ bool adjacency_list_read(Graph& g, const char* filename)
         {
 
 
-            std::string edgeStart;
-            std::string edgeEnd;
+            long long edgeStart;
+            long long edgeEnd;
 
             if(datafile >> edgeStart && datafile >> edgeEnd)
             {
-                add_edge(std::stoi(edgeStart), std::stoi(edgeEnd), EdgeWeightProperty(1), g);
+                add_edge(edgeStart, edgeEnd, EdgeWeightProperty(1), g);
             }
 
 
