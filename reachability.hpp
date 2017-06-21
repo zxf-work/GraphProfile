@@ -38,7 +38,7 @@ struct reachability_single_bfs_visitor : default_bfs_visitor
 
 bool reachability(const Graph &g, const Vertex& v, Vertex& u)
 {
-    bool reachable;
+    bool reachable = false;
     reachability_single_bfs_visitor vis(&u, &reachable);
     breadth_first_search(g, v, visitor(vis));
 
