@@ -37,7 +37,7 @@ void testing_funcs(const Graph &g, ofstream& outFile, std::multimap<Vertex, Vert
                     const std::map<std::pair<Vertex, Vertex>, unsigned>& distanceMap,
                     const std::vector<double>& originalPageRank, bool original = false)
 {
-
+/*
     outFile << "Edges: " << boost::num_edges(g) << endl;
     outFile << "Vertices: " << boost::num_vertices(g) << endl;;
     //outFile << "Exact Diameter: " << simple_graph_diameter(g) << endl;
@@ -79,16 +79,22 @@ void testing_funcs(const Graph &g, ofstream& outFile, std::multimap<Vertex, Vert
     }
     outFile << endl;
 
-
+*/
     //reachability
     if(!original)
     {
+        unsigned reachabilityCount = 0;
         outFile << "Reachability Testing Pairs: ";
         for(auto it = ReachabilityPairs.begin(); it != ReachabilityPairs.end(); ++it)
         {
-            if(!reachability(g, it->first, it->second)) outFile << "(" << it->first << ", " << it->second << ") ";
+            if(!reachability(g, it->first, it->second))
+            {
+                outFile << "(" << it->first << ", " << it->second << ") ";
+                ++reachabilityCount;
+            }
         }
         outFile << endl;
+        outFile << "Total unreachable pairs: " << reachabilityCount <<endl;
 
     //distance
     //NOTE: if original distance is close to int::max, and then the pair becomes disconnected, could result in false result
@@ -99,7 +105,7 @@ void testing_funcs(const Graph &g, ofstream& outFile, std::multimap<Vertex, Vert
             unsigned dist = graph_distance(g, it->first, it->second);
             unsigned distDelta = dist > distanceMap.at(*it) ? dist - distanceMap.at(*it) : distanceMap.at(*it) - dist;
             if(distanceRecorder.size() < (distDelta+1)  && distDelta <= 100) distanceRecorder.resize(distDelta+1);
-            if (dist <= 100) ++distanceRecorder.at(distDelta);
+            if (dist != 0) ++distanceRecorder.at(distDelta); //disregard when unreachable
         }
         for(int j = 0; j < 10; ++j)
         {

@@ -4,6 +4,7 @@
 #include "common.h"
 #include <boost/graph/breadth_first_search.hpp>
 
+//returns 0 if not reachable
 unsigned graph_distance(const Graph &g, const Vertex v, const Vertex u)
 {
     std::vector<vertices_size_type> distances;
