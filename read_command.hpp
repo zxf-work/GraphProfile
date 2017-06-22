@@ -120,15 +120,6 @@ void readCommand(const graph &g, string filename)
             bcFile.close();
             outFile << "Betweenness Centrality computed." << endl;
         }
-        else if (command == "abc") //approximate betweenness centrality, for a single vertex
-        {
-            cout << "Select a vertex from " << boost::num_vertices(g) << " vertices." << endl;
-            unsigned v;
-            cin >> v;
-            outFile.precision(4);
-            outFile << "BC of vertex " << v << ": " << approx_betweenness_centrality(g, v) << endl;
-            getline(cin, command); //to clear up the whitespace
-        }
         else if (command == "bbc") //brandes bc
         {
             std::map<Vertex, float>centralityMap;
@@ -216,7 +207,13 @@ void readCommand(const graph &g, string filename)
             cout << "Selected second vertex" << endl;
             cin >> u;
             outFile << "Distance from " << v << " to " << u << ": " << graph_distance(g, v, u) << endl;
+            getline(cin, command); //to clear up the whitespace
 
+        }
+        else if (command == "kdiam")
+        {
+            pair<vertices_size_type, vertices_size_type> diameterBounds = khaled_approx_diameter(g);
+            outFile << "Khaled's Approx Diameter Bounds: " << diameterBounds.first << ", " << diameterBounds.second << endl;
         }
         else if (command == "adiam") outFile << "Approx Diameter: " << approx_graph_diameter(g) << endl;
         else if (command == "ediam") outFile << "Exact Diameter: " << simple_graph_diameter(g) << endl;

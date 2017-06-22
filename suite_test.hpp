@@ -43,6 +43,8 @@ void testing_funcs(const Graph &g, ofstream& outFile, std::multimap<Vertex, Vert
     //outFile << "Exact Diameter: " << simple_graph_diameter(g) << endl;
     outFile << "Approx Diamter: " << approx_graph_diameter(g) << endl;
 
+    pair<vertices_size_type, vertices_size_type> diameterBounds;
+    outFile << "Khaled Diameter Bounds: " << diameterBounds.first << "," <<diameterBounds.second <<endl;
     //cc
     std::vector<unsigned> connectedCompCount = connected_comp(g);
     outFile << "Connected Components: " << connectedCompCount.at(0) << endl;

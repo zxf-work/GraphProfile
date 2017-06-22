@@ -27,14 +27,14 @@ There are four main graph reductions used in the experiments below.  All the red
 
 The first reduction algorithm iterates through each vertex, and keeps the edges to the highest $k_1$ degree neighbours.
 
-The second reduction iterates through each vertex $v$, and prioritizes its high degree neighbours, but also attempts to avoid any triangles formed by the neighbours.  On each vertex iteration, each neighbour is initially given a priority 1.  The algorithm will choose to keep the highest degree neighbour with priority 1.  Whenever an edge $vu$ is kept, the algorithm goes through each pair of remaining neighbours and checks if the pair forms a triangle with $u$.  If so, then the priority of the pair of neighbours increase by 1.  The algorithm continues by adding the next highest degree neighbour that still has priority 1.  If there are no more neighbours with priority 1, then neighbours of priority 2 will be added, and so on until $k_2$ edges are kept.  This reduction is detailed in Algorithm 1.
+The second reduction iterates through each vertex $v$, and prioritizes its high degree neighbours, but also attempts to avoid any triangles formed by the neighbours.  On each vertex iteration, each neighbour is initially given a priority 1.  The algorithm will choose to keep the highest degree neighbour with priority 1.  Whenever an edge $vu$ is kept, the algorithm goes through each pair of remaining neighbours and checks if the pair forms a triangle with $u$.  If so, then the priority of the pair of neighbours increase by 1.  The algorithm continues by adding the next highest degree neighbour that still has priority 1.  If there are no more neighbours with priority 1, then neighbours of priority 2 will be added, and so on until $k_2$ edges are kept.  This reduction is detailed in Algorithm 1, and is named Triangle Top K, or T Top K.
 
 The third reduction combines the edges of several spanning trees to form a reduced graph.  In the experiments below, the spanning trees are rooted at the highest $k_3$ degree vertices of $G$.
 
 The last reduction keeps 1 out of $k_4$ neighbours for each vertex, if the degree of the vertex is above the median value of all vertex degrees.
 
 \begin{algorithm}
-\caption{Graph Reduction Avoiding Triangles}
+\caption{Graph Reduction Avoiding Triangles (T Top $k$)}
 \begin{algorithmic}[1]
 	\REQUIRE Original Graph $G$, Empty Graph $H$, integer $k$
 	\FORALL{vertices $v$ of $G$}
@@ -67,11 +67,30 @@ The last reduction keeps 1 out of $k_4$ neighbours for each vertex, if the degre
 \section{Analysis}
 Experiments were performed on graphs from Stanford's Large Network Collection.  Running time was not measured, but the change in the number edges was measured, which is a good indication on how much faster some algorithms will perform on the reduced versions.  For each graph, the first two reductions were running four times, with $k_1$, $k_2 = 2,4,8,16$.  This third reduction was run twice, with $k_3 = 3,5$.  And the last reduction was run once, with $k_4 = 4$.  For completeness, the experiments were done with undirected and directed graphs; however, the purpose for these experiments are for undirected graphs. 
 
-For each graph and reduced graph, in addition to diameter and number of connected components, one thousand reachable random pairs of vertices were picked from each original graph.  Then, for the reduced graphs, the distance of each pair was measured again, the difference in distance was recorded, if the pair was still reachable.  The Page Rank was computed for all vertices in each graph and reduced graph.  Since there are a lot of numbers to process, the top 0.15\% page rank vertices were examined in each reduced graph, and the number of those vertices in the top 0.15\% and top 1\% page rank in the original were recorded.  The results will be summarized below, and a full Excel spreadsheet is available with all results.
+For each graph and reduced graph, in addition to diameter and number of connected components, one thousand reachable random pairs of vertices were picked from each original graph.  Then, for the reduced graphs, the distance of each pair was measured again, the difference in distance was recorded, if the pair was still reachable.  The Page Rank was computed for all vertices in each graph and reduced graph.  Since there are a lot of numbers to process, the top 0.15\% (or top 15 if < 1000 vertices) page rank vertices were examined in each reduced graph, and the number of those vertices in the top 0.15\% and top 1\% page rank in the original were recorded.  The results will be summarized below, and a full Excel spreadsheet is available with all results.
 
 \subsection{Analysis by Graph Metric}
 \textbf{Diameter} - Across all undirected reduced graphs, the diameter, using the approximation algorithm, was always within +/- 2 (within 15\%) of the diameter of the original graph.  The approximation typically had more error when only two or four edges were kept for each vertex in the top $k$ reductions. All in all, the approximate diameter measured in the reduced graphs were very close to the original graph's diameter in all reduced graph iterations for undirected graphs.
 
+For directed graphs, the results are not very good.  The approximate diameter fluctuates heavily.  As an example, the wikivote graph from Stanford's SNAP measured an approximate diameter of 35 on the reduced graph that kept the top 8 neighbours, and an approximate diameter of 11 on the reduced graph that kept the top 4 neighbours.
 
+\textbf{Page Rank} - Page rank results typically varied depending on the original graph.  For some graphs, around half of the reduced versions' top 0.15\% page rank vertices were in the top 0.15\% of the original. However, most graphs' had 90\% of all reduced versions' 0.15\% in the original top 0.15\%.  There is only slight improvement as $k$ went up in all cases, until $k_1 = 8 or 16$, as those results are always at least 80\% in the original top 0.15\%.
+
+In each original graph, the high degree vertices, in terms of ranking, will continue to be the high ranking vertices in the reduced graph as well.  Since Page Rank is computed largely based on the degree of a vertex, it is intuitive that the reduced graphs give accurate rankings to the high page rank vertices.
+
+
+\textbf{Reachability} - On undirected graphs, the reachability results had great results.  On almost every reduced graph, all 1000 pairs were in the same component.  The only time this not the case was for some reduced graphs that only kept 2 edges from each vertex.
+
+However, for directed graphs, many pairs were often in different components in the reduced graphs.  For the spanning tree reduced graphs, the reduced graph using 3 roots had < 1\% of pairs in the same component, and the reduced graph using 5 roots had ~10\% of pairs in the same component.  T Top K reduced graphs showed better results than the Top K results, but still <10\% of pairs were in the same component for $k_1 = 2, 4, 8, k_2 = 2, 4$.  With $k_2 = 8$, ~50\% of pairs were in the same component.  And there were good results for $k_1, k_2 = 16$.
+
+Although there is some randomness to this measurement, I think these results can be useful to characterize real-world graphs.  Vertices with large degree (or "hubs") will preserve most of their edges in the these graph reductions.  I believe that since real-world graphs typically have several very large hubs, these hubs keep components similar in size in reduced graphs compared to the original.
+
+
+
+
+\begin{tabular}{l | c | c | c |}
+	fb top4 & fb top 8 
+
+\end{tabular} 
 
 \end{document}

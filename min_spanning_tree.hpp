@@ -59,7 +59,6 @@ std::vector<Vertex> high_degree_vertices(const Graph &g, int x = 5)
 }
 
 //perform bfs, recording the edges of the tree
-//choosing the highest degree neighbours to be added to the q first
 void high_degree_bfs(const Graph &g, const Vertex &v, std::multimap<Vertex, Vertex>&tree)
 {
     std::queue<Vertex> mainQ;
@@ -71,21 +70,15 @@ void high_degree_bfs(const Graph &g, const Vertex &v, std::multimap<Vertex, Vert
         Vertex current = mainQ.front();
 
         std::pair<AdjacencyIterator, AdjacencyIterator> neighbourIt = adjacent_vertices(current, g);
-        //create ordered map of the neighbours, sorted by degree
-        std::multimap<unsigned, Vertex> neighbourDegreeMap;
+        //add neighbours to the Q
         for(auto ni = neighbourIt.first; ni != neighbourIt.second; ++ni)
         {
-            neighbourDegreeMap.emplace(degree(*ni, g), *ni);
-        }
-        //add neighbours to the Q
-        for(auto it = neighbourDegreeMap.begin(); it != neighbourDegreeMap.end(); ++it)
-        {
             //only add if not visited before
-            if(visitedMap.find(it->second) == visitedMap.end())
+            if(visitedMap.find(*ni) == visitedMap.end())
             {
-                mainQ.push(it->second);
-                tree.emplace(current, it->second);
-                visitedMap.emplace(it->second, true);
+                mainQ.push(*ni);
+                tree.emplace(current, *ni);
+                visitedMap.emplace(*ni, true);
             }
         }
 

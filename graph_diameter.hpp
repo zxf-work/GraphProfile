@@ -10,7 +10,7 @@
 #include "bfs_furthest_vertex.hpp"
 #include <boost/graph/johnson_all_pairs_shortest.hpp>
 #include <boost/graph/floyd_warshall_shortest.hpp>
-
+#include "graph_reduction.hpp"
 
 
 
@@ -30,22 +30,16 @@ vertices_size_type approx_graph_diameter(const Graph &g)
     //main loop
     for (int i = 0; i < 1000; i++)
     {
-
-        std::cout << "2BFS #" << i+1 << " ";
+        if(i % 200 == 0) std::cout << "Current Diameter: " << diameter << std::endl;
         //start at random vertex
         Vertex v = vertex(rand() % num_vertices(g), g);
         //find next vertex u
-        std::cout << "Performing 1st BFS ";
         std::pair<Vertex, vertices_size_type> uPair = bfs_furthest_vertex(g, v);
         if (uPair.second > diameter) diameter = uPair.second;
 
-        std::cout << "Performing 2nd BFS ";
         //find next vertex w
         std::pair<Vertex, vertices_size_type> wPair = bfs_furthest_vertex(g, v);
         if (wPair.second > diameter) diameter = wPair.second;
-
-        std::cout << "Current Diameter: " << diameter;
-        std::cout << std::endl;
     }
     return diameter;
 
@@ -76,6 +70,59 @@ unsigned approx_graph_diameter_bfs(const Graph &g, int bfs_count, int iterations
     }
 
     return diameter;
+}
+
+//finds an upper bound and a lower bound to the diameter
+//upper bound: diameter of a spanning tree
+//this diameter is measured by 2BFS (exact for trees)
+//lower bound: 2BFS
+std::pair<vertices_size_type, vertices_size_type> khaled_approx_diameter(const Graph &g)
+{
+    //create ordered list of vertices by degree (ordered smallest to greatest)
+    std::multimap<unsigned, Vertex> vertexDegreeMap;
+    for(unsigned v = 0; v < num_vertices(g); ++v)
+    {
+        vertexDegreeMap.emplace(degree(v, g), v);
+    }
+
+    vertices_size_type lowerbound = 0;
+    vertices_size_type upperbound = std::numeric_limits<unsigned>::max();
+    int iterations = 0;
+    for(auto it = vertexDegreeMap.rbegin(); it!= vertexDegreeMap.rend(); ++it)
+    {
+        if(upperbound - lowerbound <= 5 && iterations > 4) break;
+
+        ++iterations;
+        std::cout << iterations << std::endl;
+
+        Vertex v = it->second;
+
+        //compute upper bound
+        Graph h;
+        std::vector<Vertex> root;
+        root.push_back(v);
+        std::cout << "ROot:" << v << " " << degree(v, g) << std::endl;
+        //create tree
+        graph_reduction_spanning_tree(g, h, root);
+        //compute diameter by 2BFS
+        std::pair<Vertex, vertices_size_type> uPair = bfs_furthest_vertex(h, v);
+        std::pair<Vertex, vertices_size_type> upperboundPair = bfs_furthest_vertex(h, uPair.first);  //diameter is wPair.second
+
+        if(upperboundPair.second < upperbound) upperbound = upperboundPair.second;
+
+        //compute lowerbound
+        std::pair<Vertex, vertices_size_type> wPair = bfs_furthest_vertex(g, v);
+        std::pair<Vertex, vertices_size_type> lowerboundPair = bfs_furthest_vertex(g, wPair.first);
+        std::cout << "2nd Vertex: " << wPair.first <<std::endl;
+        std::cout << "3rd Vertex: " << lowerboundPair.first <<std::endl;
+        if(lowerboundPair.second > lowerbound) lowerbound = lowerboundPair.second;
+
+        std::cout << lowerbound << "," << upperbound << std::endl;
+
+    }
+
+    return std::pair<vertices_size_type, vertices_size_type>(lowerbound, upperbound);
+
 }
 
 //computes all pairs shortest path problem
