@@ -81,6 +81,7 @@ unsigned approx_graph_diameter_bfs(const Graph &g, int bfs_count, int iterations
 //upper bound: diameter of a spanning tree
 //this diameter is measured by 2BFS (exact for trees)
 //lower bound: 2BFS
+//forces 5 iterations
 std::pair<vertices_size_type, vertices_size_type> khaled_approx_diameter(const Graph &g)
 {
     //create ordered list of vertices by degree (ordered smallest to greatest)
@@ -98,7 +99,6 @@ std::pair<vertices_size_type, vertices_size_type> khaled_approx_diameter(const G
         if(upperbound - lowerbound <= 5 && iterations > 4) break;
 
         ++iterations;
-        std::cout << iterations << std::endl;
 
         Vertex v = it->second;
 
@@ -106,7 +106,6 @@ std::pair<vertices_size_type, vertices_size_type> khaled_approx_diameter(const G
         Graph h;
         std::vector<Vertex> root;
         root.push_back(v);
-        std::cout << "ROot:" << v << " " << degree(v, g) << std::endl;
         //create tree
         graph_reduction_spanning_tree(g, h, root);
         //compute diameter by 2BFS
@@ -118,11 +117,9 @@ std::pair<vertices_size_type, vertices_size_type> khaled_approx_diameter(const G
         //compute lowerbound
         std::pair<Vertex, vertices_size_type> wPair = bfs_furthest_vertex(g, v);
         std::pair<Vertex, vertices_size_type> lowerboundPair = bfs_furthest_vertex(g, wPair.first);
-        std::cout << "2nd Vertex: " << wPair.first <<std::endl;
-        std::cout << "3rd Vertex: " << lowerboundPair.first <<std::endl;
+
         if(lowerboundPair.second > lowerbound) lowerbound = lowerboundPair.second;
 
-        std::cout << lowerbound << "," << upperbound << std::endl;
 
     }
 
