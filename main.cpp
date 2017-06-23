@@ -6,63 +6,70 @@
 #include "read_command.hpp"
 #include "suite_test.hpp"
 
+
 using namespace std;
 
 int main()
 {
-    string filename;// = "C:\\Users\\Eric\\Documents\\Vincent Work\\Graph data\\facebook_combined.txt";
+    string file;
 
     while (true)
     {
         cout << "Enter Adjacency List Filename: (type exit to quit)" << endl;
-        getline(cin, filename);
+        getline(cin, file);
+        bool suitemode = false;
+        Graph g;
 
-        if (filename == "stop" || filename == "exit") break;
-        if (filename == "default") filename = "C:\\Users\\Vincent Luong\\Documents\\Git\\GraphProfile\\Graph Data\\facebook_combined.txt";
-        if (filename == "small") filename = "C:\\Users\\Vincent Luong\\Documents\\Git\\GraphProfile\\Graph Data\\small test.txt";
-        if (filename == "enron") filename = "C:\\Users\\Vincent Luong\\Documents\\Git\\GraphProfile\\Graph Data\\enron.txt";
+        if (file == "stop" || file == "exit") break;
+        else if (file == "default") file = "C:\\Users\\Vincent Luong\\Documents\\Git\\GraphProfile\\Graph Data\\facebook_combined.txt";
+        else if (file == "small") file = "C:\\Users\\Vincent Luong\\Documents\\Git\\GraphProfile\\Graph Data\\small test.txt";
+        else if (file == "enron") file = "C:\\Users\\Vincent Luong\\Documents\\Git\\GraphProfile\\Graph Data\\enron.txt";
 
-        if (filename == "suitemodetop")
+        else if (file == "suitemodetop")
         {
+            suitemode = true;
             vector<string>filenames;
             string filename;
             cout << "Enter Filenames (type exit to finish)" << endl;
-            cin >> filename;
+            getline(cin, filename);
             while(filename != "exit")
             {
                 filenames.push_back(filename);
-                cin >> filename;
+                getline(cin, filename);
             }
             suite_test_top_k(filenames);
         }
-        if (filename == "suitemodetri")
+        else if (file == "suitemodetri")
         {
+            suitemode = true;
             vector<string>filenames;
             string filename;
             cout << "Enter Filenames (type exit to finish)" << endl;
-            cin >> filename;
+            getline(cin, filename);
             while(filename != "exit")
             {
                 filenames.push_back(filename);
-                cin >> filename;
+                getline(cin, filename);
             }
             suite_test_triangle_top_k(filenames);
         }
-        if (filename == "suitemodetree")
+        else if (file == "suitemodetree")
         {
+            suitemode = true;
             vector<string>filenames;
             string filename;
             cout << "Enter Filenames (type exit to finish)" << endl;
-            cin >> filename;
+            getline(cin, filename);
             while(filename != "exit")
             {
                 filenames.push_back(filename);
-                cin >> filename;
+                getline(cin, filename);
             }
             suite_test_spanning_tree(filenames);
         }
-        if (filename == "suitemode")
+        else if (file == "suitemode")
         {
+            suitemode = true;
             vector<string>filenames;
             vector<string>filenames2;
             filenames.push_back("C:\\Users\\Vincent Luong\\Documents\\Git\\GraphProfile\\Graph Data\\facebook_combined.txt");
@@ -75,19 +82,22 @@ int main()
             //filenames.push_back("C:\\Users\\Vincent Luong\\Documents\\Git\\GraphProfile\\Graph Data\\skitter.txt");
             //filenames2.push_back("C:\\Users\\Vincent Luong\\Documents\\Git\\GraphProfile\\Graph Data\\skitter.txt");
 
-            //suite_test(filenames);
+            suite_test(filenames);
             //suite_test_spanning_tree(filenames);
-            suite_test_top_k(filenames);
-            suite_test_triangle_top_k(filenames);
+            //suite_test_top_k(filenames);
+            //suite_test_triangle_top_k(filenames);
             //suite_test_top_k(filenames2);
         }
 
-        Graph g;
-
-        if (adjacency_list_read(g, filename.c_str()))
+        //for dev use
+        if (!suitemode)
         {
-            readCommand(g, filename);
+            if (adjacency_list_read(g, file.c_str()))
+            {
+                readCommand(g, file);
+            }
         }
+
     }
 
     return 0;

@@ -18,20 +18,6 @@
 
 using namespace std;
 
-//returns median value of degree
-unsigned median_cutoff(const Graph &g)
-{
-    multimap<unsigned, Vertex> degreeMap;
-    for(VertexIterator vi = boost::vertices(g).first; vi != boost::vertices(g).second; ++vi)
-    {
-        degreeMap.emplace(boost::degree(*vi, g), *vi);
-    }
-    auto it = degreeMap.begin();
-    advance(it, (degreeMap.size() / 2));
-
-    unsigned median = it->first;
-    return median;
-}
 
 void testing_funcs(const Graph &g, ofstream& outFile, std::multimap<Vertex, Vertex>& ReachabilityPairs,
                     const std::map<std::pair<Vertex, Vertex>, unsigned>& distanceMap,

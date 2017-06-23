@@ -198,6 +198,16 @@ void readCommand(const graph &g, string filename)
             graph_reduction_triangle_avoid(g, h, x);
             edge_list_print_file(h, "Reduced Graph Triangle.txt");
         }
+        else if (command == "reducepercent")
+        {
+            Graph h;
+            cout << "Select Proportion of vertices to keep if past median" << endl;
+            int x;
+            cin >> x;
+            cin.ignore();
+            graph_reduction_percentage(g, h, median_cutoff(g), x);
+            edge_list_print_file(h, "Reduced Graph Proportion.txt");
+        }
         else if (command == "dist")
         {
             Vertex v;

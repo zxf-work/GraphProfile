@@ -84,6 +84,22 @@ void graph_reduction(const Graph &g, Graph &h, unsigned x = 3)
     }
 }
 
+//returns median value of degree
+//TODO: put in util file
+unsigned median_cutoff(const Graph &g)
+{
+    std::multimap<unsigned, Vertex> degreeMap;
+    for(VertexIterator vi = boost::vertices(g).first; vi != boost::vertices(g).second; ++vi)
+    {
+        degreeMap.emplace(boost::degree(*vi, g), *vi);
+    }
+    auto it = degreeMap.begin();
+    std::advance(it, (degreeMap.size() / 2));
+
+    unsigned median = it->first;
+    return median;
+}
+
 
 //expects graph g, empty graph h
 //takes graph g, creates reduced graph h

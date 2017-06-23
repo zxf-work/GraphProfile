@@ -25,7 +25,7 @@ vertices_size_type approx_graph_diameter(const Graph &g)
 {
     srand(time(NULL));
 
-
+    vertices_size_type lowerdiam = std::numeric_limits<unsigned>::max();
     vertices_size_type diameter = 0;
     //main loop
     for (int i = 0; i < 1000; i++)
@@ -36,10 +36,15 @@ vertices_size_type approx_graph_diameter(const Graph &g)
         //find next vertex u
         std::pair<Vertex, vertices_size_type> uPair = bfs_furthest_vertex(g, v);
         if (uPair.second > diameter) diameter = uPair.second;
+        if (uPair.second < lowerdiam) lowerdiam = uPair.second;
 
         //find next vertex w
         std::pair<Vertex, vertices_size_type> wPair = bfs_furthest_vertex(g, v);
         if (wPair.second > diameter) diameter = wPair.second;
+        if (uPair.second < lowerdiam) lowerdiam = wPair.second;
+
+        //stop if diameter is 2x the lowerdiam
+        if(diameter * 2 == lowerdiam) break;
     }
     return diameter;
 
