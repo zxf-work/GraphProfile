@@ -13,14 +13,16 @@
 \begin{document}
 
 \section{Introduction}
-This article will be looking at different methods at approximating graph metrics, mainly by graph reductions, and analysing the results the approximations give.  There are two approximation methods that this article will go through.  The first is using approximation algorithms; these are algorithms that do not calculate the exact value of a metric, but a similar value that can be used to estimate the exact value.  The second method is to compute the graph metric on a \textit{reduced} graph. In this article, a reduced graph of a graph $G$ is a graph with the same number of vertices as $G$, but with less edges.  The goal of these approximation methods is to decrease the run time of graph algorithms, while still getting good results in the graph metrics.
+This article will be looking at different methods at approximating graph metrics, mainly by graph reductions, and analyzing the results the approximations give.  There are two approximation methods that this article will go through.  The first is using approximation algorithms; these are algorithms that do not calculate the exact value of a metric, but a similar value that can be used to estimate the exact value.  The second method is to compute the graph metric on a \textit{reduced} graph. In this article, a reduced graph of a graph $G$ is a graph with the same number of vertices as $G$, but with less edges.  The goal of these approximation methods is to decrease the run time of graph algorithms, while still getting good results in the graph metrics.
 
 \section{Approximation Algorithms}
 This section will cover the approximation algorithms used in the experiments to compute graph metrics.
 \subsection{Approximate Diameter} 
-The diameter of a graph is the maximal distance between a pair of vertices.  That is, the shortest path between any two vertices is at least as small as the graph's diameter.  The algorithm that will be analysed in this article for approximating graph diameter will be based on iterations of "2-BFS".  
+The diameter of a graph is the maximal distance between a pair of vertices.  That is, the shortest path between any two vertices is at least as small as the graph's diameter.  The algorithm that will be analyzed in this article for approximating graph diameter will be based on iterations of "2-BFS".  
 
 Each iteration performs breadth-first search twice.  The first BFS is performed starting at a random vertex $v$, to find a vertex $u$ that is of maximal distance from $v$.  The distance from $u$ to $v$, $d_v$ is recorded.  Then, the second BFS is performed starting at $u$.  The maximal distance from $u$ to another vertex, $d_u$ is recorded. (this is not necessarily the distance from $u$ to $v$).  Then an iteration of "2-BFS" will return $max(d_u, d_v)$.  The approximate diameter algorithm runs "2-BFS" 1000 times, and returns the maximum value of the 1000 "2-BFS" iterations.
+
+These values all give a lower bound to the actual diameter of a graph.  However, an upper bound can be given by multiplying the values given by 2.  Then a nice upper bound can be given by multiplying the lowest value by 2, and lower bound given by the highest result.
 
 \subsection{Graph Reductions}
 There are four main graph reductions used in the experiments below.  All the reductions keep the same number of vertices, but try to lower the number of edges in the graph.  Some of the graph metrics we want to measure characterize vertices in the graph, so there should be no loss of vertices.  
@@ -70,27 +72,32 @@ Experiments were performed on graphs from Stanford's Large Network Collection.  
 For each graph and reduced graph, in addition to diameter and number of connected components, one thousand reachable random pairs of vertices were picked from each original graph.  Then, for the reduced graphs, the distance of each pair was measured again, the difference in distance was recorded, if the pair was still reachable.  The Page Rank was computed for all vertices in each graph and reduced graph.  Since there are a lot of numbers to process, the top 0.15\% (or top 15 if < 1000 vertices) page rank vertices were examined in each reduced graph, and the number of those vertices in the top 0.15\% and top 1\% page rank in the original were recorded.  The results will be summarized below, and a full Excel spreadsheet is available with all results.
 
 \subsection{Analysis by Graph Metric}
-\textbf{Diameter} - Across all undirected reduced graphs, the diameter, using the approximation algorithm, was always within +/- 2 (within 15\%) of the diameter of the original graph.  The approximation typically had more error when only two or four edges were kept for each vertex in the top $k$ reductions. All in all, the approximate diameter measured in the reduced graphs were very close to the original graph's diameter in all reduced graph iterations for undirected graphs.
+\textbf{Edges} - This is an important metric since this is will decrease computing time on a number of algorithms.  Of course, this is the goal of these approximations, to obtain close results while lowering the time to compute them.  The T Top K reductions have a lower amount of edges than each of its counterpart Top K reductions. For the four iterations for the Facebook graph, the reductions have 9\%, 17\%, 32\%, and 53\% of the original edges, going from $k_1 = 2, 4, 8, 16$.  The number of edges in the 1 of 4 reduction was typically inbetween the top 4 and the top 8 reduction.  The tree reductions contained very few edges, with 3 roots having typically less than the top 2 reduction, and 5 roots with similar number of edges as the top 2 reduction.  As you will see, the spanning tree reduction has great performance in the other metrics relative to the number edges it has.
+
+\textbf{Diameter} - 
+
+\iffalse
+Across all undirected reduced graphs, the diameter, using the approximation algorithm, was always within +/- 2 (within 15\%) of the diameter of the original graph.  The approximation typically had more error when only two or four edges were kept for each vertex in the top $k$ reductions. All in all, the approximate diameter measured in the reduced graphs were very close to the original graph's diameter in all reduced graph iterations for undirected graphs.
 
 For directed graphs, the results are not very good.  The approximate diameter fluctuates heavily.  As an example, the wikivote graph from Stanford's SNAP measured an approximate diameter of 35 on the reduced graph that kept the top 8 neighbours, and an approximate diameter of 11 on the reduced graph that kept the top 4 neighbours.
+\fi
 
-\textbf{Page Rank} - Page rank results typically varied depending on the original graph.  For some graphs, around half of the reduced versions' top 0.15\% page rank vertices were in the top 0.15\% of the original. However, most graphs' had 90\% of all reduced versions' 0.15\% in the original top 0.15\%.  There is only slight improvement as $k$ went up in all cases, until $k_1 = 8 or 16$, as those results are always at least 80\% in the original top 0.15\%.
+\textbf{Page Rank} - Page rank results varied depending on the original graph.  For some graphs, around half of the reduced versions' top 0.15\% page rank vertices were in the top 0.15\% of the original. However, most graphs' had 90\% of all reduced versions' 0.15\% in the original top 0.15\%.  There is only slight improvement as $k$ went up in all cases, until $k_1 = 8 or 16$, as those results are always at least 80\% in the original top 0.15\%.
 
 In each original graph, the high degree vertices, in terms of ranking, will continue to be the high ranking vertices in the reduced graph as well.  Since Page Rank is computed largely based on the degree of a vertex, it is intuitive that the reduced graphs give accurate rankings to the high page rank vertices.
 
 
 \textbf{Reachability} - On undirected graphs, the reachability results had great results.  On almost every reduced graph, all 1000 pairs were in the same component.  The only time this not the case was for some reduced graphs that only kept 2 edges from each vertex.
 
-However, for directed graphs, many pairs were often in different components in the reduced graphs.  For the spanning tree reduced graphs, the reduced graph using 3 roots had < 1\% of pairs in the same component, and the reduced graph using 5 roots had ~10\% of pairs in the same component.  T Top K reduced graphs showed better results than the Top K results, but still <10\% of pairs were in the same component for $k_1 = 2, 4, 8, k_2 = 2, 4$.  With $k_2 = 8$, ~50\% of pairs were in the same component.  And there were good results for $k_1, k_2 = 16$.
+However, for directed graphs, many pairs were often in different components in the reduced graphs.  For the spanning tree reduced graphs, the reduced graph using 3 roots had $< 1\%$ of pairs in the same component, and the reduced graph using 5 roots had $\sim 10\%$ of pairs in the same component.  T Top K reduced graphs showed better results than the Top K results, but still $<10\%$ of pairs were in the same component for $k_1 = 2, 4, 8, k_2 = 2, 4$.  With $k_2 = 8$, $\sim50\%$ of pairs were in the same component.  And there were good results for $k_1, k_2 = 16$.
 
-Although there is some randomness to this measurement, I think these results can be useful to characterize real-world graphs.  Vertices with large degree (or "hubs") will preserve most of their edges in the these graph reductions.  I believe that since real-world graphs typically have several very large hubs, these hubs keep components similar in size in reduced graphs compared to the original.
+Although there is some randomness to this measurement, I think these results can be useful to characterize real-world graphs.  Vertices with large degree (or "hubs") will preserve most of their edges in the these graph reductions.  I believe that since real-world graphs typically have several very large hubs, these hubs keep components similar in size in reduced graphs compared to the original.  For directed graphs however, although smaller degree vertices keep their edges to large hubs, the edge can only be traversed one way, so that the number of outgoing edges from large degree vertices is not very large, although the number of incoming edges to the large degree vertices will be very high.
 
+\textbf{Distance} - The results on changes of distance were quite similar to reachability.  For undirected graphs, the change in distance between the vertex pairs were mostly + 0 or 1, with some distances + 2 if only the 2 edges were kept for each vertex.  If at least 8 edges were kept for each vertex, a large majority of the pairs had their distances unchanged. The tree reduction gave similar results to the Top 2 and 4 neighbour reduction, and keeping 1 of 4 edges had similar results to the Top 4 neighbour reduction.
 
+For directed graphs, we will only consider when 16 edges were kept for each vertex.  The reachable pairs resulted in a difference in distance centered around +2, with mostly +1, 2, or 3, with some +0 or +4,5.
 
+I believe the intuition for this is similar to reachability, with large hubs giving easy access to paths from one vertex to another, so that these short paths are left unchanged in real-world graphs. Of course, once the top 8 or 16 edges are kept, a lot of the edges are kept from the original graph, and it will be that "less important" edges, edges between low degree vertices are left out, which are typically not used in shortest paths.
 
-\begin{tabular}{l | c | c | c |}
-	fb top4 & fb top 8 
-
-\end{tabular} 
 
 \end{document}
