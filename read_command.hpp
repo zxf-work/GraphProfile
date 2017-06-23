@@ -179,7 +179,7 @@ void readCommand(const graph &g, string filename)
             graph_reduction_spanning_tree(g, h, roots);
             edge_list_print_file(h, "Reduced Graph Tree.txt");
         }
-        else if (command == "reducetree2")
+        else if (command == "reducetreetop")
         {
             Graph h;
             cout << "Select # Vertices as roots. " << endl;
