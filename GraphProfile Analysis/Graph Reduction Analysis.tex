@@ -1,6 +1,8 @@
 \documentclass[11pt]{article}
 \usepackage[parfill]{parskip}
 
+\usepackage{hyperref}
+
 \usepackage{algorithmic}
 \usepackage{algorithm}
 
@@ -71,21 +73,57 @@ Experiments were performed on graphs from Stanford's Large Network Collection.  
 
 For each graph and reduced graph, in addition to diameter and number of connected components, one thousand reachable random pairs of vertices were picked from each original graph.  Then, for the reduced graphs, the distance of each pair was measured again, the difference in distance was recorded, if the pair was still reachable.  The Page Rank was computed for all vertices in each graph and reduced graph.  Since there are a lot of numbers to process, the top 0.15\% (or top 15 if < 1000 vertices) page rank vertices were examined in each reduced graph, and the number of those vertices in the top 0.15\% and top 1\% page rank in the original were recorded.  The results will be summarized below, and a full Excel spreadsheet is available with all results.
 
+In the analysis ahead, there will be tables for each category.  The category is listed on the top right of each table.  Bolded graph names indicate that the graph metric was well approximated for all reductions.  Otherwise, some values of the table of the graph will be bolded, indicating the graph metric was well approximated for the given reduction and graph.  A "good" approximation is defined below under each category.
+
+The graphs used for analysis were all provided using Stanford's SNAP datasets, found at \url{http://snap.stanford.edu/data}.  The datasets used for undirected graphs are labeled ego-Facebook (fb), ca-CondMat (cm), ca-AstroPH(ap), email-Enron (enron), com-Youtube (yt), as-733 (auto).  The datasets used for directed graph are labeled soc-Epinions (dir ep), wiki-Vote (dir wiki).
+
 \subsection{Analysis by Graph Metric}
 \textbf{Edges} - This is an important metric since this is will decrease computing time on a number of algorithms.  Of course, this is the goal of these approximations, to obtain close results while lowering the time to compute them.  The T Top K reductions have a lower amount of edges than each of its counterpart Top K reductions. For the four iterations for the Facebook graph, the reductions have 9\%, 17\%, 32\%, and 53\% of the original edges, going from $k_1 = 2, 4, 8, 16$.  The number of edges in the 1 of 4 reduction was typically inbetween the top 4 and the top 8 reduction.  The tree reductions contained very few edges, with 3 roots having typically less than the top 2 reduction, and 5 roots with similar number of edges as the top 2 reduction.  As you will see, the spanning tree reduction has great performance in the other metrics relative to the number edges it has.
 
-\textbf{Diameter} - 
-
-\iffalse
-Across all undirected reduced graphs, the diameter, using the approximation algorithm, was always within +/- 2 (within 15\%) of the diameter of the original graph.  The approximation typically had more error when only two or four edges were kept for each vertex in the top $k$ reductions. All in all, the approximate diameter measured in the reduced graphs were very close to the original graph's diameter in all reduced graph iterations for undirected graphs.
+\textbf{Diameter} - Across all undirected reduced graphs, with the exception of youtube's reduced graphs, the approximation algorithm was always within 15\% of the diameter of the original graph.  The approximation typically had more error when only two or four edges were kept for each vertex in the top $k$ reductions.  All in all, the approximate diameter measured in the reduced graphs were very close to the original graph's diameter in all reduced graph iterations for undirected graphs.
 
 For directed graphs, the results are not very good.  The approximate diameter fluctuates heavily.  As an example, the wikivote graph from Stanford's SNAP measured an approximate diameter of 35 on the reduced graph that kept the top 8 neighbours, and an approximate diameter of 11 on the reduced graph that kept the top 4 neighbours.
-\fi
+
+\begin{tabular}{| l | c | c | c | c | c | c | c | c |}
+ \hline
+ A. Diameter & fb & cm & ap & \textbf{enron} & yt & \textbf{auto} & dir ep & dir wiki \\ \hline
+ Original & 8 & 15 & 14 & 13 & 20 & 9 & 13 & 8\\ \hline
+ Top 2 & \textbf{8} & \textbf{16} & \textbf{14} & 13 & 16 & 10 & 9 & \textbf{7}\\ \hline
+ Top 4 & \textbf{8} & \textbf{15} & \textbf{13} & 12 & 15 & 9 & \textbf{12} & 11\\ \hline
+ Top 8 & \textbf{8} & \textbf{14} & \textbf{12} & 13 & 15 & 9 & 61 & 35\\ \hline
+ Top 16 & \textbf{8} & \textbf{13} & \textbf{12} & 12 & 16 & 9 & 31 & 15\\ \hline
+ T Top 2 & 10 & \textbf{15} & \textbf{13} & 14 & 17 & 10 & \textbf{11} & 12\\ \hline
+ T Top 4 & 10 & \textbf{15} & \textbf{13} & 12 & 16 & 1 & \textbf{13} & 27\\ \hline
+ T Top 8 & \textbf{8} & \textbf{15} & \textbf{13} & 13 & 15 & 10 & 45 & 15\\ \hline
+ T Top 16 & \textbf{8} & \textbf{14} & \textbf{1}3 & 12 & 15 & 10 & 19 & 10\\ \hline
+ Tree 3 & \textbf{8} & \textbf{15} & \textbf{13} & 14 & 16 & 10 & 28 & 16\\ \hline
+ Tree 5 & \textbf{8} & \textbf{15} & \textbf{14} & 13 & 15 & 10 & 22 & 29\\ \hline
+ Keep 1/4 & \textbf{9} & 20 & 17 & 12 & 16 & 10 & \textbf{13} & 12\\ \hline
+ 
+\end{tabular}\\
+A "good" approximation is defined to be within 15\% of the original graph's diameter. (Listed in the Original row)
 
 \textbf{Page Rank} - Page rank results varied depending on the original graph.  For some graphs, around half of the reduced versions' top 0.15\% page rank vertices were in the top 0.15\% of the original. However, most graphs' had 90\% of all reduced versions' 0.15\% in the original top 0.15\%.  There is only slight improvement as $k$ went up in all cases, until $k_1 = 8 or 16$, as those results are always at least 80\% in the original top 0.15\%.
 
 In each original graph, the high degree vertices, in terms of ranking, will continue to be the high ranking vertices in the reduced graph as well.  Since Page Rank is computed largely based on the degree of a vertex, it is intuitive that the reduced graphs give accurate rankings to the high page rank vertices.
 
+\begin{tabular}{| l | c | c | c | c | c | c | c | c |}
+	\hline
+	PR \% in Top 0.15\% & fb & cm & ap & \textbf{enron} & \textbf{yt} & \textbf{auto} & dir ep & dir wiki \\ \hline
+	Top 2 & 67\% & 63\% & 54\% & 89\% & 94\% & 93\% & \textbf{88\%} & 80\% \\ \hline
+	Top 4 & 60\% & 68\% & 53\% & 95\% & 97\% & 100\% & \textbf{98\%} & \textbf{87\%} \\ \hline
+	Top 8 & 47\% & \textbf{88\%} & 59\% & 96\% & 98\% & 100\% & \textbf{100\%} & \textbf{93\%} \\ \hline
+	Top 16 & 60\% & \textbf{99\%} & 79\% & 100\% & 99\% & 100\% & \textbf{100\%} & \textbf{100\%} \\ \hline
+	T Top 2 & 73\% & 59\% & 53\% & 86\% & 94\% & 93\% & \textbf{88\%} & 80\% \\ \hline
+	T Top 4 & 73\% & 52\% & 49\% & 89\% & 97\% & 100\% & \textbf{98\%} & \textbf{87\%} \\ \hline
+	T Top 8 & 80\% & 57\% & 47\% & 95\% & 99\% & 100\% & \textbf{100\%} & \textbf{93\%} \\ \hline
+	T Top 16 & 73\% & \textbf{95\%} & 62\% & 100\% & 99\% & 100\% & \textbf{100\%} & \textbf{100\%} \\ \hline
+	Tree 3 & 73\% & 65\% & 35\% & 86\% & 94\% & 93\% & 4\% & 0\% \\ \hline
+	Tree 5 & 73\% & 67\% & 40\% & 86\% & 94\% & 93\% & 4\% & 0\% \\ \hline
+	Keep 1/4 & \textbf{93\%} & 61\% & 58\% & 95\% & 94\% & 93\% & \textbf{85\%} & \textbf{87\%} \\ \hline
+	
+\end{tabular}\\
+An approximation is bolded if it is within 15\% error.
 
 \textbf{Reachability} - On undirected graphs, the reachability results had great results.  On almost every reduced graph, all 1000 pairs were in the same component.  The only time this not the case was for some reduced graphs that only kept 2 edges from each vertex.
 
@@ -93,11 +131,51 @@ However, for directed graphs, many pairs were often in different components in t
 
 Although there is some randomness to this measurement, I think these results can be useful to characterize real-world graphs.  Vertices with large degree (or "hubs") will preserve most of their edges in the these graph reductions.  I believe that since real-world graphs typically have several very large hubs, these hubs keep components similar in size in reduced graphs compared to the original.  For directed graphs however, although smaller degree vertices keep their edges to large hubs, the edge can only be traversed one way, so that the number of outgoing edges from large degree vertices is not very large, although the number of incoming edges to the large degree vertices will be very high.
 
+\begin{tabular}{| l | c | c | c | c | c | c | c | c |}
+	\hline
+	Reachability, /1000 & \textbf{fb} & \textbf{cm} & \textbf{ap} & \textbf{enron} & \textbf{yt} & \textbf{auto} & dir ep & dir wiki \\ \hline
+	Top 2 & 966 & 999 & 998 & 1000 & 1000 & 1000 & 0 & 5\\ \hline
+	Top 4 & 1000 & 1000 & 1000 & 1000 & 1000 & 1000 & 1 & 18\\ \hline
+	Top 8 & 1000 & 1000 & 1000 & 1000 & 1000 & 1000 & 23 & 162\\ \hline
+	Top 16 & 1000 & 1000 & 1000 & 1000 & 1000 & 1000 & 442 & 750\\ \hline
+	T Top 2 & 1000 & 1000 & 1000 & 1000 & 1000 & 1000 & 0 & 8\\ \hline
+	T Top 4 & 1000 & 1000 & 1000 & 1000 & 1000 & 1000 & 8 & 187\\ \hline
+	T Top 8 & 1000 & 1000 & 1000 & 1000 & 1000 & 1000 & 228 & 653 \\ \hline 
+	T Top 16 & 1000 & 1000 & 1000 & 1000 & 1000 & 1000 & 548 & 841\\ \hline
+	Tree 3 & 1000 & 1000 & 1000 & 1000 & 1000 & 1000 & 3 & 2\\ \hline
+	Tree 5 & 1000 & 1000 & 1000 & 1000 & 1000 & 1000 & 5 & 81\\ \hline
+	Keep 1/4 & 1000 & 1000 & 1000 & 1000 & 1000 & 1000 & 569 & 861 \\ \hline
+
+\end{tabular}\\
+An approximation is bolded if it is within 10\% error.
+
 \textbf{Distance} - The results on changes of distance were quite similar to reachability.  For undirected graphs, the change in distance between the vertex pairs were mostly + 0 or 1, with some distances + 2 if only the 2 edges were kept for each vertex.  If at least 8 edges were kept for each vertex, a large majority of the pairs had their distances unchanged. The tree reduction gave similar results to the Top 2 and 4 neighbour reduction, and keeping 1 of 4 edges had similar results to the Top 4 neighbour reduction.
 
 For directed graphs, we will only consider when 16 edges were kept for each vertex.  The reachable pairs resulted in a difference in distance centered around +2, with mostly +1, 2, or 3, with some +0 or +4,5.
 
 I believe the intuition for this is similar to reachability, with large hubs giving easy access to paths from one vertex to another, so that these short paths are left unchanged in real-world graphs. Of course, once the top 8 or 16 edges are kept, a lot of the edges are kept from the original graph, and it will be that "less important" edges, edges between low degree vertices are left out, which are typically not used in shortest paths.
+
+\begin{tabular}{| l | c | c | c | c | c | c | c | c |}
+	\hline
+	$\Delta$ Dist 0 \& 1, /1000 & \textbf{fb} & cm & ap & \textbf{enron} & \textbf{yt} & \textbf{auto} & dir ep & dir wiki \\ \hline
+	Top 2 & 952 & \textbf{852} & 754 & 928 & 991 & 987 & 0 & 3\\ \hline
+	Top 4 & 999 & \textbf{995} & \textbf{966} & 991 & 999 & 999 & 0 & 15\\ \hline
+	Top 8 & 1000 & \textbf{1000} & \textbf{999} & 999 & 1000 & 1000 & 5 & 44\\ \hline
+	Top 16 & 1000 & \textbf{1000} & \textbf{999} & 1000 & 1000 & 1000 & 20 & 253\\ \hline
+	T Top 2 & 975 & 817 & 691 & 892 & 969 & 983 & 0 & 6\\ \hline
+	T Top 4 & 987 & \textbf{956} & \textbf{887} & 966 & 993 & 995 & 5 & 36\\ \hline
+	T Top 8 & 991 & \textbf{982} & \textbf{949} & 991 & 996 & 996 & 18 & 215\\ \hline
+	T Top 16 & 995 & \textbf{997} & \textbf{968} & 994 & 997 & 997 & 172 & 610\\ \hline
+	Tree 3 & 996 & \textbf{839} & \textbf{767} & 896 & 982 & 987 & 1 & 1\\ \hline
+	Tree 5 & 999 & \textbf{916} & \textbf{855} & 956 & 992 & 995 & 6 & 2\\ \hline
+	Keep 1/4 & 976 & \textbf{975} & \textbf{996} & 992 & 981 & 960 & 358 & 550\\ \hline
+
+
+\end{tabular}\\
+An approximation is bolded if it is withing 15\% error.
+
+
+
 
 
 \end{document}
