@@ -19,6 +19,7 @@
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>       /* time */
 #include "shortest_path.hpp"
+#include "onion_decomp.hpp"
 
 
 using namespace std;
@@ -212,13 +213,24 @@ void readCommand(const graph &g, string filename)
         {
             Vertex v;
             Vertex u;
-            cout << "Selected first vertex" << endl;
+            cout << "Select first vertex" << endl;
             cin >> v;
-            cout << "Selected second vertex" << endl;
+            cout << "Select second vertex" << endl;
             cin >> u;
             outFile << "Distance from " << v << " to " << u << ": " << graph_distance(g, v, u) << endl;
             getline(cin, command); //to clear up the whitespace
 
+        }
+        else if (command == "od") //onion decomp
+        {
+            std::vector<unsigned> onionLayerCount;
+            outFile << "Layers: " << onion_decomp(g, onionLayerCount) << endl;
+            outFile << "Layer Count: ";
+            for(auto it = onionLayerCount.begin(); it != onionLayerCount.end(); ++it)
+            {
+                outFile << *it << " ";
+            }
+            outFile<< endl;
         }
         else if (command == "kdiam")
         {
@@ -226,6 +238,7 @@ void readCommand(const graph &g, string filename)
             outFile << "Khaled's Approx Diameter Bounds: " << diameterBounds.first << ", " << diameterBounds.second << endl;
         }
         else if (command == "adiam") outFile << "Approx Diameter: " << approx_graph_diameter(g) << endl;
+        else if (command == "emdiam") outFile << "Exact Diameter (M): " << memory_graph_diamter(g) << endl;
         else if (command == "ediam") outFile << "Exact Diameter: " << simple_graph_diameter(g) << endl;
         else if (command == "etri") outFile << "Exact Triangle Count: "  << exact_triangle_count(g) << endl;
         else if (command == "vert") cout << "Num Vert: " << boost::num_vertices(g) << endl;

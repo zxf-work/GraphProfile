@@ -24,7 +24,7 @@ struct reachability_bfs_visitor : default_bfs_visitor
 
 struct reachability_single_bfs_visitor : default_bfs_visitor
 {
-    bool* reachability = false;
+    bool* reachability;
     Vertex* vertex;
 
     void discover_vertex(const Vertex &u, const Graph &g)

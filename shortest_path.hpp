@@ -4,6 +4,47 @@
 #include "common.h"
 #include <boost/graph/breadth_first_search.hpp>
 
+//performs BFS, recording distances
+//distance left at 0 if unreachable
+void bfs_distance(const Graph &g, const Vertex &v, std::vector<unsigned>& distanceMap)
+{
+    distanceMap = std::vector<unsigned>(num_vertices(g), 0);
+    std::vector<Vertex> predecessor_map(num_vertices(g));
+
+    std::queue<Vertex> mainQ;
+    std::map<Vertex, bool> visitedMap;
+    mainQ.push(v);
+    visitedMap.emplace(v, true);
+    while(!mainQ.empty())
+    {
+        Vertex current = mainQ.front();
+
+        std::pair<AdjacencyIterator, AdjacencyIterator> neighbourIt = adjacent_vertices(current, g);
+        //add neighbours to the Q
+        for(auto ni = neighbourIt.first; ni != neighbourIt.second; ++ni)
+        {
+            //only add if not visited before
+            if(visitedMap.find(*ni) == visitedMap.end())
+            {
+                mainQ.push(*ni);
+                visitedMap.emplace(*ni, true);
+
+                predecessor_map.at(*ni) = predecessor_map.at(current);
+                distanceMap.at(*ni) = distanceMap.at(current) + 1;
+            }
+        }
+
+        mainQ.pop();
+    }
+}
+
+unsigned non_boost_distance(const Graph &g, const Vertex v, const Vertex u)
+{
+    std::vector<unsigned> distanceMap;
+    bfs_distance(g, v, distanceMap);
+    return distanceMap.at(u);
+}
+
 //returns 0 if not reachable
 unsigned graph_distance(const Graph &g, const Vertex v, const Vertex u)
 {

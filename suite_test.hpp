@@ -15,6 +15,7 @@
 #include <math.h>
 #include "shortest_path.hpp"
 #include "betweenness_centrality.hpp"
+#include "onion_decomp.hpp"
 
 using namespace std;
 
@@ -29,8 +30,9 @@ void testing_funcs(const Graph &g, ofstream& outFile, std::multimap<Vertex, Vert
     //outFile << "Exact Diameter: " << simple_graph_diameter(g) << endl;
     outFile << "Approx Diamter: " << approx_graph_diameter(g) << endl;
 
-    pair<vertices_size_type, vertices_size_type> diameterBounds;
+    pair<vertices_size_type, vertices_size_type> diameterBounds = khaled_approx_diameter(g);
     outFile << "Khaled Diameter Bounds: " << diameterBounds.first << "," <<diameterBounds.second <<endl;
+
     //cc
     std::vector<unsigned> connectedCompCount = connected_comp(g);
     outFile << "Connected Components: " << connectedCompCount.at(0) << endl;
@@ -102,6 +104,16 @@ void testing_funcs(const Graph &g, ofstream& outFile, std::multimap<Vertex, Vert
         outFile<<endl;
 
     }
+*/
+    //onion decomp
+    std::vector<unsigned> onionLayerCount;
+    outFile << "Layers: " << onion_decomp(g, onionLayerCount) << endl;
+    outFile << "Layer Count: ";
+    for(auto it = onionLayerCount.begin(); it != onionLayerCount.end(); ++it)
+    {
+        outFile << *it << " ";
+    }
+    outFile<< endl;
 
     outFile<<endl;
 
