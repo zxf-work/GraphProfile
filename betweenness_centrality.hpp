@@ -149,7 +149,7 @@ float approx_betweenness_centrality(const Graph &g, const Vertex &v)
                         //go through the path, except the start and end vertices
                         for(auto pathIt = pathListIt->begin() + 1; pathIt != pathListIt->end() -1; ++pathIt)
                         {
-                            if(*pathIt = vertex(u,g)) ++uPathCount;
+                            if(*pathIt == vertex(u,g)) ++uPathCount;
                         }
                     }
                 }

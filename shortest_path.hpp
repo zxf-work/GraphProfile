@@ -6,7 +6,7 @@
 
 //performs BFS, recording distances
 //distance left at 0 if unreachable
-void bfs_distance(const Graph &g, const Vertex &v, std::vector<unsigned>& distanceMap)
+void bfs_with_distance(const Graph &g, const Vertex &v, std::vector<unsigned>& distanceMap)
 {
     distanceMap = std::vector<unsigned>(num_vertices(g), 0);
     std::vector<Vertex> predecessor_map(num_vertices(g));
@@ -38,14 +38,16 @@ void bfs_distance(const Graph &g, const Vertex &v, std::vector<unsigned>& distan
     }
 }
 
+//computes distance w/o boost's bfs
 unsigned non_boost_distance(const Graph &g, const Vertex v, const Vertex u)
 {
     std::vector<unsigned> distanceMap;
-    bfs_distance(g, v, distanceMap);
+    bfs_with_distance(g, v, distanceMap);
     return distanceMap.at(u);
 }
 
 //returns 0 if not reachable
+//computes distance of a graph using boost's bfs
 unsigned graph_distance(const Graph &g, const Vertex v, const Vertex u)
 {
     std::vector<vertices_size_type> distances;

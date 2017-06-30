@@ -69,6 +69,8 @@ int random_reachability_test(const Graph &g, const Graph &h, int x)
     return reachableCount;
 }
 
+
+//deprecated function
 std::multimap<Vertex, Vertex> reachability_test(const Graph &g, std::multimap<Vertex, Vertex>& PairMap)
 {
     std::multimap<Vertex,Vertex> retVal;

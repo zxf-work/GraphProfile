@@ -39,7 +39,7 @@ void graph_reduction_reverse(const Graph &g, Graph &h, unsigned x = 3)
             neighbourMap.emplace((unsigned)degree(*ni1, g), *ni1);
         }
         //add edges to up to d/up to x neighbours
-        for(int y = 0; y < x && y < d; ++y)
+        for(unsigned y = 0; y < x && y < d; ++y)
         {
             auto it = neighbourMap.begin();
             std::advance(it, y);
@@ -169,6 +169,9 @@ void graph_reduction_spanning_tree(const Graph& g, Graph &h, const std::vector<V
     }
 }
 
+//expects graph g, empty graph h, and list of vertices from g
+//creates a graph by joining spanning trees using high_degree_bfs (self made bfs instead of boost's bfs)
+//roots is a vector of vertices from which the spanning trees are rooted
 void graph_reduction_high_degree_tree(const Graph &g, Graph &h, const std::vector<Vertex>& roots)
 {
     unsigned n = num_vertices(g);

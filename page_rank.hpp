@@ -14,6 +14,7 @@ using namespace boost;
 const double damp = 0.85;
 //https://en.wikipedia.org/wiki/PageRank for more info
 //erases any info on current vector passed on
+//stops when the total difference after an iteration is no larger than 0.0001
 void page_rank(const Graph &g, std::vector<double> &pageRankVector)
 {
     pageRankVector = std::vector<double>(num_vertices(g), (double)1 / num_vertices(g));
@@ -58,6 +59,7 @@ void page_rank(const Graph &g, std::vector<double> &pageRankVector)
 }
 
 //perform N random walks, 1 starting from each vertex
+//page for a vertex v is the # of times v is encountered during walks/ total vertices encountered during walks
 void approx_page_rank(const Graph &g, std::vector<double> &pageRankVector)
 {
     unsigned n = num_vertices(g);

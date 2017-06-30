@@ -11,6 +11,7 @@ using namespace boost;
 
 // expects file to be an adjecency list that is separated by only whitespace, no punctuation
 // ex. 1 2 2 3 4 5 is a graph with edges 1-2, 2-3, 4-5.
+// should not be another words in the file
 bool adjacency_list_read(Graph& g, const char* filename)
 {
     std::ifstream datafile;
@@ -32,6 +33,11 @@ bool adjacency_list_read(Graph& g, const char* filename)
 
             if(datafile >> edgeStart && datafile >> edgeEnd)
             {
+                if(edgeStart == 0 && edgeStart == edgeEnd)
+                {
+                    std::cout << "error when reading. check format of file." << std::endl;
+                    return false;
+                }
                 add_edge(edgeStart, edgeEnd, EdgeWeightProperty(1), g);
             }
 

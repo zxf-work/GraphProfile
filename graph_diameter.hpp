@@ -146,7 +146,7 @@ int simple_graph_diameter(const Graph &g, bool dense = false)
     else johnson_all_pairs_shortest_paths(g, D);
     std::cout<< "Finished all pairs shortest paths." << std::endl;
     int shortestPath[V];
-    for (int i = 0; i < V; ++i)
+    for (unsigned i = 0; i < V; ++i)
     {
         shortestPath[i] = 0;
         for(unsigned j = 0; j < V; ++j)

@@ -51,7 +51,6 @@ std::vector<Vertex> high_degree_vertices(const Graph &g, int x = 5)
     {
         auto it = vertexList.begin();
         std::advance(it, num_vertices(g) - 1 - i);
-        Vertex y = it->second;
         retVal.push_back(it->second);
     }
 
@@ -59,6 +58,7 @@ std::vector<Vertex> high_degree_vertices(const Graph &g, int x = 5)
 }
 
 //perform bfs, recording the edges of the tree
+//self made bfs, nothing "high degree"
 void high_degree_bfs(const Graph &g, const Vertex &v, std::multimap<Vertex, Vertex>&tree)
 {
     std::queue<Vertex> mainQ;
