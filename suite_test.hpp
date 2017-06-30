@@ -104,7 +104,7 @@ void testing_funcs(const Graph &g, ofstream& outFile, std::multimap<Vertex, Vert
         outFile<<endl;
 
     }
-*/
+
     //onion decomp
     std::vector<unsigned> onionLayerCount;
     outFile << "Layers: " << onion_decomp(g, onionLayerCount) << endl;
