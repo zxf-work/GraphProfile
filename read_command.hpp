@@ -37,7 +37,7 @@ void readCommand(const graph &g, string filename)
     bool b = true;
     while (b)
     {
-        cout << "Select modes available: cc, adiam, ediam, etri, lcc, prank, bc, abc, bbc, reduce (type exit to quit)" << endl;
+        cout << "Select modes available: abc, adiam, aprank, bbc, bc, cc, dist, ediam, emdiam, edges, etri, kdiam, lcc, od, prank, vertices, reduce, reducetri, reducetree, reducetreetop, reducepercent (type exit to quit)" << endl;
         string command;
         getline(cin, command);
 
@@ -61,7 +61,7 @@ void readCommand(const graph &g, string filename)
             outFile.precision(4);
             if (v == -1) outFile << "Average LCC: " << average_cluster_coeff(g) << endl;
             else outFile << "LCC of vertex " << v << ": " << local_cluster_coeff(v, g) << endl;
-            getline(cin, command); //to clear up the whitespace
+            cin.ignore(); //to clear up the whitespace
         }
         else if (command == "prank") //page rank, outputs to separate file
         {
@@ -100,6 +100,7 @@ void readCommand(const graph &g, string filename)
             cout << "Select a vertex from " << boost::num_vertices(g) << "vertices." << endl;
             unsigned v;
             cin >> v;
+            cin.ignore();
             outFile.precision(8);
             outFile << "Approx Betweenness Centrality " << approx_betweenness_centrality(g, boost::vertex(v, g)) << endl;
             getline(cin, command); //to clear up the whitespace
@@ -146,6 +147,7 @@ void readCommand(const graph &g, string filename)
             int x;
             cout << "Enter # Vertices to keep." << endl;
             cin >> x;
+            cin.ignore();
             graph_reduction(g, h, x);
             edge_list_print_file(h, "Reduced Graph.txt");
         }
@@ -186,6 +188,7 @@ void readCommand(const graph &g, string filename)
             cout << "Select # Vertices as roots. " << endl;
             int x;
             cin >> x;
+            cin.ignore();
             graph_reduction_spanning_tree(g, h, high_degree_vertices(g, x));
             edge_list_print_file(h, "Reduced Graph Tree2.txt");
 
@@ -196,6 +199,7 @@ void readCommand(const graph &g, string filename)
             cout << "Select # Vertices to keep. " << endl;
             int x;
             cin >> x;
+            cin.ignore();
             graph_reduction_triangle_avoid(g, h, x);
             edge_list_print_file(h, "Reduced Graph Triangle.txt");
         }
