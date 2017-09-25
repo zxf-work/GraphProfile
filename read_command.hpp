@@ -37,7 +37,7 @@ void readCommand(const graph &g, string filename)
     bool b = true;
     while (b)
     {
-        cout << "Select modes available: abc, adiam, aprank, bbc, bc, cc, dist, ediam, emdiam, edges, etri, kdiam, lcc, od, prank, vertices, reduce, reducetri, reducetree, reducetreetop, reducepercent (type exit to quit)" << endl;
+        cout << "Select modes available: abc, adiam, aprank, bbc, bc, cc, dist, ediam, emdiam, edge, etri, kdiam, lcc, od, prank, vert, reduce, reducetri, reducetree, reducetreetop, reducepercent (type exit to quit)" << endl;
         string command;
         getline(cin, command);
 
@@ -61,6 +61,7 @@ void readCommand(const graph &g, string filename)
             outFile.precision(4);
             if (v == -1) outFile << "Average LCC: " << average_cluster_coeff(g) << endl;
             else outFile << "LCC of vertex " << v << ": " << local_cluster_coeff(v, g) << endl;
+
             cin.ignore(); //to clear up the whitespace
         }
         else if (command == "prank") //page rank, outputs to separate file
@@ -103,7 +104,6 @@ void readCommand(const graph &g, string filename)
             cin.ignore();
             outFile.precision(8);
             outFile << "Approx Betweenness Centrality " << approx_betweenness_centrality(g, boost::vertex(v, g)) << endl;
-            getline(cin, command); //to clear up the whitespace
         }
         else if (command == "bc") //betweenness centrality, outputs to separate file
         {
@@ -174,6 +174,7 @@ void readCommand(const graph &g, string filename)
                 cin >> x;
                 if(x >= 0) roots.push_back(x);
             }
+            cin.ignore();
             cout << "Roots: ";
             for(auto it = roots.begin(); it != roots.end(); ++it)
             {
@@ -222,7 +223,7 @@ void readCommand(const graph &g, string filename)
             cout << "Select second vertex" << endl;
             cin >> u;
             outFile << "Distance from " << v << " to " << u << ": " << graph_distance(g, v, u) << endl;
-            getline(cin, command); //to clear up the whitespace
+            cin.ignore(); //to clear up the whitespace
 
         }
         else if (command == "od") //onion decomp

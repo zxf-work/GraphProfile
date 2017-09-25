@@ -11,9 +11,9 @@ using namespace boost;
 double local_cluster_coeff(const Vertex &v, const Graph &g)
 {
     double localTriCount = 0;
-
     int deg = degree(v, g);
-    if (deg != 0 && deg != 1)
+
+    if (deg > 2) // if vertex has less than 3 neighbors, they cannot form a triangle in the first place
     {
         //check every pair of neighbours
         std::pair<AdjacencyIterator, AdjacencyIterator> neighbourIter = adjacent_vertices(v, g);
@@ -27,9 +27,9 @@ double local_cluster_coeff(const Vertex &v, const Graph &g)
         }
     }
     else return 0;
+
     double maxTriangle = (double)deg * (deg-1) / 2;
     return localTriCount / maxTriangle;
-
 }
 
 double average_cluster_coeff(const Graph &g)

@@ -21,10 +21,6 @@ int main()
         Graph g;
 
         if (file == "stop" || file == "exit") break;
-        else if (file == "default") file = "C:\\Users\\Vincent Luong\\Documents\\Git\\GraphProfile\\Graph Data\\facebook_combined.txt";
-        else if (file == "small") file = "C:\\Users\\Vincent Luong\\Documents\\Git\\GraphProfile\\Graph Data\\small test.txt";
-        else if (file == "enron") file = "C:\\Users\\Vincent Luong\\Documents\\Git\\GraphProfile\\Graph Data\\enron.txt";
-
         else if (file == "suitemodetop")
         {
             suitemode = true;
@@ -71,16 +67,14 @@ int main()
         {
             suitemode = true;
             vector<string>filenames;
-            vector<string>filenames2;
-            filenames.push_back("C:\\Users\\Vincent Luong\\Documents\\Git\\GraphProfile\\Graph Data\\facebook_combined.txt");
-            filenames.push_back("C:\\Users\\Vincent Luong\\Documents\\Git\\GraphProfile\\Graph Data\\CondMat.txt");
-            filenames.push_back("C:\\Users\\Vincent Luong\\Documents\\Git\\GraphProfile\\Graph Data\\astroph.txt");
-            filenames.push_back("C:\\Users\\Vincent Luong\\Documents\\Git\\GraphProfile\\Graph Data\\enron.txt");
-            filenames.push_back("C:\\Users\\Vincent Luong\\Documents\\Git\\GraphProfile\\Graph Data\\epinions.txt");
-            filenames.push_back("C:\\Users\\Vincent Luong\\Documents\\Git\\GraphProfile\\Graph Data\\Autonomous.txt");
-            filenames.push_back("C:\\Users\\Vincent Luong\\Documents\\Git\\GraphProfile\\Graph Data\\youtube.txt");
-            //filenames.push_back("C:\\Users\\Vincent Luong\\Documents\\Git\\GraphProfile\\Graph Data\\skitter.txt");
-            //filenames2.push_back("C:\\Users\\Vincent Luong\\Documents\\Git\\GraphProfile\\Graph Data\\skitter.txt");
+            string filename;
+            cout << "Enter Filenames (type exit to finish)" << endl;
+            getline(cin, filename);
+            while(filename != "exit")
+            {
+                filenames.push_back(filename);
+                getline(cin, filename);
+            }
 
             suite_test(filenames);
             //suite_test_spanning_tree(filenames);
