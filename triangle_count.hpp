@@ -12,8 +12,6 @@ using namespace boost;
 //if index of v < u, w, check if there is a uw edge, forming a triangle
 unsigned long exact_triangle_count(const Graph &g)
 {
-    std::ofstream outFile;
-    outFile.open("triangleCount.txt");
 
     int triangleCount = 0;
     std::pair<VertexIterator, VertexIterator> vertexIter = vertices(g);
@@ -38,7 +36,6 @@ unsigned long exact_triangle_count(const Graph &g)
         }
     }
 
-    outFile.close();
     return triangleCount;
 
 }

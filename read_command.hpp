@@ -31,7 +31,8 @@ template<class graph>
 void readCommand(const graph &g, string filename)
 {
     ofstream outFile;
-    outFile.open("Graph Properties.txt", ios_base::out | ios_base::app );
+    string outFileName = filename.substr(0, filename.length()-4);
+    outFile.open(outFileName + "-graph-properties.txt", ios_base::out | ios_base::app );
     outFile << "File: " << filename << endl;
 
     bool b = true;
@@ -67,7 +68,7 @@ void readCommand(const graph &g, string filename)
         else if (command == "prank") //page rank, outputs to separate file
         {
             ofstream pRankFile;
-            pRankFile.open("Page Rank.txt", ios_base::out | ios_base::app);
+            pRankFile.open(outFileName + "-page-rank.txt", ios_base::out | ios_base::app);
             pRankFile.precision(10);
             pRankFile << filename << endl;
 
@@ -83,7 +84,7 @@ void readCommand(const graph &g, string filename)
         else if (command == "aprank") //approx page rank, outputs to separate file
         {
             ofstream pRankFile;
-            pRankFile.open("Approximate Page Rank.txt", ios_base::out | ios_base::app);
+            pRankFile.open(outFileName + "-approximate-page-rank.txt", ios_base::out | ios_base::app);
             pRankFile.precision(10);
             pRankFile << filename << endl;
 
@@ -108,7 +109,7 @@ void readCommand(const graph &g, string filename)
         else if (command == "bc") //betweenness centrality, outputs to separate file
         {
             ofstream bcFile;
-            bcFile.open("Betweenness Centrality.txt", ios_base::out | ios_base::app);
+            bcFile.open(outFileName + "-betweenness-centrality.txt", ios_base::out | ios_base::app);
             bcFile.precision(4);
             bcFile << filename << endl;
 
@@ -130,7 +131,7 @@ void readCommand(const graph &g, string filename)
             boost::brandes_betweenness_centrality(g, centralityPropMap);
 
             ofstream bcFile;
-            bcFile.open("Brandes BC.txt", ios_base::out | ios_base::app);
+            bcFile.open(outFileName + "-brandes-BC.txt", ios_base::out | ios_base::app);
             bcFile.precision(4);
             bcFile << filename << endl;
 
@@ -149,19 +150,19 @@ void readCommand(const graph &g, string filename)
             cin >> x;
             cin.ignore();
             graph_reduction(g, h, x);
-            edge_list_print_file(h, "Reduced Graph.txt");
+            edge_list_print_file(h, outFileName + "-reduced-graph.txt");
         }
         else if (command == "reduce5") //create reduced graph
         {
             Graph h;
             graph_reduction(g, h, 5);
-            edge_list_print_file(h, "Reduced Graph5.txt");
+            edge_list_print_file(h, outFileName + "-reduced-graph5.txt");
         }
         else if (command == "reduce5r") //create reduced graph
         {
             Graph h;
             graph_reduction_reverse(g, h, 5);
-            edge_list_print_file(h, "Reduced Graph5.txt");
+            edge_list_print_file(h, outFileName + "-reduced-graph5.txt");
         }
         else if (command == "reducetree")
         {
@@ -181,7 +182,7 @@ void readCommand(const graph &g, string filename)
                 cout << *it << " " << endl;
             }
             graph_reduction_spanning_tree(g, h, roots);
-            edge_list_print_file(h, "Reduced Graph Tree.txt");
+            edge_list_print_file(h, outFileName + "-reduced-graph Tree.txt");
         }
         else if (command == "reducetreetop")
         {
@@ -191,7 +192,7 @@ void readCommand(const graph &g, string filename)
             cin >> x;
             cin.ignore();
             graph_reduction_spanning_tree(g, h, high_degree_vertices(g, x));
-            edge_list_print_file(h, "Reduced Graph Tree2.txt");
+            edge_list_print_file(h, outFileName + "-reduced-graph-tree2.txt");
 
         }
         else if (command == "reducetri")
@@ -202,7 +203,7 @@ void readCommand(const graph &g, string filename)
             cin >> x;
             cin.ignore();
             graph_reduction_triangle_avoid(g, h, x);
-            edge_list_print_file(h, "Reduced Graph Triangle.txt");
+            edge_list_print_file(h, outFileName + "-reduced-graph-triangle.txt");
         }
         else if (command == "reducepercent")
         {
@@ -212,7 +213,7 @@ void readCommand(const graph &g, string filename)
             cin >> x;
             cin.ignore();
             graph_reduction_percentage(g, h, median_cutoff(g), x);
-            edge_list_print_file(h, "Reduced Graph Proportion.txt");
+            edge_list_print_file(h, outFileName + "-reduced-graph-proportion.txt");
         }
         else if (command == "dist")
         {
