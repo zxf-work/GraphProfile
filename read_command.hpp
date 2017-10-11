@@ -2,6 +2,7 @@
 #define READ_COMMAND_HPP_INCLUDED
 
 #include <iostream>
+#include <ctime>
 #include "common.h"
 #include <fstream>
 #include <string>
@@ -243,7 +244,17 @@ void readCommand(const graph &g, string filename)
             pair<vertices_size_type, vertices_size_type> diameterBounds = khaled_approx_diameter(g);
             outFile << "Khaled's Approx Diameter Bounds: " << diameterBounds.first << ", " << diameterBounds.second << endl;
         }
-        else if (command == "adiam") outFile << "Approx Diameter: " << approx_graph_diameter(g) << endl;
+        else if (command == "adiam"){
+            time_t startTime = time(NULL);
+            cout<<"Start time: "<<startTime<<endl;
+            outFile<<"Start time: "<<startTime<<endl;
+            outFile << "Approx Diameter: " << approx_graph_diameter(g) << endl;
+            time_t endTime = time(NULL);
+            cout<<"End time: "<<endTime<<endl;
+            cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
+            outFile<<"End time: "<<endTime<<endl;
+            outFile<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
+        }
         else if (command == "emdiam") outFile << "Exact Diameter (M): " << memory_graph_diamter(g) << endl;
         else if (command == "ediam") outFile << "Exact Diameter: " << simple_graph_diameter(g) << endl;
         else if (command == "etri") outFile << "Exact Triangle Count: "  << exact_triangle_count(g) << endl;
