@@ -2,16 +2,12 @@
 #define BFS_PRINT_VISITOR_H_INCLUDED
 
 #include "common.h"
-#include <boost/graph/adjacency_list.hpp>
-#include <boost/graph/breadth_first_search.hpp>
 #include <iostream>
 
 //prints the vertex when visited via BFS
 struct bfs_print_visitor : boost::default_bfs_visitor
 {
-    void examine_vertex(const Graph::vertex_descriptor &s, const Graph &g) {
-      std::cout << "Examine vertex: " << s << std::endl;
-    }
+    void examine_vertex(const Graph::vertex_descriptor &s, const Graph &g);
 };
 
 #endif // BFS_PRINT_VISITOR_H_INCLUDED
