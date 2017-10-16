@@ -243,14 +243,26 @@ void readCommand(const Graph &g, string filename)
         }
         else if (command == "adiam"){
             time_t startTime = time(NULL);
-            cout<<"Start time: "<<startTime<<endl;
-            outFile<<"Start time: "<<startTime<<endl;
+
             outFile << "Approx Diameter: " << approx_graph_diameter(g) << endl;
+            cout << "Approx Diameter: " << approx_graph_diameter(g) << endl;
+
             time_t endTime = time(NULL);
-            cout<<"End time: "<<endTime<<endl;
+
+
             cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
-            outFile<<"End time: "<<endTime<<endl;
             outFile<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
+
+
+            startTime = time(NULL);
+
+            outFile << "Approx Diameter, Multithreaded: " << approx_graph_diameter_multithread(g) << endl;
+            cout << "Approx Diameter, Multithreaded: " << approx_graph_diameter_multithread(g) << endl;
+
+            endTime = time(NULL);
+
+            cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
+            outFile<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
         }
         else if (command == "emdiam") outFile << "Exact Diameter (M): " << memory_graph_diamter(g) << endl;
         else if (command == "ediam") outFile << "Exact Diameter: " << simple_graph_diameter(g) << endl;

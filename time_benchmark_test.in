@@ -10,4 +10,8 @@ exit
 ./Graph Data/facebook_combined.txt
 adiam
 exit
+./Graph Data/enron.txt
+adiam
 exit
+exit
+
