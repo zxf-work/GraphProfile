@@ -85,7 +85,6 @@ vertices_size_type approx_graph_diameter(const Graph &g)
         //stop if lowerdiam is 2x the diam
         if(lowerdiam * 2 == diameter) break;
     }
-    std::cout << "Current Diameter: " << lowerdiam << "," << diameter << std::endl;
     return diameter;
 
 

@@ -32,6 +32,8 @@ void readCommand(const Graph &g, string filename)
     string outFileName = filename.substr(0, filename.length()-4);
     outFile.open(outFileName + "-graph-properties.txt", ios_base::out | ios_base::app );
     outFile << "File: " << filename << endl;
+    time_t startTime;
+    time_t endTime;
 
     bool b = true;
     while (b)
@@ -51,6 +53,7 @@ void readCommand(const Graph &g, string filename)
                 outFile << " " << *i;
             }
             outFile << endl;
+
         }
         else if (command == "lcc") //local cluster coeff
         {
@@ -242,12 +245,12 @@ void readCommand(const Graph &g, string filename)
             outFile << "Khaled's Approx Diameter Bounds: " << diameterBounds.first << ", " << diameterBounds.second << endl;
         }
         else if (command == "adiam"){
-            time_t startTime = time(NULL);
+            startTime = time(NULL);
 
             outFile << "Approx Diameter: " << approx_graph_diameter(g) << endl;
             cout << "Approx Diameter: " << approx_graph_diameter(g) << endl;
 
-            time_t endTime = time(NULL);
+            endTime = time(NULL);
 
 
             cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
