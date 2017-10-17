@@ -1,0 +1,14 @@
+adiam:
+facebook:
+	unparallelized: 248
+	parallelized: 8
+enron:
+	unparallelized: 563
+	parallelized: 16
+
+betweeness_centrality:
+small_test.txt:
+	unparallellized: 327, 371, 350
+	parallelized: 333, 
+		triple parallel fors: 18, 18
+		quadruple parallel fors: 46, 50

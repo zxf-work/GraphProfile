@@ -115,14 +115,28 @@ void readCommand(const Graph &g, string filename)
             bcFile << filename << endl;
 
             vector<float> centralityVector(boost::num_vertices(g), 0);
+
+
+            startTime = time(NULL);
+            betweenness_centrality_multithread(g, centralityVector);
+            endTime = time(NULL);
+
+            cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
+
+
+            startTime = time(NULL);
             betweenness_centrality(g, centralityVector);
+            endTime = time(NULL);
+
+            cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
+
             for(auto it = centralityVector.begin(); it != centralityVector.end(); ++it)
             {
                 bcFile << *it << endl;
             }
 
             bcFile.close();
-            outFile << "Betweenness Centrality computed." << endl;
+            cout<< "Betweenness Centrality computed." << endl;
         }
         else if (command == "bbc") //brandes bc
         {

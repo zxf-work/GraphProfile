@@ -1,5 +1,0 @@
-Unparallelized:
-facebook_combined - 136s, 127s, 18s, 126s,
-enron - 294s, 275s, 283s,
-
-Parallel BGL:
