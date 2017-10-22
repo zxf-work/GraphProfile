@@ -15,8 +15,9 @@ using namespace boost;
 //O(n) BFS ops = O(n^2 + mn). O(n^3) summations. O(n^3) space.
 void betweenness_centrality(const Graph &g, std::vector<float> &centralityVector);
 
-
 void betweenness_centrality_multithread(const Graph &g, std::vector<float> &centralityVector);
+
+void betweenness_centrality_multithread_3parallel(const Graph &g, std::vector<float> &centralityVector);
 
 //approximate BC for a single vertex
 //alg: repeatedly select vertex vi

@@ -121,7 +121,14 @@ void readCommand(const Graph &g, string filename)
             betweenness_centrality_multithread(g, centralityVector);
             endTime = time(NULL);
 
-            cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
+            cout<<"Time elapsed, Multithreaded, double parallel_for: "<<difftime(endTime, startTime)<<endl;
+
+
+            startTime = time(NULL);
+            betweenness_centrality_multithread_3parallel(g, centralityVector);
+            endTime = time(NULL);
+
+            cout<<"Time elapsed, Multithreaded, triple parallel_for: "<<difftime(endTime, startTime)<<endl;
 
 
             startTime = time(NULL);
@@ -259,12 +266,13 @@ void readCommand(const Graph &g, string filename)
             outFile << "Khaled's Approx Diameter Bounds: " << diameterBounds.first << ", " << diameterBounds.second << endl;
         }
         else if (command == "adiam"){
+
             startTime = time(NULL);
-
-            outFile << "Approx Diameter: " << approx_graph_diameter(g) << endl;
-            cout << "Approx Diameter: " << approx_graph_diameter(g) << endl;
-
+            auto adiam = approx_graph_diameter(g);
             endTime = time(NULL);
+
+            outFile << "Approx Diameter: " << adiam << endl;
+            cout << "Approx Diameter: " << adiam << endl;
 
 
             cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
@@ -272,11 +280,12 @@ void readCommand(const Graph &g, string filename)
 
 
             startTime = time(NULL);
-
-            outFile << "Approx Diameter, Multithreaded: " << approx_graph_diameter_multithread(g) << endl;
-            cout << "Approx Diameter, Multithreaded: " << approx_graph_diameter_multithread(g) << endl;
-
+            adiam = approx_graph_diameter_multithread(g);
             endTime = time(NULL);
+
+            outFile << "Approx Diameter, Multithreaded: " << adiam  << endl;
+            cout << "Approx Diameter, Multithreaded: " << adiam << endl;
+
 
             cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
             outFile<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;

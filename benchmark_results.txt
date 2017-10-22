@@ -8,7 +8,13 @@ enron:
 
 betweeness_centrality:
 small_test.txt:
-	unparallellized: 327, 371, 350
+	unparallellized: 327, 371, 350, 339, 348
 	parallelized: 333, 
-		triple parallel fors: 18, 18
-		quadruple parallel fors: 46, 50
+		double parallel fors: 18, 18
+		triple parallel fors: 46, 50, 45
+
+https://snap.stanford.edu/data/
+snap graph
+-livejournal
+-skitter
+

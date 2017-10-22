@@ -25,7 +25,7 @@ OBJECTS = adjacency_list_read.o \
 					main.o
 
 ${EXEC}: ${OBJECTS}
-	${CXX} ${CXXFLAGS} ${OBJECTS} -o ${EXEC}
+	${CXX} ${OBJECTS} ${CXXFLAGS} -o ${EXEC}
 
 compile:
 	${CXX} *.cpp ${CXXFLAGS} -o ${EXEC}

@@ -26,7 +26,7 @@ void betweenness_centrality(const Graph &g, std::vector<float> &centralityVector
 
     int n = num_vertices(g);
 
-    CentralityMap centralityMap(n);
+    CentralityMap centralityMap(num_vertices(g));
 
     for(auto it = centralityMap.begin(); it != centralityMap.end(); ++it)
     {
@@ -39,8 +39,8 @@ void betweenness_centrality(const Graph &g, std::vector<float> &centralityVector
     //performing the multiple BFS and storing path data
     for (unsigned i = 0; i < num_vertices(g); ++i)
     {
-        std::vector<PathList> shortestPathsMap(n);
-        std::vector<unsigned> shortestDistanceMap(n);
+        std::vector<PathList> shortestPathsMap(num_vertices(g));
+        std::vector<unsigned> shortestDistanceMap(num_vertices(g));
 
         //BFS
         centrality_bfs_visitor vis = centrality_bfs_visitor(&shortestDistanceMap, &shortestPathsMap);
@@ -103,7 +103,7 @@ void betweenness_centrality_multithread(const Graph &g, std::vector<float> &cent
 
     int n = num_vertices(g);
 
-    CentralityMap centralityMap(n);
+    CentralityMap centralityMap(num_vertices(g));
 
     for(auto it = centralityMap.begin(); it != centralityMap.end(); ++it)
     {
@@ -121,8 +121,87 @@ void betweenness_centrality_multithread(const Graph &g, std::vector<float> &cent
 
         for(int i=r.rows().begin(), i_end=r.rows().end(); i<i_end; i++){
 
-        std::vector<PathList> shortestPathsMap(n);
-        std::vector<unsigned> shortestDistanceMap(n);
+        std::vector<PathList> shortestPathsMap(num_vertices(g));
+        std::vector<unsigned> shortestDistanceMap(num_vertices(g));
+
+        //BFS
+        centrality_bfs_visitor vis = centrality_bfs_visitor(&shortestDistanceMap, &shortestPathsMap);
+        breadth_first_search(g, vertex(i, g), visitor(vis));
+
+            for(int t=r.cols().begin(), t_end=r.cols().end(); t<t_end; t++){
+                //go through each path, for each vertex v in the path, increase the # of shortest st/it paths with v
+                for(auto pathListIt = shortestPathsMap.at(t).begin(); pathListIt != shortestPathsMap.at(t).end(); ++pathListIt)
+                {
+                    ++shortestPathsCount.at(i).at(t);
+                    if (pathListIt->size() > 2)
+                    {
+                        for(auto pathIt = pathListIt->begin() + 1; pathIt != pathListIt->end() - 1; ++pathIt)
+                        {
+                            ++centralityMap[*pathIt][i][t];
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    //once all BFS is finished, use the data to sum up # of st paths, and # of st paths through a vertex v
+    //using this, computer BC(v) for all v
+    tbb::parallel_for( tbb::blocked_range2d<int>(0, n, 0, n),
+    [&centralityMap, &shortestPathsCount, &centralityVector, n]( const tbb::blocked_range2d<int> &r ) {
+        for(int i=r.rows().begin(), i_end=r.rows().end(); i<i_end; i++){
+
+            float centralitySum = 0;
+
+            for(int j=r.cols().begin(), j_end=r.cols().end(); j<j_end; j++){
+                for(int t = j + 1; t < n; ++t)
+                {
+                    if(j != i && t != i)
+                    {
+                        unsigned betweenPathCount = 0;
+                        unsigned totalPathCount = 0;
+
+                        betweenPathCount = centralityMap[i][j][t];
+                        totalPathCount = shortestPathsCount[j][t];
+                        if (totalPathCount != 0) centralitySum = centralitySum + (float)betweenPathCount / totalPathCount;
+                    }
+                }
+            }
+
+            centralityVector[i] = centralitySum;
+        }
+    });
+}
+
+//multithreaded implementation with a triple parallel_for loop
+void betweenness_centrality_multithread_3parallel(const Graph &g, std::vector<float> &centralityVector)
+{
+    typedef std::vector< std::vector<int> > CentralityMatrix;
+    typedef std::vector<CentralityMatrix> CentralityMap;
+    //CentralityMap[v][s][t] denotes the # of sp's from s to t that contain v
+
+    int n = num_vertices(g);
+
+    CentralityMap centralityMap(num_vertices(g));
+
+    for(auto it = centralityMap.begin(); it != centralityMap.end(); ++it)
+    {
+        *it = std::vector< std::vector<int> >(num_vertices(g), std::vector<int>(num_vertices(g), 0));
+    }
+
+    //shortestPathsCount[s][t] contains the # of sp'd from s to t
+    std::vector< std::vector<int> >shortestPathsCount(num_vertices(g), std::vector<int>(num_vertices(g), 0));
+
+
+    //performing the multiple BFS and storing path data
+
+    tbb::parallel_for(tbb::blocked_range2d<int>(0, n, 0, n),
+    [&g, &centralityMap, &shortestPathsCount, &n](const tbb::blocked_range2d<int> &r){
+
+        for(int i=r.rows().begin(), i_end=r.rows().end(); i<i_end; i++){
+
+        std::vector<PathList> shortestPathsMap(num_vertices(g));
+        std::vector<unsigned> shortestDistanceMap(num_vertices(g));
 
         //BFS
         centrality_bfs_visitor vis = centrality_bfs_visitor(&shortestDistanceMap, &shortestPathsMap);
@@ -145,19 +224,6 @@ void betweenness_centrality_multithread(const Graph &g, std::vector<float> &cent
                         //}
 
                 });
-
-                //go through each path, for each vertex v in the path, increase the # of shortest st/it paths with v
-                // for(auto pathListIt = shortestPathsMap.at(t).begin(); pathListIt != shortestPathsMap.at(t).end(); ++pathListIt)
-                // {
-                //     ++shortestPathsCount.at(i).at(t);
-                //     if (pathListIt->size() > 2)
-                //     {
-                //         for(auto pathIt = pathListIt->begin() + 1; pathIt != pathListIt->end() - 1; ++pathIt)
-                //         {
-                //             ++centralityMap[*pathIt][i][t];
-                //         }
-                //     }
-                // }
             }
         }
     });
@@ -184,24 +250,13 @@ void betweenness_centrality_multithread(const Graph &g, std::vector<float> &cent
                             if (totalPathCount != 0) centralitySum = centralitySum + (float)betweenPathCount / totalPathCount;
                         }
                     });
-                // for(int t = j + 1; t < n; ++t)
-                // {
-                //     if(j != i && t != i)
-                //     {
-                //         unsigned betweenPathCount = 0;
-                //         unsigned totalPathCount = 0;
-
-                //         betweenPathCount = centralityMap[i][j][t];
-                //         totalPathCount = shortestPathsCount[j][t];
-                //         if (totalPathCount != 0) centralitySum = centralitySum + (float)betweenPathCount / totalPathCount;
-                //     }
-                // }
             }
 
             centralityVector[i] = centralitySum;
         }
     });
 }
+
 
 //approximate BC for a single vertex
 //alg: repeatedly select vertex vi
@@ -227,8 +282,8 @@ float approx_betweenness_centrality(const Graph &g, const Vertex &v)
         }
         Vertex vi = vertex(rand() % num_vertices(g), g);
 
-        std::vector<PathList> shortestPathsMap(n);
-        std::vector<unsigned> shortestDistanceMap(n);
+        std::vector<PathList> shortestPathsMap(num_vertices(g));
+        std::vector<unsigned> shortestDistanceMap(num_vertices(g));
 
 
         //BFS
