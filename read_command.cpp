@@ -47,10 +47,31 @@ void readCommand(const Graph &g, string filename)
 
         if(command == "cc") //connected components
         {
-            std::vector<unsigned> connectedCompCount = connected_comp(g);
+            vector<unsigned> connectedCompCount;
+
+            startTime = time(NULL);
+            connectedCompCount = connected_comp(g);
+            endTime = time(NULL);
             outFile << "Connected Components: " << connectedCompCount.at(0) << endl;
+            cout << "Connected Components: " << connectedCompCount.at(0) << endl;
+            cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
 
             outFile << "Largest Component Sizes: ";
+            for(std::vector<unsigned>::iterator i = connectedCompCount.begin() + 1; i != connectedCompCount.end(); ++i)
+            {
+                outFile << " " << *i;
+            }
+            outFile << endl;
+
+
+            startTime = time(NULL);
+            connectedCompCount = connected_comp_multithread(g);
+            endTime = time(NULL);
+            outFile << "Connected Components, Multithreaded: " << connectedCompCount.at(0) << endl;
+            cout << "Connected Components, Multithreaded: " << connectedCompCount.at(0) << endl;
+            cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
+
+            outFile << "Largest Component Sizes, Multithreaded: ";
             for(std::vector<unsigned>::iterator i = connectedCompCount.begin() + 1; i != connectedCompCount.end(); ++i)
             {
                 outFile << " " << *i;

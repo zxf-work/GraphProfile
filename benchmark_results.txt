@@ -23,11 +23,9 @@ small test.txt
 	unparallelized: (3, 0, 6), (67, 0, 6)
 	parallelized: (3, 0, 0), (67, 0, 1)
 facebook_combined:
-	unparallelized: (1000, ,)
-	parallelized: (1000, 33.2584, 44)
+	unparallelized: (1000, 32.357 , 881)
+	parallelized: (1000, 33.2584, 44), (1000, 20.2787, 34)
 
 https://snap.stanford.edu/data/
-snap graph
--livejournal
--skitter
+
 

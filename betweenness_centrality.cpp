@@ -279,6 +279,8 @@ float approx_betweenness_centrality(const Graph &g, const Vertex &v)
             break;
         }
 
+        if(iterations % 1000 == 0) std::cout<<"computing..."<<std::endl;
+
         // select a random vertex to calculate abc on
         // if randomly selected vertex is the one we are calculating abc on,
         // select a new vertex instead
@@ -450,7 +452,7 @@ std::pair<unsigned, unsigned>betweenness_centrality_test(const Graph &g, const G
 }
 
 
-std::pair<unsigned, unsigned>betweenness_centrality_test_multithreaded(const Graph &g, const Graph &h)
+std::pair<unsigned, unsigned>betweenness_centrality_test_multithread(const Graph &g, const Graph &h)
 {
     unsigned n = num_vertices(g);
     std::multimap<float, Vertex> originalBetweennessMap;
@@ -458,7 +460,7 @@ std::pair<unsigned, unsigned>betweenness_centrality_test_multithreaded(const Gra
 
     //compute BC
     tbb::parallel_for(0U, n,
-        [&originalBetweennessMap, &reducedBetweennessMap](unsigned v)
+        [&g, &h, &originalBetweennessMap, &reducedBetweennessMap](unsigned v)
         {
             originalBetweennessMap.emplace(approx_betweenness_centrality_multithread(g, v), v);
             reducedBetweennessMap.emplace(approx_betweenness_centrality_multithread(h, v), v);
@@ -470,8 +472,8 @@ std::pair<unsigned, unsigned>betweenness_centrality_test_multithreaded(const Gra
     auto betweennessIt = reducedBetweennessMap.rbegin();
 
 
-    tbb::parallel_for(0, p,
-        [&betweennessIt, &originalBetweennessMap, &betweennessCount](){
+    tbb::parallel_for(0, (int)p,
+        [&n, &p, &betweennessIt, &originalBetweennessMap, &betweennessCount](int i){
             Vertex v = betweennessIt->second;
             ++betweennessIt;
 

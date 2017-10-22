@@ -35,4 +35,7 @@ float approx_betweenness_centrality_multithread(const Graph &g, const Vertex &v)
 //and # of vertices of h in top 1% and not 0.15% of BC that are in h
 std::pair<unsigned, unsigned>betweenness_centrality_test(const Graph &g, const Graph &h);
 
+
+std::pair<unsigned, unsigned>betweenness_centrality_test_multithread(const Graph &g, const Graph &h);
+
 #endif // BETWEENNESS_CENTRALITY_HPP_INCLUDED
