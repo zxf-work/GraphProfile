@@ -27,6 +27,8 @@ void betweenness_centrality_multithread_3parallel(const Graph &g, std::vector<fl
 //then BC(v) = nS / k, where k random vertices were chosen
 float approx_betweenness_centrality(const Graph &g, const Vertex &v);
 
+float approx_betweenness_centrality_multithread(const Graph &g, const Vertex &v);
+
 //expects graph g, reduced graph h with same # of vertices
 //computers approx BC for each vertex in g and h
 //returns # of vertices of h in top 0.15% of BC that are in top 0.15% of g,

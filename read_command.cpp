@@ -108,7 +108,22 @@ void readCommand(const Graph &g, string filename)
             cin >> v;
             cin.ignore();
             outFile.precision(8);
-            outFile << "Approx Betweenness Centrality " << approx_betweenness_centrality(g, boost::vertex(v, g)) << endl;
+
+            float abc;
+
+            startTime = time(NULL);
+            abc = approx_betweenness_centrality_multithread(g, boost::vertex(v, g));
+            endTime = time(NULL);
+            outFile << "Approx Betweenness Centrality, Multithreaded " << abc<< endl;
+            cout << "Approx Betweenness Centrality, Multithreaded " << abc << endl;
+            cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
+
+            startTime = time(NULL);
+            abc = approx_betweenness_centrality(g, boost::vertex(v, g));
+            endTime = time(NULL);
+            outFile << "Approx Betweenness Centrality " << abc<< endl;
+            cout << "Approx Betweenness Centrality " << abc << endl;
+            cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
         }
         else if (command == "bc") //betweenness centrality, outputs to separate file
         {

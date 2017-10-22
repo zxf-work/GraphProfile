@@ -94,7 +94,6 @@ void betweenness_centrality(const Graph &g, std::vector<float> &centralityVector
 }
 
 //multithreaded implementation
-
 void betweenness_centrality_multithread(const Graph &g, std::vector<float> &centralityVector)
 {
     typedef std::vector< std::vector<int> > CentralityMatrix;
@@ -277,16 +276,22 @@ float approx_betweenness_centrality(const Graph &g, const Vertex &v)
         ++iterations;
         if(iterations > 10000)
         {
-            std::cout << "Long loop for betweenness centrality. Vertex :" << v << std::endl;
             break;
         }
+
+        // select a random vertex to calculate abc on
+        // if randomly selected vertex is the one we are calculating abc on,
+        // select a new vertex instead
+        // NOTE: this will infinite loop on a graph with only 1 vertex
         Vertex vi = vertex(rand() % num_vertices(g), g);
+        while(vi == v) vi = vertex(rand() % num_vertices(g), g);
+
 
         std::vector<PathList> shortestPathsMap(num_vertices(g));
         std::vector<unsigned> shortestDistanceMap(num_vertices(g));
 
-
         //BFS
+        // Calculate all shortest paths to all other nodes from vi
         centrality_bfs_visitor vis(&shortestDistanceMap, &shortestPathsMap);
         breadth_first_search(g, vi, visitor(vis));
 
@@ -300,16 +305,20 @@ float approx_betweenness_centrality(const Graph &g, const Vertex &v)
                 unsigned uPathCount = 0; //# of shortest paths with u
 
                 PathList pathList = shortestPathsMap.at(u);
-                for(auto pathListIt = shortestPathsMap.at(u).begin(); pathListIt != shortestPathsMap.at(u).end(); ++pathListIt)
+                for(auto pathListIt = pathList.begin(); pathListIt != pathList.end(); ++pathListIt)
                 {
                     ++pathCount;
                     //only check if the path has >2 vertices/length 1
                     if(pathListIt->size() > 2)
                     {
                         //go through the path, except the start and end vertices
-                        for(auto pathIt = pathListIt->begin() + 1; pathIt != pathListIt->end() -1; ++pathIt)
+                        for(auto pathIt = pathListIt->begin()+1; pathIt != pathListIt->end()-1; ++pathIt)
                         {
-                            if(*pathIt == vertex(u,g)) ++uPathCount;
+                            //if our vertex is found in the path
+                            //then increment uPathCount
+                            if(*pathIt == v){
+                                ++uPathCount;
+                            }
                         }
                     }
                 }
@@ -321,7 +330,77 @@ float approx_betweenness_centrality(const Graph &g, const Vertex &v)
 
     }
     return n * sum / iterations;
+}
 
+
+//multithreaded implementation
+float approx_betweenness_centrality_multithread(const Graph &g, const Vertex &v)
+{
+    unsigned n = num_vertices(g);
+    unsigned iterations = 0;
+    float sum = 0;
+    float target = 0.5*n;
+    srand(time(NULL));
+
+    tbb::parallel_for(0, 10000,
+        [&g, &v, &n, &iterations, &sum, &target](int i){
+            if(sum >= target)
+            {
+                tbb::task::self().cancel_group_execution();
+            }
+            ++iterations;
+
+            // select a random vertex to calculate abc on
+            // if randomly selected vertex is the one we are calculating abc on,
+            // select a new vertex instead
+            // NOTE: this will infinite loop on a graph with only 1 vertex
+            Vertex vi = vertex(rand() % num_vertices(g), g);
+            while(vi == v) vi = vertex(rand() % num_vertices(g), g);
+
+            std::vector<PathList> shortestPathsMap(n);
+            std::vector<unsigned> shortestDistanceMap(n);
+
+
+            //BFS
+            centrality_bfs_visitor vis(&shortestDistanceMap, &shortestPathsMap);
+            breadth_first_search(g, vi, visitor(vis));
+
+            //add to the sum
+            //for each vertex u != vi or v, add delta_vi,u(v) to sum
+            tbb::parallel_for(0U, n,
+                [&g, &v, &vi, &sum, &shortestPathsMap, &shortestDistanceMap](unsigned u){
+                    if(vertex(u, g) != vi && vertex(u, g) != v)
+                    {
+                        unsigned pathCount = 0;
+                        unsigned uPathCount = 0; //# of shortest paths with u
+
+                        PathList pathList = shortestPathsMap.at(u);
+
+                        tbb::parallel_for_each(pathList.begin(), pathList.end(),
+                            [&v, &g, &pathCount, &uPathCount](auto pathListIt){
+                                ++pathCount;
+                                //only check if the path has >2 vertices/length 1
+                                if(pathListIt.size() > 2)
+                                {
+                                    //go through the path, except the start and end vertices
+                                    for(auto pathIt = pathListIt.begin() + 1; pathIt != pathListIt.end() - 1; ++pathIt)
+                                    {
+                                        if(*pathIt == v){
+                                            ++uPathCount;
+                                        }
+                                    }
+                                }
+                            }
+                        );
+
+                        if (pathCount != 0) //pathCount should only be 0 if graph is not connected
+                            sum = sum + (float)uPathCount / pathCount;
+                    }
+                }
+            );
+        }
+    );
+    return n * sum / iterations;
 }
 
 //expects graph g, reduced graph h with same # of vertices

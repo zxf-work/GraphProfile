@@ -1,5 +1,5 @@
 On linux.student.cs.uwaterloo.ca machines
-number of threads available: 56
+number of threads available: 56 - 64
 
 adiam:
 facebook:
@@ -9,12 +9,16 @@ enron:
 	unparallelized: 563
 	parallelized: 16
 
-betweeness_centrality:
-small_test.txt:
-	unparallellized: 327, 371, 350, 339, 348
+bc:
+small test.txt:
+	unparallellized: 327, 371, 350, 339, 348, 327
 	parallelized: 333, 
-		double parallel fors: 18, 18
-		triple parallel fors: 46, 50, 45
+		double parallel fors: 18, 18, 18
+		triple parallel fors: 46, 50, 45, 39
+
+
+abc:
+small test.txt
 
 https://snap.stanford.edu/data/
 snap graph
