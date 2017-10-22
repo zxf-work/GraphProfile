@@ -449,3 +449,50 @@ std::pair<unsigned, unsigned>betweenness_centrality_test(const Graph &g, const G
     return betweennessCount;
 }
 
+
+std::pair<unsigned, unsigned>betweenness_centrality_test_multithreaded(const Graph &g, const Graph &h)
+{
+    unsigned n = num_vertices(g);
+    std::multimap<float, Vertex> originalBetweennessMap;
+    std::multimap<float, Vertex> reducedBetweennessMap;
+
+    //compute BC
+    tbb::parallel_for(0U, n,
+        [&originalBetweennessMap, &reducedBetweennessMap](unsigned v)
+        {
+            originalBetweennessMap.emplace(approx_betweenness_centrality_multithread(g, v), v);
+            reducedBetweennessMap.emplace(approx_betweenness_centrality_multithread(h, v), v);
+        }
+    );
+
+    double p = (n * 0.0015) > 15 ? n * 0.0015 : 15; //percentile for 0.15%
+    std::pair<unsigned, unsigned>betweennessCount; //first number counts # of vertices in original top 0.15, second counts # in top 1%
+    auto betweennessIt = reducedBetweennessMap.rbegin();
+
+
+    tbb::parallel_for(0, p,
+        [&betweennessIt, &originalBetweennessMap, &betweennessCount](){
+            Vertex v = betweennessIt->second;
+            ++betweennessIt;
+
+            //check if top ranking vector is in the original's top rank (top 0.15% or top 1%)
+            bool top15 = false;
+            bool top1 = false;
+            auto originalIt = originalBetweennessMap.rbegin();
+            for(float j = 0; j < (n * 0.01 ); ++j)
+            {
+                if (originalIt->second == v)
+                {
+                    if (j < p) top15 = true;
+                    else top1 = true;
+                    break;
+                }
+                ++originalIt;
+            }
+            if(top15) ++betweennessCount.first;
+            if (top1) ++betweennessCount.second;
+    });
+
+    return betweennessCount;
+}
+
