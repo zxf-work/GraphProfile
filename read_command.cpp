@@ -19,6 +19,7 @@
 #include "shortest_path.hpp"
 #include "onion_decomp.hpp"
 #include "read_command.hpp"
+#include "tbb/tbb.h"
 
 
 using namespace std;
@@ -34,6 +35,8 @@ void readCommand(const Graph &g, string filename)
     outFile << "File: " << filename << endl;
     time_t startTime;
     time_t endTime;
+
+    cout<<"Number of threads available: "<<tbb::task_scheduler_init::default_num_threads()<<endl;
 
     bool b = true;
     while (b)

@@ -1,3 +1,6 @@
+On linux.student.cs.uwaterloo.ca machines
+number of threads available: 56
+
 adiam:
 facebook:
 	unparallelized: 248
