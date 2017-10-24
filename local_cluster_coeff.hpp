@@ -11,4 +11,11 @@ double local_cluster_coeff(const Vertex &v, const Graph &g);
 
 double average_cluster_coeff(const Graph &g);
 
+//multithreaded implementations
+double local_cluster_coeff_multithread(const Vertex &v, const Graph &g);
+
+double average_cluster_coeff_multithread(const Graph &g);
+
+double average_cluster_coeff_multithread_reduce(const Graph &g);
+
 #endif // LOCAL_CLUSTERING_COEFF_HPP_INCLUDED

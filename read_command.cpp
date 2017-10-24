@@ -83,10 +83,58 @@ void readCommand(const Graph &g, string filename)
         {
             cout << "Select a vertex from " << boost::num_vertices(g) << " vertices. (-1 for average)" << endl;
             long v;
+            double lcc;
             cin >> v;
             outFile.precision(4);
-            if (v == -1) outFile << "Average LCC: " << average_cluster_coeff(g) << endl;
-            else outFile << "LCC of vertex " << v << ": " << local_cluster_coeff(v, g) << endl;
+
+            if (v == -1){
+                startTime = time(NULL);
+                lcc = average_cluster_coeff(g);
+                endTime = time(NULL);
+
+                outFile << "Average LCC: " << lcc << endl;
+                cout<< "Average LCC: " << lcc << endl;
+                cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
+
+
+                startTime = time(NULL);
+                lcc = average_cluster_coeff_multithread(g);
+                endTime = time(NULL);
+
+                outFile << "Average LCC, Multithreaded: " << lcc << endl;
+                cout<< "Average LCC, Multithreaded: " << lcc << endl;
+                cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
+
+
+
+                startTime = time(NULL);
+                lcc = average_cluster_coeff_multithread_reduce(g);
+                endTime = time(NULL);
+
+                outFile << "Average LCC, reduce: " << lcc << endl;
+                cout<< "Average LCC, reduce: " << lcc << endl;
+                cout<<"Time elapsed, reduce: "<<difftime(endTime, startTime)<<endl;
+
+            }
+            else{
+
+                startTime = time(NULL);
+                lcc = local_cluster_coeff(v, g);
+                endTime = time(NULL);
+
+                outFile << "LCC of vertex " << v << ": " << lcc << endl;
+                cout<< "LCC of vertex " << v << ": " << lcc << endl;
+                cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
+
+
+                startTime = time(NULL);
+                lcc = local_cluster_coeff_multithread(v, g);
+                endTime = time(NULL);
+
+                outFile << "LCC of vertex " << v << ", Multithreaded: " << lcc << endl;
+                cout << "LCC of vertex " << v << ", Multithreaded: " << lcc << endl;
+                cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
+            }
 
             cin.ignore(); //to clear up the whitespace
         }

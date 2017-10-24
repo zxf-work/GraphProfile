@@ -6,7 +6,6 @@
 #include "connected_comp.hpp"
 #include "tbb/tbb.h"
 
-
 using namespace boost;
 
 //returns (# of CC, percentiles of largest CC's)
@@ -57,7 +56,7 @@ std::vector<unsigned> connected_comp_multithread(const Graph &g)
     unsigned sum = 0;
 
     std::vector<unsigned> componentCount(numComp, 0);
-    tbb::parallel_for_each(component.begin(), component.end()
+    tbb::parallel_for_each(component.begin(), component.end(),
         [&componentCount](unsigned i){
             ++componentCount[i];
         }
@@ -70,12 +69,14 @@ std::vector<unsigned> connected_comp_multithread(const Graph &g)
     while(((sum * 100) / V )<= 90)
     {
         unsigned* largest = std::max_element(&componentCount[0], &componentCount[0] + componentCount.size());
+        if(*largest == 0) break;
+
         sum = sum + *largest;
         retVal.push_back(*largest);
+
         *largest = 0;
     }
 
     return retVal;
-
 }
 
