@@ -137,7 +137,7 @@ void readCommand(const Graph &g, string filename)
 
             cin.ignore(); //to clear up the whitespace
         }
-        else if (command == "prank") //page rank, outputs to separate file !!
+        else if (command == "prank") //page rank, outputs to separate file
         {
             vector<double> pageRank;
             ofstream pRankFile;

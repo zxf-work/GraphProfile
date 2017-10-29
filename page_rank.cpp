@@ -7,6 +7,8 @@
 
 #include "page_rank.hpp"
 
+#include "tbb/tbb.h"
+
 #include <iostream>
 
 
@@ -25,7 +27,6 @@ void page_rank(const Graph &g, std::vector<double> &pageRankVector)
     // or 1000 iterations have been reached
     while(totalDifference > 0.0001 && timeCount < 1000)
     {
-
         totalDifference = 0;
         std::vector<double>::iterator currentIter = pageRankVector.begin();
         std::vector<double>::iterator nextIter = nextPageRanks.begin();
@@ -34,7 +35,6 @@ void page_rank(const Graph &g, std::vector<double> &pageRankVector)
         while(currentIter != pageRankVector.end() && nextIter != nextPageRanks.end())
         {
             Vertex v = vertex(currentIter - pageRankVector.begin(), g);
-
             //sum is sigma(PR(u;t) / deg(u)) for all u that are neighbours of v, as described on wiki page.
             double sum = 0;
             std::pair<AdjacencyIterator, AdjacencyIterator> neighbourIter = adjacent_vertices(v, g);
@@ -185,30 +185,26 @@ void page_rank_multithread(const Graph &g, std::vector<double> &pageRankVector)
     {
 
         totalDifference = 0;
-        std::vector<double>::iterator currentIter = pageRankVector.begin();
-        std::vector<double>::iterator nextIter = nextPageRanks.begin();
 
-        //calculate PR(v) for every v
-        while(currentIter != pageRankVector.end() && nextIter != nextPageRanks.end())
-        {
-            Vertex v = vertex(currentIter - pageRankVector.begin(), g);
+        tbb::parallel_for(tbb::blocked_range<unsigned long int>(0U,num_vertices(g)),
+            [&g, &pageRankVector, &nextPageRanks, &totalDifference](auto r){
+                for(auto i=r.begin(); i!= r.end(); i++){
+                    //sum is sigma(PR(u;t) / deg(u)) for all u that are neighbours of v, as described on wiki page.
+                    double sum = 0;
+                    std::pair<AdjacencyIterator, AdjacencyIterator> neighbourIter = adjacent_vertices(i, g);
+                    for(AdjacencyIterator ni = neighbourIter.first; ni != neighbourIter.second; ++ni)
+                    {
+                        sum = sum + pageRankVector[*ni] / degree(*ni, g);
+                    }
+                    nextPageRanks[i] = ((1 - damp) / num_vertices(g)) + damp * sum;
 
-            //sum is sigma(PR(u;t) / deg(u)) for all u that are neighbours of v, as described on wiki page.
-            double sum = 0;
-            std::pair<AdjacencyIterator, AdjacencyIterator> neighbourIter = adjacent_vertices(v, g);
-            for(AdjacencyIterator ni = neighbourIter.first; ni != neighbourIter.second; ++ni)
-            {
-                sum = sum + pageRankVector.at((unsigned)*ni) / degree(*ni, g);
+                    //add the difference between the current PR and the newly calculated PR
+                    //to totalDifference
+                    totalDifference = totalDifference + fabs(nextPageRanks[i] - pageRankVector[i]);
+                }
             }
-            *nextIter = ((1 - damp) / num_vertices(g)) + damp * sum;
+        );
 
-            //add the difference between the current PR and the newly calculated PR
-            //to totalDifference
-            totalDifference = totalDifference + fabs(*nextIter - *currentIter);
-
-            ++currentIter;
-            ++nextIter;
-        }
         pageRankVector = nextPageRanks;
         timeCount++;
     }

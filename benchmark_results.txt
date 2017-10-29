@@ -36,6 +36,11 @@ epinions.txt:
 	parallelized, outer only: 8,8,8
 	parallelized, outer + inner: 2,3,3
 
+prank:
+epinions.txt:
+	unparallelized: 9, 9, 8
+	parallelized: 0, 1, 0
+
 https://snap.stanford.edu/data/
 
 
