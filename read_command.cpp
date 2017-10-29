@@ -106,7 +106,6 @@ void readCommand(const Graph &g, string filename)
                 cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
 
 
-
                 startTime = time(NULL);
                 lcc = average_cluster_coeff_multithread_reduce(g);
                 endTime = time(NULL);
@@ -138,23 +137,43 @@ void readCommand(const Graph &g, string filename)
 
             cin.ignore(); //to clear up the whitespace
         }
-        else if (command == "prank") //page rank, outputs to separate file
+        else if (command == "prank") //page rank, outputs to separate file !!
         {
+            vector<double> pageRank;
             ofstream pRankFile;
-            pRankFile.open(outFileName + "-page-rank.txt", ios_base::out | ios_base::app);
+
+            startTime = time(NULL);
+            page_rank_multithread(g, pageRank);
+            endTime = time(NULL);
+            cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
+
+            pRankFile.open(outFileName + "-page-rank-multithread.txt", ios_base::out | ios_base::app);
             pRankFile.precision(10);
             pRankFile << filename << endl;
-
-            vector<double> pageRank;
-            page_rank(g, pageRank);
             for(auto it = pageRank.begin(); it != pageRank.end(); ++it)
             {
                 pRankFile << *it << endl;
             }
             pRankFile.close();
-            outFile << "Page Rank computed." << endl;
+
+
+            startTime = time(NULL);
+            page_rank(g, pageRank);
+            endTime = time(NULL);
+            cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
+
+            pRankFile.open(outFileName + "-page-rank.txt", ios_base::out | ios_base::app);
+            pRankFile.precision(10);
+            pRankFile << filename << endl;
+            for(auto it = pageRank.begin(); it != pageRank.end(); ++it)
+            {
+                pRankFile << *it << endl;
+            }
+            pRankFile.close();
+
+            cout << "Page Rank computed." << endl;
         }
-        else if (command == "aprank") //approx page rank, outputs to separate file
+        else if (command == "aprank") //approx page rank, outputs to separate file !!
         {
             ofstream pRankFile;
             pRankFile.open(outFileName + "-approximate-page-rank.txt", ios_base::out | ios_base::app);
@@ -347,7 +366,7 @@ void readCommand(const Graph &g, string filename)
             }
             outFile<< endl;
         }
-        else if (command == "kdiam")
+        else if (command == "kdiam") //!!
         {
             pair<vertices_size_type, vertices_size_type> diameterBounds = khaled_approx_diameter(g);
             outFile << "Khaled's Approx Diameter Bounds: " << diameterBounds.first << ", " << diameterBounds.second << endl;
@@ -379,7 +398,7 @@ void readCommand(const Graph &g, string filename)
         }
         else if (command == "emdiam") outFile << "Exact Diameter (M): " << memory_graph_diamter(g) << endl;
         else if (command == "ediam") outFile << "Exact Diameter: " << simple_graph_diameter(g) << endl;
-        else if (command == "etri") outFile << "Exact Triangle Count: "  << exact_triangle_count(g) << endl;
+        else if (command == "etri") outFile << "Exact Triangle Count: "  << exact_triangle_count(g) << endl; //!!
         else if (command == "vert") cout << "Num Vert: " << boost::num_vertices(g) << endl;
         else if (command == "edge") cout << "Num Edge: " << boost::num_edges(g) << endl;
         else if (command == "exit") break;

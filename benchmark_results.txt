@@ -16,7 +16,6 @@ small test.txt:
 		double parallel fors: 18, 18, 18
 		triple parallel fors: 46, 50, 45, 39
 
-
 abc:
 results are (vertex chosen, computation time) pair
 small test.txt:
@@ -30,6 +29,12 @@ cc:
 epinions.txt:
 	unparallelized: 0, 1
 	parallelized: 0, 1
+
+lcc -1:
+epinions.txt:
+	unparallelized: 50, 51, 50
+	parallelized, outer only: 8,8,8
+	parallelized, outer + inner: 2,3,3
 
 https://snap.stanford.edu/data/
 

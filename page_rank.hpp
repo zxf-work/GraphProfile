@@ -23,4 +23,12 @@ void approx_page_rank(const Graph &g, std::vector<double> &pageRankVector);
 //in top 0.15% page rank of original, and in top 1% (but not top 0.15%) of the original
 std::pair<unsigned, unsigned> page_rank_test(const Graph &g, const std::vector<double>& originalPageRanks);
 
+
+//multithreaded versions
+void page_rank_multithread(const Graph &g, std::vector<double> &pageRankVector);
+
+void approx_page_rank_multithread(const Graph &g, std::vector<double> &pageRankVector);
+
+std::pair<unsigned, unsigned> page_rank_test_multithread(const Graph &g, const std::vector<double>& originalPageRanks);
+
 #endif // PAGE_RANK_HPP_INCLUDED

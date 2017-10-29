@@ -84,51 +84,6 @@ double local_cluster_coeff_multithread(const Vertex &v, const Graph &g)
     return localTriCount / maxTriangle;
 }
 
-// double local_cluster_coeff_multithread_reduce(const Vertex &v, const Graph &g)
-// {
-//     double localTriCount = 0;
-//     int deg = degree(v, g);
-
-//     if (deg >= 2) // if vertex has less than 3 neighbors, they cannot form a triangle in the first place
-//     {
-//         //check every pair of neighbours
-//         //neighbourIter is a pair (first neighbor, last neighbor)
-//         std::pair<AdjacencyIterator, AdjacencyIterator> neighbourIter = adjacent_vertices(v, g);
-
-//         // tbb::parallel_for_each(neighbourIter.first, neighbourIter.second,
-//         //     [&g, &localTriCount, &neighbourIter](long int ni1){
-//         //         tbb::parallel_for_each(neighbourIter.first, neighbourIter.second,
-//         //             [&g, &localTriCount, &ni1, &neighbourIter](long int ni2){
-//         //                 if(ni1 > ni2){
-//         //                     std::pair<Edge, bool> e = edge(ni1, ni2, g);
-//         //                     if(e.second){
-//         //                         localTriCount++;
-//         //                     }
-//         //                 }
-//         //             }
-//         //         );
-//         //     });
-
-//         parallel_reduce(
-//                 blocked_range<AdjacencyIterator*>( neighbourIter.first, neighbourIter.second ),
-//                 0.f,
-//                 [](const blocked_range<AdjacencyIterator*>& r, int init)->int {
-//                     for( AdjacencyIterator a=r.begin(); a!=r.end(); ++a )
-//                         init += *a;
-//                     return init;
-//                 },
-//                 []( float x, float y )->float {
-//                     return x+y;
-//                 }
-//             );
-//     }
-//     else return 0;
-
-//     double maxTriangle = (double)deg * (deg-1) / 2;
-//     return localTriCount / maxTriangle;
-// }
-
-
 double average_cluster_coeff_multithread(const Graph &g)
 {
     double sum = 0;
