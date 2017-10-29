@@ -175,19 +175,39 @@ void readCommand(const Graph &g, string filename)
         }
         else if (command == "aprank") //approx page rank, outputs to separate file !!
         {
+            vector<double> pageRank;
             ofstream pRankFile;
-            pRankFile.open(outFileName + "-approximate-page-rank.txt", ios_base::out | ios_base::app);
+
+            startTime = time(NULL);
+            approx_page_rank_multithread(g, pageRank);
+            endTime = time(NULL);
+            cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
+
+            pRankFile.open(outFileName + "-approximate-page-rank-multithread.txt", ios_base::out | ios_base::app);
             pRankFile.precision(10);
             pRankFile << filename << endl;
-
-            vector<double> pageRank;
-            approx_page_rank(g, pageRank);
             for(auto it = pageRank.begin(); it != pageRank.end(); ++it)
             {
                 pRankFile << *it << endl;
             }
             pRankFile.close();
-            outFile << "Approx Page Rank computed." << endl;
+
+
+            startTime = time(NULL);
+            approx_page_rank(g, pageRank);
+            endTime = time(NULL);
+            cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
+
+            pRankFile.open(outFileName + "-approximate-page-rank.txt", ios_base::out | ios_base::app);
+            pRankFile.precision(10);
+            pRankFile << filename << endl;
+            for(auto it = pageRank.begin(); it != pageRank.end(); ++it)
+            {
+                pRankFile << *it << endl;
+            }
+            pRankFile.close();
+
+            cout << "Approximate Page Rank computed." << endl;
         }
         else if (command == "abc") //aprox betwenness centrality
         {
