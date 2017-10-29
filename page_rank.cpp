@@ -268,21 +268,25 @@ std::pair<unsigned, unsigned> page_rank_test_multithread(const Graph &g, const s
 {
     unsigned n = num_vertices(g);
     std::vector<double>pageRankVector(n, 0);
-    page_rank(g, pageRankVector); //compute page rank
+    page_rank_multithread(g, pageRankVector); //compute page rank
 
     //create ordered map of new page ranks
     std::multimap<double, Vertex> pageRankMap;
-    for(unsigned i = 0; i < pageRankVector.size(); ++i)
-    {
-        pageRankMap.emplace(pageRankVector.at(i), i);
-    }
+
+    tbb::parallel_for(0U, n,
+        [&pageRankMap, &pageRankVector](auto i){
+            pageRankMap.emplace(pageRankVector.at(i), i);
+        }
+    );
 
     //create oredered map of old page ranks
     std::multimap<double, Vertex> originalPageRankMap;
-    for(unsigned i = 0; i < originalPageRanks.size(); ++i)
-    {
-        originalPageRankMap.emplace(originalPageRanks.at(i), i);
-    }
+
+    tbb::parallel_for(0U, n,
+        [&originalPageRankMap, &originalPageRanks](auto i){
+            originalPageRankMap.emplace(originalPageRanks.at(i), i);
+        }
+    );
 
     double p = (n * 0.0015) > 15 ? n * 0.0015 : 15; //percentile for 0.15%
     std::pair<unsigned, unsigned>pageRankCount; //first number counts # of vertices in original top 0.15, second counts # in top 1%
