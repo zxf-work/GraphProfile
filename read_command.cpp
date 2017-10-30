@@ -173,7 +173,7 @@ void readCommand(const Graph &g, string filename)
 
             cout << "Page Rank computed." << endl;
         }
-        else if (command == "aprank") //approx page rank, outputs to separate file !!
+        else if (command == "aprank") //approx page rank, outputs to separate file
         {
             vector<double> pageRank;
             ofstream pRankFile;
@@ -292,29 +292,29 @@ void readCommand(const Graph &g, string filename)
         }
         else if (command == "reduce") //create reduced graph
         {
-            Graph h;
+            Graph h1,h2;
             int x;
             cout << "Enter # Vertices to keep." << endl;
             cin >> x;
             cin.ignore();
-            graph_reduction(g, h, x);
-            edge_list_print_file(h, outFileName + "-reduced-graph.txt");
-        }
-        else if (command == "reduce5") //create reduced graph
-        {
-            Graph h;
-            graph_reduction(g, h, 5);
-            edge_list_print_file(h, outFileName + "-reduced-graph5.txt");
-        }
-        else if (command == "reduce5r") //create reduced graph
-        {
-            Graph h;
-            graph_reduction_reverse(g, h, 5);
-            edge_list_print_file(h, outFileName + "-reduced-graph5.txt");
+
+            startTime = time(NULL);
+            graph_reduction(g, h1, x);
+            endTime = time(NULL);
+            edge_list_print_file(h1, outFileName + "-reduced-graph.txt");
+            cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
+
+
+            startTime = time(NULL);
+            graph_reduction_multithread(g, h2, x);
+            endTime = time(NULL);
+            edge_list_print_file(h2, outFileName + "-reduced-graph-multithread.txt");
+            cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
+
         }
         else if (command == "reducetree")
         {
-            Graph h;
+            Graph h1, h2;
             cout << "Select Vertices as roots. (-1 to stop)" <<endl;
             vector<Vertex> roots;
             long x = 0;
@@ -329,39 +329,85 @@ void readCommand(const Graph &g, string filename)
             {
                 cout << *it << " " << endl;
             }
-            graph_reduction_spanning_tree(g, h, roots);
-            edge_list_print_file(h, outFileName + "-reduced-graph Tree.txt");
+
+            startTime = time(NULL);
+            graph_reduction_spanning_tree(g, h1, roots);
+            endTime = time(NULL);
+            edge_list_print_file(h1, outFileName + "-reduced-graph-tree.txt");
+            cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
+
+
+            startTime = time(NULL);
+            graph_reduction_spanning_tree_multithread(g, h2, roots);
+            endTime = time(NULL);
+            edge_list_print_file(h2, outFileName + "-reduced-graph-tree-multithread.txt");
+            cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
         }
         else if (command == "reducetreetop")
         {
-            Graph h;
+            Graph h1,h2;
             cout << "Select # Vertices as roots. " << endl;
             int x;
             cin >> x;
             cin.ignore();
-            graph_reduction_spanning_tree(g, h, high_degree_vertices(g, x));
-            edge_list_print_file(h, outFileName + "-reduced-graph-tree2.txt");
 
+            vector<Vertex> vertices = high_degree_vertices(g, x);
+
+            startTime = time(NULL);
+            graph_reduction_spanning_tree(g, h1, vertices);
+            endTime = time(NULL);
+            edge_list_print_file(h1, outFileName + "-reduced-graph-tree2.txt");
+            cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
+
+
+            startTime = time(NULL);
+            graph_reduction_spanning_tree_multithread(g, h2, vertices);
+            endTime = time(NULL);
+            edge_list_print_file(h2, outFileName + "-reduced-graph-tree2-multithread.txt");
+            cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
         }
         else if (command == "reducetri")
         {
-            Graph h;
+            Graph h1, h2;
             cout << "Select # Vertices to keep. " << endl;
             int x;
             cin >> x;
             cin.ignore();
-            graph_reduction_triangle_avoid(g, h, x);
-            edge_list_print_file(h, outFileName + "-reduced-graph-triangle.txt");
+
+            startTime = time(NULL);
+            graph_reduction_triangle_avoid(g, h1, x);
+            endTime = time(NULL);
+            edge_list_print_file(h1, outFileName + "-reduced-graph-triangle.txt");
+            cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
+
+
+            startTime = time(NULL);
+            graph_reduction_triangle_avoid_multithread(g, h2, x);
+            endTime = time(NULL);
+            edge_list_print_file(h2, outFileName + "-reduced-graph-triangle-multithread.txt");
+            cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
         }
         else if (command == "reducepercent")
         {
-            Graph h;
+            Graph h1, h2;
             cout << "Select Proportion of vertices to keep if past median" << endl;
             int x;
             cin >> x;
             cin.ignore();
-            graph_reduction_percentage(g, h, median_cutoff(g), x);
-            edge_list_print_file(h, outFileName + "-reduced-graph-proportion.txt");
+
+
+            startTime = time(NULL);
+            graph_reduction_percentage(g, h1, median_cutoff(g), x);
+            endTime = time(NULL);
+            edge_list_print_file(h1, outFileName + "-reduced-graph-proportion.txt");
+            cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
+
+
+            startTime = time(NULL);
+            graph_reduction_percentage_multithread(g, h2, median_cutoff(g), x);
+            endTime = time(NULL);
+            edge_list_print_file(h2, outFileName + "-reduced-graph-proportion-multithread.txt");
+            cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
         }
         else if (command == "dist")
         {

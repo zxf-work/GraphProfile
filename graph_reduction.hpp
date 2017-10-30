@@ -10,12 +10,6 @@
 
 using namespace boost;
 
-
-//expects graph g, and empty graph h, integer x
-//takes graph g, and creates a reduced graph h
-//for each vertex of g, keep x edges, to the lowest degree neighbours
-void graph_reduction_reverse(const Graph &g, Graph &h, unsigned x = 3);
-
 //expects graph g, and empty graph h, integer x
 //takes graph g, and creates a reduced graph h
 //for each vertex of g, keep x edges, to the highest degree neighbours
@@ -48,5 +42,20 @@ void graph_reduction_high_degree_tree(const Graph &g, Graph &h, const std::vecto
 //when edge vu is chosen as an edge to add, set all vertex pairs w, y to priority 2
 //if y, z are neighbours of v, and u, w, y form a triangle
 void graph_reduction_triangle_avoid(const Graph& g, Graph &h, unsigned x = 3);
+
+
+/*========================================================
+=                 multithreaded versions                 =
+========================================================*/
+
+void graph_reduction_multithread(const Graph &g, Graph &h, unsigned x);
+
+void graph_reduction_spanning_tree_multithread(const Graph& g, Graph &h, const std::vector<Vertex>& roots);
+
+void graph_reduction_triangle_avoid_multithread(const Graph& g, Graph &h, unsigned x);
+
+void graph_reduction_high_degree_tree_multithread(const Graph &g, Graph &h, const std::vector<Vertex>& roots);
+
+void graph_reduction_percentage_multithread(const Graph &g, Graph &h, unsigned cutoff, unsigned percentage);
 
 #endif // GRAPH_REDUCTION_HPP_INCLUDED
