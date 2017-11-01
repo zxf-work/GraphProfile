@@ -169,6 +169,7 @@ void graph_reduction_high_degree_tree(const Graph &g, Graph &h, const std::vecto
 //if y, z are neighbours of v, and u, w, y form a triangle
 void graph_reduction_triangle_avoid(const Graph& g, Graph &h, unsigned x)
 {
+    if(x == 0) return;
     unsigned n = num_vertices(g);
 
     //add the vertices
@@ -178,65 +179,61 @@ void graph_reduction_triangle_avoid(const Graph& g, Graph &h, unsigned x)
         remove_edge(0, num_vertices(g) - 1, h);
     }
 
-    if (x != 0)
+    for(unsigned i = 0; i < num_vertices(g); ++i)
     {
-        for(unsigned i = 0; i < num_vertices(g); ++i)
+        unsigned d = degree(i, g);
+
+        if(d <= x) //when degree <= # edges to add, add all
         {
-            unsigned d = degree(i, g);
-
-            if(d <= x) //when degree <= # edges to add, add all
+            for(auto it = adjacent_vertices(i, g).first; it != adjacent_vertices(i, g).second; ++it)
             {
-                for(auto it = adjacent_vertices(i, g).first; it != adjacent_vertices(i, g).second; ++it)
-                {
-                    add_edge(i, *it, h);
-                }
+                add_edge(i, *it, h);
             }
-            else
+        }
+        else
+        {
+            std::multimap<unsigned, Vertex> neighbourDegreeMap;
+            std::map<Vertex, int> priorityMap;
+            for(auto it = adjacent_vertices(i, g).first; it != adjacent_vertices(i, g).second; ++it)
             {
-                std::multimap<unsigned, Vertex> neighbourDegreeMap;
-                std::map<Vertex, int> priorityMap;
-                for(auto it = adjacent_vertices(i, g).first; it != adjacent_vertices(i, g).second; ++it)
-                {
-                    neighbourDegreeMap.emplace(degree(*it, g), *it);
-                    priorityMap.emplace(*it, 1);
-                }
+                neighbourDegreeMap.emplace(degree(*it, g), *it);
+                priorityMap.emplace(*it, 1);
+            }
 
-                unsigned edgesAdded = 0;
-                int priorityCount = 1; //when adding edges, only add edges with priority set to this number
-                //edge adding loop, loop until sufficient number added
-                while(edgesAdded < x)
+            unsigned edgesAdded = 0;
+            int priorityCount = 1; //when adding edges, only add edges with priority set to this number
+            //edge adding loop, loop until sufficient number added
+            while(edgesAdded < x)
+            {
+                //check highest degree neighbours first
+                for(auto it = neighbourDegreeMap.rbegin(); it != neighbourDegreeMap.rend(); ++it)
                 {
-                    //check highest degree neighbours first
-                    for(auto it = neighbourDegreeMap.rbegin(); it != neighbourDegreeMap.rend(); ++it)
+                    if(edgesAdded >= x) break;
+                    if(priorityMap.at(it->second) <= priorityCount)
                     {
-                        if(edgesAdded >= x) break;
-                        if(priorityMap.at(it->second) <= priorityCount)
-                        {
-                            add_edge(i, it->second, h);
-                            ++edgesAdded;
+                        add_edge(i, it->second, h);
+                        ++edgesAdded;
 
-                            //increase priority of other vertices that form triangle, need to check all other pairs of neighbours
-                            for(auto n1 = neighbourDegreeMap.begin(); n1 != --neighbourDegreeMap.end(); ++n1)
+                        //increase priority of other vertices that form triangle, need to check all other pairs of neighbours
+                        for(auto n1 = neighbourDegreeMap.begin(); n1 != --neighbourDegreeMap.end(); ++n1)
+                        {
+                            auto n1copy = n1;
+                            for(auto n2 = ++n1copy; n2 != neighbourDegreeMap.end(); ++n2)
                             {
-                                auto n1copy = n1;
-                                for(auto n2 = ++n1copy; n2 != neighbourDegreeMap.end(); ++n2)
+                                if(edge(it->second, n1->second, g).second && edge(it->second, n2->second, g).second && edge(n1->second, n2->second, g).second) //if there is triangle
                                 {
-                                    if(edge(it->second, n1->second, g).second && edge(it->second, n2->second, g).second && edge(n1->second, n2->second, g).second) //if there is triangle
-                                    {
-                                        ++priorityMap.at(n1->second);
-                                        ++priorityMap.at(n2->second);
-                                    }
+                                    ++priorityMap.at(n1->second);
+                                    ++priorityMap.at(n2->second);
                                 }
                             }
                         }
                     }
-
-                    ++priorityCount; //move on to next priority setting
                 }
+
+                ++priorityCount; //move on to next priority setting
             }
         }
     }
-
 }
 
 
@@ -246,6 +243,8 @@ void graph_reduction_triangle_avoid(const Graph& g, Graph &h, unsigned x)
 
 void graph_reduction_multithread(const Graph &g, Graph &h, unsigned x)
 {
+    if (x==0) return;
+
     unsigned n = num_vertices(g);
     tbb::concurrent_vector<std::pair<Vertex, Vertex>> edges;
 
@@ -257,7 +256,7 @@ void graph_reduction_multithread(const Graph &g, Graph &h, unsigned x)
     }
 
     tbb::parallel_for(0U, n,
-        [&g, &h, &x, &edges](unsigned i){
+        [&g, &x, &edges](unsigned i){
             unsigned d = degree(i, g);
 
             tbb::concurrent_priority_queue<std::pair<unsigned,Vertex>> neighbours;
@@ -274,7 +273,7 @@ void graph_reduction_multithread(const Graph &g, Graph &h, unsigned x)
             //get the top min(d,x) vertices with the highest degrees
             //and save those edges to our concurrent vector
             tbb::parallel_for(0U, std::min(d,x),
-                [&h, &neighbours, &d, &i, &edges](auto y){
+                [&neighbours, &i, &edges](auto y){
                     std::pair<unsigned,Vertex> top;
                     if(neighbours.try_pop(top)){
                         edges.push_back(std::make_pair(i, top.second));
@@ -295,7 +294,9 @@ void graph_reduction_multithread(const Graph &g, Graph &h, unsigned x)
 
 void graph_reduction_triangle_avoid_multithread(const Graph& g, Graph &h, unsigned x)
 {
+    if(x == 0) return;
     unsigned n = num_vertices(g);
+    tbb::concurrent_vector<std::pair<Vertex, Vertex>> edges;
 
     //add the vertices
     if (n != 0)
@@ -304,21 +305,25 @@ void graph_reduction_triangle_avoid_multithread(const Graph& g, Graph &h, unsign
         remove_edge(0, num_vertices(g) - 1, h);
     }
 
-    if (x != 0)
-    {
-        for(unsigned i = 0; i < num_vertices(g); ++i)
-        {
+    tbb::parallel_for(0U, n,
+        [&g, &x, &edges](unsigned i){
             unsigned d = degree(i, g);
 
             if(d <= x) //when degree <= # edges to add, add all
             {
-                for(auto it = adjacent_vertices(i, g).first; it != adjacent_vertices(i, g).second; ++it)
-                {
-                    add_edge(i, *it, h);
-                }
+                std::pair<AdjacencyIterator, AdjacencyIterator> neighbourIter = adjacent_vertices(i, g);
+                tbb::parallel_for_each(neighbourIter.first, neighbourIter.second,
+                    [&g, &edges, &i](auto ni){
+                        edges.push_back(std::make_pair(i, ni));
+                    }
+                );
             }
+            //otherwise, starting with the highest degree neighbours,
+            //add all edges, giving priority to those that don't form triangles
             else
             {
+                //@TODO: optimize this in the future
+                //performance is good enough for now
                 std::multimap<unsigned, Vertex> neighbourDegreeMap;
                 std::map<Vertex, int> priorityMap;
                 for(auto it = adjacent_vertices(i, g).first; it != adjacent_vertices(i, g).second; ++it)
@@ -338,7 +343,7 @@ void graph_reduction_triangle_avoid_multithread(const Graph& g, Graph &h, unsign
                         if(edgesAdded >= x) break;
                         if(priorityMap.at(it->second) <= priorityCount)
                         {
-                            add_edge(i, it->second, h);
+                            edges.push_back(std::make_pair(i, it->second));
                             ++edgesAdded;
 
                             //increase priority of other vertices that form triangle, need to check all other pairs of neighbours
@@ -361,13 +366,21 @@ void graph_reduction_triangle_avoid_multithread(const Graph& g, Graph &h, unsign
                 }
             }
         }
-    }
+    );
 
+    // create our graph h from our list of edges
+    // adding edges to h cannot be done concurrently
+    // as it will throw memory errors
+    for(auto i=edges.begin(); i!=edges.end(); i++){
+        add_edge(i->first, i->second, h);
+    }
 }
 
 void graph_reduction_spanning_tree_multithread(const Graph& g, Graph &h, const std::vector<Vertex>& roots)
 {
     unsigned n = num_vertices(g);
+    unsigned r = roots.size();
+    tbb::concurrent_vector<std::pair<Vertex, Vertex>> edges;
 
     //add vertices
     if (n != 0)
@@ -376,19 +389,26 @@ void graph_reduction_spanning_tree_multithread(const Graph& g, Graph &h, const s
         remove_edge(0, num_vertices(g) - 1, h);
     }
 
-    for(auto it = roots.begin(); it != roots.end(); ++it)
-    {
-        Vertex root = *it;
-        std::map<Vertex, Vertex> tree;
+   tbb::parallel_for(0U, r,
+        [&edges, &g](Vertex i){
+            std::map<Vertex, Vertex> tree;
 
-        min_spanning_tree(g, root, tree); //creates tree
+            min_spanning_tree(g, i, tree); //creates tree
 
-        //add edges to graph
-        for(auto treeIt = tree.begin(); treeIt != tree.end(); ++treeIt)
-        {
-            add_edge(treeIt->first, treeIt->second, h);
+            //add edges to graph
+            tbb::parallel_for_each(tree.begin(), tree.end(),
+                [&edges](auto j){
+                    edges.push_back(j);
+                }
+            );
         }
+    );
 
+    // create our graph h from our list of edges
+    // adding edges to h cannot be done concurrently
+    // as it will throw memory errors
+    for(auto i=edges.begin(); i!=edges.end(); i++){
+        add_edge(i->first, i->second, h);
     }
 }
 

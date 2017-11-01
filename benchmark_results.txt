@@ -51,6 +51,16 @@ epinions.txt, keep top 1000:
 	unparallelized: 2, 2, 2
 	parallelized: 2, 2, 1
 
+reducetri:
+enron.txt, keep top 3:
+	unparallelized: 46, 44
+	parallelized: 1,2
+epinions.txt, keep top 2:
+	unparallelized: 108, 113, 104
+	parallelized: 11, 11, 11
+
+
+
 https://snap.stanford.edu/data/
 
 
