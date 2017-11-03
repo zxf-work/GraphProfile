@@ -56,11 +56,22 @@ enron.txt, keep top 3:
 	unparallelized: 46, 44
 	parallelized: 1,2
 epinions.txt, keep top 2:
-	unparallelized: 108, 113, 104
-	parallelized: 11, 11, 11
+	unparallelized: 108, 113, 104, 
+	parallelized: 5,5,6,5
 
+reducetreetop:
+epinions.txt, keep top 758 vertices (1%):
+	unparallelized: 463
+	parallelized: 94
 
+reducehighdegreetop:
+epinions.txt, keep top 758 vertices (1%):
+	unparallelized: 711
+	parallelized: 77, 75
+
+reducepercent:
+epinions.txt, keep 50%:
+	unparallelized: 0,1,1,0
+	parallelized: 1,1,0,0
 
 https://snap.stanford.edu/data/
-
-

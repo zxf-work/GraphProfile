@@ -41,7 +41,7 @@ void readCommand(const Graph &g, string filename)
     bool b = true;
     while (b)
     {
-        cout << "Select modes available: abc, adiam, aprank, bbc, bc, cc, dist, ediam, emdiam, edge, etri, kdiam, lcc, od, prank, vert, reduce, reducetri, reducetree, reducetreetop, reducepercent (type exit to quit)" << endl;
+        cout << "Select modes available: abc, adiam, aprank, bbc, bc, cc, dist, ediam, emdiam, edge, etri, kdiam, lcc, od, prank, vert, reduce, reducetri, reducetree, reducetreetop, reducehighdegree, reducehighdegreetop, reducepercent (type exit to quit)" << endl;
         string command;
         getline(cin, command);
 
@@ -351,19 +351,69 @@ void readCommand(const Graph &g, string filename)
             cin >> x;
             cin.ignore();
 
-            vector<Vertex> vertices = high_degree_vertices(g, x);
-
             startTime = time(NULL);
-            graph_reduction_spanning_tree(g, h1, vertices);
+            graph_reduction_spanning_tree(g, h1, high_degree_vertices(g, x));
             endTime = time(NULL);
             edge_list_print_file(h1, outFileName + "-reduced-graph-tree2.txt");
             cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
 
 
             startTime = time(NULL);
-            graph_reduction_spanning_tree_multithread(g, h2, vertices);
+            graph_reduction_spanning_tree_multithread(g, h2, high_degree_vertices_multithread(g, x));
             endTime = time(NULL);
             edge_list_print_file(h2, outFileName + "-reduced-graph-tree2-multithread.txt");
+            cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
+        }
+        else if (command == "reducehighdegree")
+        {
+            Graph h1, h2;
+            cout << "Select Vertices as roots. (-1 to stop)" <<endl;
+            vector<Vertex> roots;
+            long x = 0;
+            while(x != -1)
+            {
+                cin >> x;
+                if(x >= 0) roots.push_back(x);
+            }
+            cin.ignore();
+            cout << "Roots: ";
+            for(auto it = roots.begin(); it != roots.end(); ++it)
+            {
+                cout << *it << " " << endl;
+            }
+
+            startTime = time(NULL);
+            graph_reduction_high_degree_tree(g, h1, roots);
+            endTime = time(NULL);
+            edge_list_print_file(h1, outFileName + "-reduced-graph-high-degree.txt");
+            cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
+
+
+            startTime = time(NULL);
+            graph_reduction_high_degree_tree_multithread(g, h2, roots);
+            endTime = time(NULL);
+            edge_list_print_file(h2, outFileName + "-reduced-graph-high-degree-multithread.txt");
+            cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
+        }
+        else if (command == "reducehighdegreetop")
+        {
+            Graph h1,h2;
+            cout << "Select # Vertices as roots. " << endl;
+            int x;
+            cin >> x;
+            cin.ignore();
+
+            startTime = time(NULL);
+            graph_reduction_high_degree_tree(g, h1, high_degree_vertices(g, x));
+            endTime = time(NULL);
+            edge_list_print_file(h1, outFileName + "-reduced-graph-high-degree2.txt");
+            cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
+
+
+            startTime = time(NULL);
+            graph_reduction_high_degree_tree_multithread(g, h2, high_degree_vertices_multithread(g, x));
+            endTime = time(NULL);
+            edge_list_print_file(h2, outFileName + "-reduced-graph-high-degree2-multithread.txt");
             cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
         }
         else if (command == "reducetri")
@@ -375,17 +425,16 @@ void readCommand(const Graph &g, string filename)
             cin.ignore();
 
             startTime = time(NULL);
-            graph_reduction_triangle_avoid(g, h1, x);
-            endTime = time(NULL);
-            edge_list_print_file(h1, outFileName + "-reduced-graph-triangle.txt");
-            cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
-
-
-            startTime = time(NULL);
             graph_reduction_triangle_avoid_multithread(g, h2, x);
             endTime = time(NULL);
             edge_list_print_file(h2, outFileName + "-reduced-graph-triangle-multithread.txt");
             cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
+
+            startTime = time(NULL);
+            graph_reduction_triangle_avoid(g, h1, x);
+            endTime = time(NULL);
+            edge_list_print_file(h1, outFileName + "-reduced-graph-triangle.txt");
+            cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
         }
         else if (command == "reducepercent")
         {
