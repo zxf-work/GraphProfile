@@ -9,4 +9,6 @@ using namespace boost;
 //if index of v < u, w, check if there is a uw edge, forming a triangle
 unsigned long exact_triangle_count(const Graph &g);
 
+unsigned long exact_triangle_count_multithread(const Graph &g);
+
 #endif // TRIANGLE_COUNT_HPP_INCLUDED

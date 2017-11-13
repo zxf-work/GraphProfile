@@ -74,4 +74,12 @@ epinions.txt, keep 50%:
 	unparallelized: 0,1,1,0
 	parallelized: 1,1,0,0
 
+etri:
+enron.txt:
+	unparallelized: 14, 14, 14
+	parallelized: 1, 1, 1
+epinions.txt:
+	unparallelized: 37, 37, 39
+	parallelized: 3, 2, 2
+
 https://snap.stanford.edu/data/

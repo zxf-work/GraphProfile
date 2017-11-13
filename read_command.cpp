@@ -481,7 +481,7 @@ void readCommand(const Graph &g, string filename)
             }
             outFile<< endl;
         }
-        else if (command == "kdiam") //!!
+        else if (command == "kdiam")
         {
             pair<vertices_size_type, vertices_size_type> diameterBounds = khaled_approx_diameter(g);
             outFile << "Khaled's Approx Diameter Bounds: " << diameterBounds.first << ", " << diameterBounds.second << endl;
@@ -513,7 +513,29 @@ void readCommand(const Graph &g, string filename)
         }
         else if (command == "emdiam") outFile << "Exact Diameter (M): " << memory_graph_diamter(g) << endl;
         else if (command == "ediam") outFile << "Exact Diameter: " << simple_graph_diameter(g) << endl;
-        else if (command == "etri") outFile << "Exact Triangle Count: "  << exact_triangle_count(g) << endl; //!!
+        else if (command == "etri"){
+
+            startTime = time(NULL);
+            auto etri = exact_triangle_count_multithread(g);
+            endTime = time(NULL);
+
+            outFile << "Exact Triangle Count, Multithreaded: " << etri  << endl;
+            cout << "Exact Triangle Count, Multithreaded: " << etri << endl;
+
+            cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
+            outFile<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
+
+
+            startTime = time(NULL);
+            etri = exact_triangle_count(g);
+            endTime = time(NULL);
+
+            outFile << "Exact Triangle Count: "  << etri << endl;
+            cout << "Exact Triangle Count: "  << etri << endl;
+
+            cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
+            outFile<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
+        }
         else if (command == "vert") cout << "Num Vert: " << boost::num_vertices(g) << endl;
         else if (command == "edge") cout << "Num Edge: " << boost::num_edges(g) << endl;
         else if (command == "exit") break;
