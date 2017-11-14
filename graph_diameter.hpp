@@ -4,30 +4,20 @@
 #include "common.h"
 #include <utility>
 
-#include "tbb/tbb.h"
-
 using namespace boost;
-
-//tbb task class for multithreaded implementation of approx_graph_diameter
-struct approx_graph_diameter_task{
-    const Graph &g;
-    vertices_size_type &lowerdiam;
-    vertices_size_type &diameter;
-public:
-    void operator()(const tbb::blocked_range<size_t>& r) const;
-
-    //constructor
-    approx_graph_diameter_task(const Graph &g, vertices_size_type &ld, vertices_size_type &d);
-};
 
 //idea: use BFS starting at a random vertex v0, find a vertex u0 that is furthest away from v0
 //use BFS at vertex u0, find vertex w0 that is furthest away from u0, with distance d0
 //repeat with another random vertex v1 != v0
 //possible TODO: disallow repeated vertices as v
+#ifdef SEQ
 vertices_size_type approx_graph_diameter(const Graph &g);
+#endif
 
 //multithreaded version
+#ifdef TBB
 vertices_size_type approx_graph_diameter_multithread(const Graph &g);
+#endif
 
 //if bfs_count = 2, iterations = 1000, same as above.
 unsigned approx_graph_diameter_bfs(const Graph &g, int bfs_count, int iterations);

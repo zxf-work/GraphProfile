@@ -122,7 +122,11 @@ void testing_funcs(const Graph &g, ofstream& outFile, std::multimap<Vertex, Vert
 
 void betweenness_print(const Graph& g, const Graph &h, ofstream& outFile)
 {
+    #ifdef SEQ
     std::pair<unsigned, unsigned> betweennessPair = betweenness_centrality_test(g, h);
+    #else
+    std::pair<unsigned, unsigned> betweennessPair = betweenness_centrality_test_multithread(g, h);
+    #endif
         outFile << "Betweenness Centrality: " << betweennessPair.first << ", " << betweennessPair.second <<endl;
 }
 
@@ -140,7 +144,13 @@ void suite_test_top_k(vector<string> filenames)
         {
             //set up pairs for reachability and shortest path, and page rank
             std::vector<double> pageRankVector;
+
+            #ifdef SEQ
             page_rank(g, pageRankVector);
+            #else
+            page_rank_multithread(g, pageRankVector);
+            #endif
+
             unsigned n = num_vertices(g);
             int reachabilityTestSize = 1000;
             int loopsize = 0;
@@ -173,7 +183,13 @@ void suite_test_top_k(vector<string> filenames)
             {
                 int k = pow(2, i);
                 Graph h;
+
+                #ifdef SEQ
                 graph_reduction(g, h, k);
+                #else
+                graph_reduction_multithread(g, h, k);
+                #endif
+
                 outFile << "Keep top " << k << " neighbours." << endl;
                 testing_funcs(h, outFile, VertexPairMap, distanceMap, pageRankVector);
 //                betweenness_print(g, h, outFile);
@@ -201,7 +217,13 @@ void suite_test_triangle_top_k(vector<string> filenames)
         {
             //set up pairs for reachability and shortest path, and page rank
             std::vector<double> pageRankVector;
+
+            #ifdef SEQ
             page_rank(g, pageRankVector);
+            #else
+            page_rank_multithread(g, pageRankVector);
+            #endif
+
             unsigned n = num_vertices(g);
             int reachabilityTestSize = 1000;
             int loopsize = 0;
@@ -234,7 +256,13 @@ void suite_test_triangle_top_k(vector<string> filenames)
             {
                 int k = pow(2, i);
                 Graph h;
+
+                #ifdef SEQ
                 graph_reduction_triangle_avoid(g, h, k);
+                #else
+                graph_reduction_triangle_avoid_multithread(g, h, k);
+                #endif
+
                 outFile << "Keep triangle top " << k << " neighbours." << endl;
                 testing_funcs(h, outFile, VertexPairMap, distanceMap, pageRankVector);
 //                betweenness_print(g, h, outFile);
@@ -264,7 +292,13 @@ void suite_test_spanning_tree(vector<string>filenames)
         {
             //set up pairs for reachability and shortest path, and page rank
             std::vector<double> pageRankVector;
+
+            #ifdef SEQ
             page_rank(g, pageRankVector);
+            #else
+            page_rank_multithread(g, pageRankVector);
+            #endif
+
             unsigned n = num_vertices(g);
             int reachabilityTestSize = 1000;
             int loopsize = 0;
@@ -321,7 +355,13 @@ void suite_test_spanning_tree(vector<string>filenames)
                 cout <<endl;
                 //actually create reduced graph
                 Graph h;
+
+                #ifdef SEQ
                 graph_reduction_high_degree_tree(g, h, roots);
+                #else
+                graph_reduction_high_degree_tree_multithread(g, h, roots);
+                #endif
+
                 outFile << "Spanning tree with middle " << k << " vertices as roots." << endl;
                 //t est reduced graph
                 testing_funcs(h, outFile, VertexPairMap, distanceMap, pageRankVector);
@@ -348,7 +388,13 @@ void suite_test(vector<string> filenames)
         {
             //set up pairs for reachability and shortest path, and page rank
             std::vector<double> pageRankVector;
+
+            #ifdef SEQ
             page_rank(g, pageRankVector);
+            #else
+            page_rank_multithread(g, pageRankVector);
+            #endif
+
             unsigned n = num_vertices(g);
             int reachabilityTestSize = 1000;
             int loopsize = 0;
@@ -387,7 +433,12 @@ void suite_test(vector<string> filenames)
 */
             //graph reduction 2
             Graph* h2 = new Graph;
+
+            #ifdef SEQ
             graph_reduction_percentage(g, *h2, median_cutoff(g), 4);
+            #else
+            graph_reduction_percentage_multithread(g, *h2, median_cutoff(g), 4);
+            #endif
 
             outFile << "Reduction 2: keep 1 of 4 neighbours (cutoff 8)" << endl;
             testing_funcs(*h2, outFile, VertexPairMap, distanceMap, pageRankVector);

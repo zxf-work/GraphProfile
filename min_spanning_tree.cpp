@@ -3,12 +3,18 @@
 #include <vector>
 #include <boost/graph/breadth_first_search.hpp>
 #include <queue>
-#include "tbb/tbb.h"
 #include <iostream>
 #include "min_spanning_tree.hpp"
 
+#ifdef TBB
+#include "tbb/tbb.h"
+#endif
+
 using namespace boost;
 
+/*================================================================
+=                      common functions                          =
+================================================================*/
 void spanning_tree_bfs_visitor::tree_edge(const Edge& e, const Graph &g)
 {
     predMap->emplace(target(e, g), source(e, g));
@@ -27,6 +33,12 @@ void min_spanning_tree(const Graph& g, Vertex v, std::map<Vertex, Vertex>& tree)
     breadth_first_search(g, v, visitor(vis));
 }
 
+
+/*=========================================================================
+=                       Single threaded versions                          =
+=========================================================================*/
+
+#ifdef SEQ
 //returns the highest x degree vertices
 std::vector<Vertex> high_degree_vertices(const Graph &g, int x)
 {
@@ -77,12 +89,13 @@ void high_degree_bfs(const Graph &g, const Vertex &v, std::multimap<Vertex, Vert
         mainQ.pop();
     }
 }
+#endif
 
 /*=========================================================================
 =                       Multithreaded versions                            =
 =========================================================================*/
 
-
+#ifdef TBB
 //returns the highest x degree vertices
 std::vector<Vertex> high_degree_vertices_multithread(const Graph &g, int x)
 {
@@ -144,3 +157,4 @@ void high_degree_bfs_multithread(const Graph &g, const Vertex &v, tbb::concurren
         }
     );
 }
+#endif

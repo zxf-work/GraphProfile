@@ -4,10 +4,14 @@
 #include <vector>
 #include <algorithm>
 #include "connected_comp.hpp"
+
+#ifdef TBB
 #include "tbb/tbb.h"
+#endif
 
 using namespace boost;
 
+#ifdef SEQ
 //returns (# of CC, percentiles of largest CC's)
 //lists out size of CC's until 90% of vertices were accounted for
 std::vector<unsigned> connected_comp(const Graph &g)
@@ -42,8 +46,9 @@ std::vector<unsigned> connected_comp(const Graph &g)
     return retVal;
 
 }
+#endif
 
-
+#ifdef TBB
 //multithread version
 std::vector<unsigned> connected_comp_multithread(const Graph &g)
 {
@@ -79,4 +84,4 @@ std::vector<unsigned> connected_comp_multithread(const Graph &g)
 
     return retVal;
 }
-
+#endif

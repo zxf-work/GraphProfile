@@ -1,17 +1,71 @@
 #include "common.h"
-#include "tbb/tbb.h"
 #include <utility>
 #include <queue>
 #include <map>
 #include "min_spanning_tree.hpp"
 
-//testing
-#include <iostream>
+#ifdef TBB
+#include "tbb/tbb.h"
+#endif
 
 #include "graph_reduction.hpp"
 
 using namespace boost;
 
+/*=============================================================
+=                       Common functions                      =
+=============================================================*/
+
+//returns median value of degree
+//TODO: put in util file
+unsigned median_cutoff(const Graph &g)
+{
+    std::multimap<unsigned, Vertex> degreeMap;
+    for(VertexIterator vi = boost::vertices(g).first; vi != boost::vertices(g).second; ++vi)
+    {
+        degreeMap.emplace(boost::degree(*vi, g), *vi);
+    }
+    auto it = degreeMap.begin();
+    std::advance(it, (degreeMap.size() / 2));
+
+    unsigned median = it->first;
+    return median;
+}
+
+/*----------  needed for khaled's graph diameter  ----------*/
+//expects graph g, empty graph h, and list of vertices from g
+//creates a graph by joining spanning trees.
+//roots is a vector of vertices from which the spanning trees are rooted
+void graph_reduction_spanning_tree(const Graph& g, Graph &h, const std::vector<Vertex>& roots)
+{
+    unsigned n = num_vertices(g);
+    //add vertices
+    if (n != 0)
+    {
+        add_edge(0, num_vertices(g) - 1, h);
+        remove_edge(0, num_vertices(g) - 1, h);
+    }
+    for(auto it = roots.begin(); it != roots.end(); ++it)
+    {
+        Vertex root = *it;
+        std::map<Vertex, Vertex> tree;
+
+        min_spanning_tree(g, root, tree); //creates tree
+
+        //add edges to graph
+        for(auto treeIt = tree.begin(); treeIt != tree.end(); ++treeIt)
+        {
+            add_edge(treeIt->first, treeIt->second, h);
+        }
+
+    }
+}
+
+
+/*=======================================================
+=            Single threaded implementations            =
+=======================================================*/
+#ifdef SEQ
 //expects graph g, and empty graph h, integer x
 //takes graph g, and creates a reduced graph h
 //for each vertex of g, keep x edges, to the highest degree neighbours
@@ -46,23 +100,6 @@ void graph_reduction(const Graph &g, Graph &h, unsigned x)
         }
     }
 }
-
-//returns median value of degree
-//TODO: put in util file
-unsigned median_cutoff(const Graph &g)
-{
-    std::multimap<unsigned, Vertex> degreeMap;
-    for(VertexIterator vi = boost::vertices(g).first; vi != boost::vertices(g).second; ++vi)
-    {
-        degreeMap.emplace(boost::degree(*vi, g), *vi);
-    }
-    auto it = degreeMap.begin();
-    std::advance(it, (degreeMap.size() / 2));
-
-    unsigned median = it->first;
-    return median;
-}
-
 
 //expects graph g, empty graph h
 //takes graph g, creates reduced graph h
@@ -99,34 +136,6 @@ void graph_reduction_percentage(const Graph &g, Graph &h, unsigned cutoff, unsig
                 add_edge(i, *ni1, h);
             }
         }
-    }
-}
-
-//expects graph g, empty graph h, and list of vertices from g
-//creates a graph by joining spanning trees.
-//roots is a vector of vertices from which the spanning trees are rooted
-void graph_reduction_spanning_tree(const Graph& g, Graph &h, const std::vector<Vertex>& roots)
-{
-    unsigned n = num_vertices(g);
-    //add vertices
-    if (n != 0)
-    {
-        add_edge(0, num_vertices(g) - 1, h);
-        remove_edge(0, num_vertices(g) - 1, h);
-    }
-    for(auto it = roots.begin(); it != roots.end(); ++it)
-    {
-        Vertex root = *it;
-        std::map<Vertex, Vertex> tree;
-
-        min_spanning_tree(g, root, tree); //creates tree
-
-        //add edges to graph
-        for(auto treeIt = tree.begin(); treeIt != tree.end(); ++treeIt)
-        {
-            add_edge(treeIt->first, treeIt->second, h);
-        }
-
     }
 }
 
@@ -233,12 +242,12 @@ void graph_reduction_triangle_avoid(const Graph& g, Graph &h, unsigned x)
         }
     }
 }
-
+#endif
 
 /*========================================================
 =                 multithreaded versions                 =
 ========================================================*/
-
+#ifdef TBB
 void graph_reduction_multithread(const Graph &g, Graph &h, unsigned x)
 {
     if (x==0) return;
@@ -511,3 +520,4 @@ void graph_reduction_percentage_multithread(const Graph &g, Graph &h, unsigned c
         add_edge(i->first, i->second, h);
     }
 }
+#endif

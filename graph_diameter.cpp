@@ -10,38 +10,13 @@
 #include "graph_reduction.hpp"
 #include "graph_diameter.hpp"
 
+#ifdef TBB
 #include "tbb/tbb.h"
+#endif
 
 using namespace boost;
 
-
-//member functions of approx_graph_diameter_task
-void approx_graph_diameter_task::operator()(const tbb::blocked_range<size_t>& r) const{
-    //main loop
-    for (std::size_t i = r.begin(); i != r.end(); ++i)
-    {
-        //start at random vertex
-        Vertex v = vertex(rand() % num_vertices(g), g);
-        //find next vertex u
-        std::pair<Vertex, vertices_size_type> uPair = bfs_furthest_vertex(g, v);
-        if (uPair.second > diameter) diameter = uPair.second;
-        if (uPair.second < lowerdiam && uPair.second != 0) lowerdiam = uPair.second;
-
-        //find next vertex w
-        std::pair<Vertex, vertices_size_type> wPair = bfs_furthest_vertex(g, v);
-        if (wPair.second > diameter) diameter = wPair.second;
-        if (wPair.second < lowerdiam && uPair.second != 0) lowerdiam = wPair.second;
-
-        //stop if lowerdiam is 2x the diam
-        if(lowerdiam * 2 == diameter) break;
-    }
-}
-
-approx_graph_diameter_task::approx_graph_diameter_task(const Graph &g, vertices_size_type &ld, vertices_size_type &d):
-g(g), lowerdiam(ld), diameter(d){}
-//end member functions
-
-
+#ifdef TBB
 //multithreaded implementation of approx_graph_diameter
 vertices_size_type approx_graph_diameter_multithread(const Graph &g)
 {
@@ -51,12 +26,33 @@ vertices_size_type approx_graph_diameter_multithread(const Graph &g)
     vertices_size_type diameter = 0;
 
     tbb::parallel_for( tbb::blocked_range<std::size_t>( 0, 1000 ),
-            approx_graph_diameter_task(g, lowerdiam, diameter) );
+        [&g, &lowerdiam, &diameter](tbb::blocked_range<std::size_t>& r){
+            for (std::size_t i = r.begin(); i != r.end(); ++i)
+            {
+                //start at random vertex
+                Vertex v = vertex(rand() % num_vertices(g), g);
+                //find next vertex u
+                std::pair<Vertex, vertices_size_type> uPair = bfs_furthest_vertex(g, v);
+                if (uPair.second > diameter) diameter = uPair.second;
+                if (uPair.second < lowerdiam && uPair.second != 0) lowerdiam = uPair.second;
+
+                //find next vertex w
+                std::pair<Vertex, vertices_size_type> wPair = bfs_furthest_vertex(g, v);
+                if (wPair.second > diameter) diameter = wPair.second;
+                if (wPair.second < lowerdiam && uPair.second != 0) lowerdiam = wPair.second;
+
+                //stop if lowerdiam is 2x the diam
+                if(lowerdiam * 2 == diameter) break;
+            }
+        }
+    );
 
     return diameter;
 }
+#endif
 
 
+#ifdef SEQ
 //idea: use BFS starting at a random vertex v0, find a vertex u0 that is furthest away from v0
 //use BFS at vertex u0, find vertex w0 that is furthest away from u0, with distance d0
 //repeat with another random vertex v1 != v0
@@ -89,6 +85,7 @@ vertices_size_type approx_graph_diameter(const Graph &g)
 
 
 }
+#endif
 
 //if bfs_count = 2, iterations = 1000, same as above.
 unsigned approx_graph_diameter_bfs(const Graph &g, int bfs_count, int iterations)

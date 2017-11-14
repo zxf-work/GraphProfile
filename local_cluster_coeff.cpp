@@ -4,10 +4,14 @@
 #include <functional>
 #include <iostream>
 #include "local_cluster_coeff.hpp"
+
+#ifdef TBB
 #include "tbb/tbb.h"
+#endif
 
 using namespace boost;
 
+#ifdef SEQ
 //computes LCC of a vertex
 //LCC is the proportion of pair of neighbours that form a triangle
 double local_cluster_coeff(const Vertex &v, const Graph &g)
@@ -47,8 +51,13 @@ double average_cluster_coeff(const Graph &g)
     }
     return sum / num_vertices(g);
 }
+#endif
 
-//multithreaded implementations
+/*=================================================================
+=                     Multithreaded versions                      =
+=================================================================*/
+
+#ifdef TBB
 double local_cluster_coeff_multithread(const Vertex &v, const Graph &g)
 {
     double localTriCount = 0;
@@ -114,3 +123,4 @@ double average_cluster_coeff_multithread_reduce(const Graph &g)
     );
     return sum / num_vertices(g);
 }
+#endif

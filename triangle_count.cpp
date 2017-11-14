@@ -3,10 +3,14 @@
 #include <boost/graph/graph_traits.hpp>
 #include <utility>
 #include "triangle_count.hpp"
+
+#ifdef TBB
 #include "tbb/tbb.h"
+#endif
 
 using namespace boost;
 
+#ifdef SEQ
 //for each vertex v, examines every pair of neighbours u w
 //if index of v < u, w, check if there is a uw edge, forming a triangle
 unsigned long exact_triangle_count(const Graph &g)
@@ -37,9 +41,11 @@ unsigned long exact_triangle_count(const Graph &g)
 
     return triangleCount;
 }
+#endif
 
 /*----------  multithreaded implementation  ----------*/
 
+#ifdef TBB
 unsigned long exact_triangle_count_multithread(const Graph &g)
 {
     return tbb::parallel_reduce(
@@ -116,3 +122,4 @@ unsigned long exact_triangle_count_multithread(const Graph &g)
         std::plus<unsigned>()
     );
 }
+#endif

@@ -7,13 +7,14 @@
 
 #include "page_rank.hpp"
 
+#ifdef TBB
 #include "tbb/tbb.h"
-
-#include <iostream>
+#endif
 
 
 using namespace boost;
 
+#ifdef SEQ
 void page_rank(const Graph &g, std::vector<double> &pageRankVector)
 {
     pageRankVector = std::vector<double>(num_vertices(g), (double)1 / num_vertices(g));
@@ -161,7 +162,7 @@ std::pair<unsigned, unsigned> page_rank_test(const Graph &g, const std::vector<d
 
 }
 
-
+#endif
 
 
 /*----------  multithreaded versions  ----------*/
@@ -169,7 +170,7 @@ std::pair<unsigned, unsigned> page_rank_test(const Graph &g, const std::vector<d
 
 
 
-
+#ifdef TBB
 void page_rank_multithread(const Graph &g, std::vector<double> &pageRankVector)
 {
     pageRankVector = std::vector<double>(num_vertices(g), (double)1 / num_vertices(g));
@@ -317,3 +318,4 @@ std::pair<unsigned, unsigned> page_rank_test_multithread(const Graph &g, const s
     return pageRankCount;
 
 }
+#endif

@@ -7,12 +7,15 @@
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>       /* time */
 #include <iostream>
-#include "tbb/tbb.h"
 #include "betweenness_centrality.hpp"
+
+#ifdef TBB
+#include "tbb/tbb.h"
+#endif
 
 using namespace boost;
 
-
+#ifdef SEQ
 //alg: use BFS to find all shortests paths from s to t, for all s t
 //then count the number of shortest paths from s to t that contain v, compute this count for all v not s or t
 //then compute BC(v) with this data. BC(v) = sum of (# of st paths through v / # of st paths) for all s t pairs, s, t not v
@@ -93,7 +96,138 @@ void betweenness_centrality(const Graph &g, std::vector<float> &centralityVector
     }
 }
 
-//multithreaded implementation
+
+//approximate BC for a single vertex
+//alg: repeatedly select vertex vi
+//perform SSSP(BFS) and compute dependency score of vi wrt v - delta_vi*(v)
+//add this dependency score to a sum S
+//stop once S >= n * c, for some constant c.
+//then BC(v) = nS / k, where k random vertices were chosen
+float approx_betweenness_centrality(const Graph &g, const Vertex &v)
+{
+    unsigned n = num_vertices(g);
+    unsigned iterations = 0;
+    float sum = 0;
+    float c = 0.5;
+    srand(time(NULL));
+
+    while(sum < float(c*n))
+    {
+        ++iterations;
+        if(iterations > 10000)
+        {
+            break;
+        }
+
+        if(iterations % 1000 == 0) std::cout<<"computing..."<<std::endl;
+
+        // select a random vertex to calculate abc on
+        // if randomly selected vertex is the one we are calculating abc on,
+        // select a new vertex instead
+        // NOTE: this will infinite loop on a graph with only 1 vertex
+        Vertex vi = vertex(rand() % num_vertices(g), g);
+        while(vi == v) vi = vertex(rand() % num_vertices(g), g);
+
+
+        std::vector<PathList> shortestPathsMap(num_vertices(g));
+        std::vector<unsigned> shortestDistanceMap(num_vertices(g));
+
+        //BFS
+        // Calculate all shortest paths to all other nodes from vi
+        centrality_bfs_visitor vis(&shortestDistanceMap, &shortestPathsMap);
+        breadth_first_search(g, vi, visitor(vis));
+
+        //add to the sum
+        //for each vertex u != vi or v, add delta_vi,u(v) to sum
+        for(unsigned u = 0; u < num_vertices(g); ++u)
+        {
+            if(vertex(u, g) != vi && vertex(u, g) != v)
+            {
+                unsigned pathCount = 0;
+                unsigned uPathCount = 0; //# of shortest paths with u
+
+                PathList pathList = shortestPathsMap.at(u);
+                for(auto pathListIt = pathList.begin(); pathListIt != pathList.end(); ++pathListIt)
+                {
+                    ++pathCount;
+                    //only check if the path has >2 vertices/length 1
+                    if(pathListIt->size() > 2)
+                    {
+                        //go through the path, except the start and end vertices
+                        for(auto pathIt = pathListIt->begin()+1; pathIt != pathListIt->end()-1; ++pathIt)
+                        {
+                            //if our vertex is found in the path
+                            //then increment uPathCount
+                            if(*pathIt == v){
+                                ++uPathCount;
+                            }
+                        }
+                    }
+                }
+
+                if (pathCount != 0) //pathCount should only be 0 if graph is not connected
+                    sum = sum + (float)uPathCount / pathCount;
+            }
+        }
+
+    }
+    return n * sum / iterations;
+}
+
+
+//expects graph g, reduced graph h with same # of vertices
+//computers approx BC for each vertex in g and h
+//returns # of vertices of h in top 0.15% of BC that are in top 0.15% of g,
+//and # of vertices of h in top 1% and not 0.15% of BC that are in h
+std::pair<unsigned, unsigned>betweenness_centrality_test(const Graph &g, const Graph &h)
+{
+    unsigned n = num_vertices(g);
+    std::multimap<float, Vertex> originalBetweennessMap;
+    std::multimap<float, Vertex> reducedBetweennessMap;
+
+    //compute BC
+    for(unsigned v = 0; v < n; ++v)
+    {
+        originalBetweennessMap.emplace(approx_betweenness_centrality(g, v), v);
+        reducedBetweennessMap.emplace(approx_betweenness_centrality(h, v), v);
+    }
+
+    double p = (n * 0.0015) > 15 ? n * 0.0015 : 15; //percentile for 0.15%
+    std::pair<unsigned, unsigned>betweennessCount; //first number counts # of vertices in original top 0.15, second counts # in top 1%
+    auto betweennessIt = reducedBetweennessMap.rbegin();
+    for(int i = 0 ; i < p; ++i) //check each top 0.15% of vertices in reduced graph
+    {
+        Vertex v = betweennessIt->second;
+
+        //check if top ranking vector is in the original's top rank (top 0.15% or top 1%)
+        bool top15 = false;
+        bool top1 = false;
+        auto originalIt = originalBetweennessMap.rbegin();
+        for(float j = 0; j < (n * 0.01 ); ++j)
+        {
+            if (originalIt->second == v)
+            {
+                if (j < p) top15 = true;
+                else top1 = true;
+                break;
+            }
+            ++originalIt;
+        }
+        if(top15) ++betweennessCount.first;
+        if (top1) ++betweennessCount.second;
+        ++betweennessIt;
+    }
+
+    return betweennessCount;
+}
+
+#endif
+/*=====================================================================================
+=                      multithreaded implementations                                  =
+=====================================================================================*/
+
+
+#ifdef TBB
 void betweenness_centrality_multithread(const Graph &g, std::vector<float> &centralityVector)
 {
     typedef std::vector< std::vector<int> > CentralityMatrix;
@@ -257,85 +391,6 @@ void betweenness_centrality_multithread_3parallel(const Graph &g, std::vector<fl
 }
 
 
-//approximate BC for a single vertex
-//alg: repeatedly select vertex vi
-//perform SSSP(BFS) and compute dependency score of vi wrt v - delta_vi*(v)
-//add this dependency score to a sum S
-//stop once S >= n * c, for some constant c.
-//then BC(v) = nS / k, where k random vertices were chosen
-float approx_betweenness_centrality(const Graph &g, const Vertex &v)
-{
-    unsigned n = num_vertices(g);
-    unsigned iterations = 0;
-    float sum = 0;
-    float c = 0.5;
-    srand(time(NULL));
-
-    while(sum < float(c*n))
-    {
-        ++iterations;
-        if(iterations > 10000)
-        {
-            break;
-        }
-
-        if(iterations % 1000 == 0) std::cout<<"computing..."<<std::endl;
-
-        // select a random vertex to calculate abc on
-        // if randomly selected vertex is the one we are calculating abc on,
-        // select a new vertex instead
-        // NOTE: this will infinite loop on a graph with only 1 vertex
-        Vertex vi = vertex(rand() % num_vertices(g), g);
-        while(vi == v) vi = vertex(rand() % num_vertices(g), g);
-
-
-        std::vector<PathList> shortestPathsMap(num_vertices(g));
-        std::vector<unsigned> shortestDistanceMap(num_vertices(g));
-
-        //BFS
-        // Calculate all shortest paths to all other nodes from vi
-        centrality_bfs_visitor vis(&shortestDistanceMap, &shortestPathsMap);
-        breadth_first_search(g, vi, visitor(vis));
-
-        //add to the sum
-        //for each vertex u != vi or v, add delta_vi,u(v) to sum
-        for(unsigned u = 0; u < num_vertices(g); ++u)
-        {
-            if(vertex(u, g) != vi && vertex(u, g) != v)
-            {
-                unsigned pathCount = 0;
-                unsigned uPathCount = 0; //# of shortest paths with u
-
-                PathList pathList = shortestPathsMap.at(u);
-                for(auto pathListIt = pathList.begin(); pathListIt != pathList.end(); ++pathListIt)
-                {
-                    ++pathCount;
-                    //only check if the path has >2 vertices/length 1
-                    if(pathListIt->size() > 2)
-                    {
-                        //go through the path, except the start and end vertices
-                        for(auto pathIt = pathListIt->begin()+1; pathIt != pathListIt->end()-1; ++pathIt)
-                        {
-                            //if our vertex is found in the path
-                            //then increment uPathCount
-                            if(*pathIt == v){
-                                ++uPathCount;
-                            }
-                        }
-                    }
-                }
-
-                if (pathCount != 0) //pathCount should only be 0 if graph is not connected
-                    sum = sum + (float)uPathCount / pathCount;
-            }
-        }
-
-    }
-    return n * sum / iterations;
-}
-
-
-//multithreaded implementation
 float approx_betweenness_centrality_multithread(const Graph &g, const Vertex &v)
 {
     unsigned n = num_vertices(g);
@@ -405,53 +460,6 @@ float approx_betweenness_centrality_multithread(const Graph &g, const Vertex &v)
     return n * sum / iterations;
 }
 
-//expects graph g, reduced graph h with same # of vertices
-//computers approx BC for each vertex in g and h
-//returns # of vertices of h in top 0.15% of BC that are in top 0.15% of g,
-//and # of vertices of h in top 1% and not 0.15% of BC that are in h
-std::pair<unsigned, unsigned>betweenness_centrality_test(const Graph &g, const Graph &h)
-{
-    unsigned n = num_vertices(g);
-    std::multimap<float, Vertex> originalBetweennessMap;
-    std::multimap<float, Vertex> reducedBetweennessMap;
-
-    //compute BC
-    for(unsigned v = 0; v < n; ++v)
-    {
-        originalBetweennessMap.emplace(approx_betweenness_centrality(g, v), v);
-        reducedBetweennessMap.emplace(approx_betweenness_centrality(h, v), v);
-    }
-
-    double p = (n * 0.0015) > 15 ? n * 0.0015 : 15; //percentile for 0.15%
-    std::pair<unsigned, unsigned>betweennessCount; //first number counts # of vertices in original top 0.15, second counts # in top 1%
-    auto betweennessIt = reducedBetweennessMap.rbegin();
-    for(int i = 0 ; i < p; ++i) //check each top 0.15% of vertices in reduced graph
-    {
-        Vertex v = betweennessIt->second;
-
-        //check if top ranking vector is in the original's top rank (top 0.15% or top 1%)
-        bool top15 = false;
-        bool top1 = false;
-        auto originalIt = originalBetweennessMap.rbegin();
-        for(float j = 0; j < (n * 0.01 ); ++j)
-        {
-            if (originalIt->second == v)
-            {
-                if (j < p) top15 = true;
-                else top1 = true;
-                break;
-            }
-            ++originalIt;
-        }
-        if(top15) ++betweennessCount.first;
-        if (top1) ++betweennessCount.second;
-        ++betweennessIt;
-    }
-
-    return betweennessCount;
-}
-
-
 std::pair<unsigned, unsigned>betweenness_centrality_test_multithread(const Graph &g, const Graph &h)
 {
     unsigned n = num_vertices(g);
@@ -497,4 +505,4 @@ std::pair<unsigned, unsigned>betweenness_centrality_test_multithread(const Graph
 
     return betweennessCount;
 }
-
+#endif

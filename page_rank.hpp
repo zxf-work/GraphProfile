@@ -9,6 +9,8 @@
 using namespace boost;
 
 const double damp = 0.85;
+
+#ifdef SEQ
 //https://en.wikipedia.org/wiki/PageRank for more info
 //erases any info on current vector passed on
 //stops when the total difference after an iteration is no larger than 0.0001
@@ -22,13 +24,15 @@ void approx_page_rank(const Graph &g, std::vector<double> &pageRankVector);
 //computes # of vertices in the top 0.15% of page rank value of g,
 //in top 0.15% page rank of original, and in top 1% (but not top 0.15%) of the original
 std::pair<unsigned, unsigned> page_rank_test(const Graph &g, const std::vector<double>& originalPageRanks);
+#endif
 
 
+#ifdef TBB
 //multithreaded versions
 void page_rank_multithread(const Graph &g, std::vector<double> &pageRankVector);
 
 void approx_page_rank_multithread(const Graph &g, std::vector<double> &pageRankVector);
 
 std::pair<unsigned, unsigned> page_rank_test_multithread(const Graph &g, const std::vector<double>& originalPageRanks);
-
+#endif
 #endif // PAGE_RANK_HPP_INCLUDED

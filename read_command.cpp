@@ -19,16 +19,28 @@
 #include "shortest_path.hpp"
 #include "onion_decomp.hpp"
 #include "read_command.hpp"
+
+#ifdef TBB
 #include "tbb/tbb.h"
+#endif
 
 
 using namespace std;
+
 
 //reads cin for a command, prints to file
 //expects the file to be already open, and closed elsewhere
 //template expects Graph or DirectedGraph
 void readCommand(const Graph &g, string filename)
 {
+    //for consistent filenames between multithread only and single thread only executables
+    //and compatibility with GraphDisplay
+    #if defined(TBB) && defined(SEQ)
+        string multithread_file_ending="-multithread.txt";
+    #else
+        string multithread_file_ending=".txt";
+    #endif
+
     ofstream outFile;
     string outFileName = filename.substr(0, filename.length()-4);
     outFile.open(outFileName + "-graph-properties.txt", ios_base::out | ios_base::app );
@@ -36,7 +48,9 @@ void readCommand(const Graph &g, string filename)
     time_t startTime;
     time_t endTime;
 
+    #ifdef TBB
     cout<<"Number of threads available: "<<tbb::task_scheduler_init::default_num_threads()<<endl;
+    #endif
 
     bool b = true;
     while (b)
@@ -49,6 +63,7 @@ void readCommand(const Graph &g, string filename)
         {
             vector<unsigned> connectedCompCount;
 
+            #ifdef SEQ
             startTime = time(NULL);
             connectedCompCount = connected_comp(g);
             endTime = time(NULL);
@@ -62,8 +77,10 @@ void readCommand(const Graph &g, string filename)
                 outFile << " " << *i;
             }
             outFile << endl;
+            #endif
 
 
+            #ifdef TBB
             startTime = time(NULL);
             connectedCompCount = connected_comp_multithread(g);
             endTime = time(NULL);
@@ -77,6 +94,7 @@ void readCommand(const Graph &g, string filename)
                 outFile << " " << *i;
             }
             outFile << endl;
+            #endif
 
         }
         else if (command == "lcc") //local cluster coeff
@@ -88,6 +106,7 @@ void readCommand(const Graph &g, string filename)
             outFile.precision(4);
 
             if (v == -1){
+                #ifdef SEQ
                 startTime = time(NULL);
                 lcc = average_cluster_coeff(g);
                 endTime = time(NULL);
@@ -95,15 +114,15 @@ void readCommand(const Graph &g, string filename)
                 outFile << "Average LCC: " << lcc << endl;
                 cout<< "Average LCC: " << lcc << endl;
                 cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
+                #endif
+                #ifdef TBB
+                // startTime = time(NULL);
+                // lcc = average_cluster_coeff_multithread(g);
+                // endTime = time(NULL);
 
-
-                startTime = time(NULL);
-                lcc = average_cluster_coeff_multithread(g);
-                endTime = time(NULL);
-
-                outFile << "Average LCC, Multithreaded: " << lcc << endl;
-                cout<< "Average LCC, Multithreaded: " << lcc << endl;
-                cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
+                // outFile << "Average LCC, Multithreaded: " << lcc << endl;
+                // cout<< "Average LCC, Multithreaded: " << lcc << endl;
+                // cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
 
 
                 startTime = time(NULL);
@@ -113,10 +132,10 @@ void readCommand(const Graph &g, string filename)
                 outFile << "Average LCC, reduce: " << lcc << endl;
                 cout<< "Average LCC, reduce: " << lcc << endl;
                 cout<<"Time elapsed, reduce: "<<difftime(endTime, startTime)<<endl;
-
+                #endif
             }
             else{
-
+                #ifdef SEQ
                 startTime = time(NULL);
                 lcc = local_cluster_coeff(v, g);
                 endTime = time(NULL);
@@ -124,8 +143,8 @@ void readCommand(const Graph &g, string filename)
                 outFile << "LCC of vertex " << v << ": " << lcc << endl;
                 cout<< "LCC of vertex " << v << ": " << lcc << endl;
                 cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
-
-
+                #endif
+                #ifdef TBB
                 startTime = time(NULL);
                 lcc = local_cluster_coeff_multithread(v, g);
                 endTime = time(NULL);
@@ -133,6 +152,7 @@ void readCommand(const Graph &g, string filename)
                 outFile << "LCC of vertex " << v << ", Multithreaded: " << lcc << endl;
                 cout << "LCC of vertex " << v << ", Multithreaded: " << lcc << endl;
                 cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
+                #endif
             }
 
             cin.ignore(); //to clear up the whitespace
@@ -142,12 +162,13 @@ void readCommand(const Graph &g, string filename)
             vector<double> pageRank;
             ofstream pRankFile;
 
+            #ifdef TBB
             startTime = time(NULL);
             page_rank_multithread(g, pageRank);
             endTime = time(NULL);
             cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
 
-            pRankFile.open(outFileName + "-page-rank-multithread.txt", ios_base::out | ios_base::app);
+            pRankFile.open(outFileName + "-page-rank" + multithread_file_ending, ios_base::out | ios_base::app);
             pRankFile.precision(10);
             pRankFile << filename << endl;
             for(auto it = pageRank.begin(); it != pageRank.end(); ++it)
@@ -155,8 +176,8 @@ void readCommand(const Graph &g, string filename)
                 pRankFile << *it << endl;
             }
             pRankFile.close();
-
-
+            #endif
+            #ifdef SEQ
             startTime = time(NULL);
             page_rank(g, pageRank);
             endTime = time(NULL);
@@ -170,7 +191,7 @@ void readCommand(const Graph &g, string filename)
                 pRankFile << *it << endl;
             }
             pRankFile.close();
-
+            #endif
             cout << "Page Rank computed." << endl;
         }
         else if (command == "aprank") //approx page rank, outputs to separate file
@@ -178,12 +199,13 @@ void readCommand(const Graph &g, string filename)
             vector<double> pageRank;
             ofstream pRankFile;
 
+            #ifdef TBB
             startTime = time(NULL);
             approx_page_rank_multithread(g, pageRank);
             endTime = time(NULL);
             cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
 
-            pRankFile.open(outFileName + "-approximate-page-rank-multithread.txt", ios_base::out | ios_base::app);
+            pRankFile.open(outFileName + "-approximate-page-rank" + multithread_file_ending, ios_base::out | ios_base::app);
             pRankFile.precision(10);
             pRankFile << filename << endl;
             for(auto it = pageRank.begin(); it != pageRank.end(); ++it)
@@ -191,8 +213,8 @@ void readCommand(const Graph &g, string filename)
                 pRankFile << *it << endl;
             }
             pRankFile.close();
-
-
+            #endif
+            #ifdef SEQ
             startTime = time(NULL);
             approx_page_rank(g, pageRank);
             endTime = time(NULL);
@@ -206,7 +228,7 @@ void readCommand(const Graph &g, string filename)
                 pRankFile << *it << endl;
             }
             pRankFile.close();
-
+            #endif
             cout << "Approximate Page Rank computed." << endl;
         }
         else if (command == "abc") //aprox betwenness centrality
@@ -219,19 +241,22 @@ void readCommand(const Graph &g, string filename)
 
             float abc;
 
+            #ifdef TBB
             startTime = time(NULL);
             abc = approx_betweenness_centrality_multithread(g, boost::vertex(v, g));
             endTime = time(NULL);
             outFile << "Approx Betweenness Centrality, Multithreaded " << abc<< endl;
             cout << "Approx Betweenness Centrality, Multithreaded " << abc << endl;
             cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
-
+            #endif
+            #ifdef SEQ
             startTime = time(NULL);
             abc = approx_betweenness_centrality(g, boost::vertex(v, g));
             endTime = time(NULL);
             outFile << "Approx Betweenness Centrality " << abc<< endl;
             cout << "Approx Betweenness Centrality " << abc << endl;
             cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
+            #endif
         }
         else if (command == "bc") //betweenness centrality, outputs to separate file
         {
@@ -242,7 +267,7 @@ void readCommand(const Graph &g, string filename)
 
             vector<float> centralityVector(boost::num_vertices(g), 0);
 
-
+            #ifdef TBB
             startTime = time(NULL);
             betweenness_centrality_multithread(g, centralityVector);
             endTime = time(NULL);
@@ -250,19 +275,19 @@ void readCommand(const Graph &g, string filename)
             cout<<"Time elapsed, Multithreaded, double parallel_for: "<<difftime(endTime, startTime)<<endl;
 
 
-            startTime = time(NULL);
-            betweenness_centrality_multithread_3parallel(g, centralityVector);
-            endTime = time(NULL);
+            // startTime = time(NULL);
+            // betweenness_centrality_multithread_3parallel(g, centralityVector);
+            // endTime = time(NULL);
 
-            cout<<"Time elapsed, Multithreaded, triple parallel_for: "<<difftime(endTime, startTime)<<endl;
-
-
+            // cout<<"Time elapsed, Multithreaded, triple parallel_for: "<<difftime(endTime, startTime)<<endl;
+            #endif
+            #ifdef SEQ
             startTime = time(NULL);
             betweenness_centrality(g, centralityVector);
             endTime = time(NULL);
 
             cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
-
+            #endif
             for(auto it = centralityVector.begin(); it != centralityVector.end(); ++it)
             {
                 bcFile << *it << endl;
@@ -297,20 +322,20 @@ void readCommand(const Graph &g, string filename)
             cout << "Enter # Vertices to keep." << endl;
             cin >> x;
             cin.ignore();
-
+            #ifdef SEQ
             startTime = time(NULL);
             graph_reduction(g, h1, x);
             endTime = time(NULL);
             edge_list_print_file(h1, outFileName + "-reduced-graph.txt");
             cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
-
-
+            #endif
+            #ifdef TBB
             startTime = time(NULL);
             graph_reduction_multithread(g, h2, x);
             endTime = time(NULL);
-            edge_list_print_file(h2, outFileName + "-reduced-graph-multithread.txt");
+            edge_list_print_file(h2, outFileName + "-reduced-graph" + multithread_file_ending);
             cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
-
+            #endif
         }
         else if (command == "reducetree")
         {
@@ -329,19 +354,20 @@ void readCommand(const Graph &g, string filename)
             {
                 cout << *it << " " << endl;
             }
-
+            #ifdef SEQ
             startTime = time(NULL);
             graph_reduction_spanning_tree(g, h1, roots);
             endTime = time(NULL);
             edge_list_print_file(h1, outFileName + "-reduced-graph-tree.txt");
             cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
-
-
+            #endif
+            #ifdef TBB
             startTime = time(NULL);
             graph_reduction_spanning_tree_multithread(g, h2, roots);
             endTime = time(NULL);
-            edge_list_print_file(h2, outFileName + "-reduced-graph-tree-multithread.txt");
+            edge_list_print_file(h2, outFileName + "-reduced-graph-tree" + multithread_file_ending);
             cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
+            #endif
         }
         else if (command == "reducetreetop")
         {
@@ -350,19 +376,20 @@ void readCommand(const Graph &g, string filename)
             int x;
             cin >> x;
             cin.ignore();
-
+            #ifdef SEQ
             startTime = time(NULL);
             graph_reduction_spanning_tree(g, h1, high_degree_vertices(g, x));
             endTime = time(NULL);
             edge_list_print_file(h1, outFileName + "-reduced-graph-tree2.txt");
             cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
-
-
+            #endif
+            #ifdef TBB
             startTime = time(NULL);
             graph_reduction_spanning_tree_multithread(g, h2, high_degree_vertices_multithread(g, x));
             endTime = time(NULL);
-            edge_list_print_file(h2, outFileName + "-reduced-graph-tree2-multithread.txt");
+            edge_list_print_file(h2, outFileName + "-reduced-graph-tree2" + multithread_file_ending);
             cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
+            #endif
         }
         else if (command == "reducehighdegree")
         {
@@ -381,19 +408,21 @@ void readCommand(const Graph &g, string filename)
             {
                 cout << *it << " " << endl;
             }
-
+            #ifdef SEQ
             startTime = time(NULL);
             graph_reduction_high_degree_tree(g, h1, roots);
             endTime = time(NULL);
             edge_list_print_file(h1, outFileName + "-reduced-graph-high-degree.txt");
             cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
+            #endif
 
-
+            #ifdef TBB
             startTime = time(NULL);
             graph_reduction_high_degree_tree_multithread(g, h2, roots);
             endTime = time(NULL);
-            edge_list_print_file(h2, outFileName + "-reduced-graph-high-degree-multithread.txt");
+            edge_list_print_file(h2, outFileName + "-reduced-graph-high-degree" + multithread_file_ending);
             cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
+            #endif
         }
         else if (command == "reducehighdegreetop")
         {
@@ -402,19 +431,21 @@ void readCommand(const Graph &g, string filename)
             int x;
             cin >> x;
             cin.ignore();
-
+            #ifdef SEQ
             startTime = time(NULL);
             graph_reduction_high_degree_tree(g, h1, high_degree_vertices(g, x));
             endTime = time(NULL);
             edge_list_print_file(h1, outFileName + "-reduced-graph-high-degree2.txt");
             cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
+            #endif
 
-
+            #ifdef TBB
             startTime = time(NULL);
             graph_reduction_high_degree_tree_multithread(g, h2, high_degree_vertices_multithread(g, x));
             endTime = time(NULL);
-            edge_list_print_file(h2, outFileName + "-reduced-graph-high-degree2-multithread.txt");
+            edge_list_print_file(h2, outFileName + "-reduced-graph-high-degree2" + multithread_file_ending);
             cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
+            #endif
         }
         else if (command == "reducetri")
         {
@@ -424,17 +455,20 @@ void readCommand(const Graph &g, string filename)
             cin >> x;
             cin.ignore();
 
+            #ifdef TBB
             startTime = time(NULL);
             graph_reduction_triangle_avoid_multithread(g, h2, x);
             endTime = time(NULL);
-            edge_list_print_file(h2, outFileName + "-reduced-graph-triangle-multithread.txt");
+            edge_list_print_file(h2, outFileName + "-reduced-graph-triangle" + multithread_file_ending);
             cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
-
+            #endif
+            #ifdef SEQ
             startTime = time(NULL);
             graph_reduction_triangle_avoid(g, h1, x);
             endTime = time(NULL);
             edge_list_print_file(h1, outFileName + "-reduced-graph-triangle.txt");
             cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
+            #endif
         }
         else if (command == "reducepercent")
         {
@@ -444,19 +478,21 @@ void readCommand(const Graph &g, string filename)
             cin >> x;
             cin.ignore();
 
-
+            #ifdef SEQ
             startTime = time(NULL);
             graph_reduction_percentage(g, h1, median_cutoff(g), x);
             endTime = time(NULL);
             edge_list_print_file(h1, outFileName + "-reduced-graph-proportion.txt");
             cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
+            #endif
 
-
+            #ifdef TBB
             startTime = time(NULL);
             graph_reduction_percentage_multithread(g, h2, median_cutoff(g), x);
             endTime = time(NULL);
-            edge_list_print_file(h2, outFileName + "-reduced-graph-proportion-multithread.txt");
+            edge_list_print_file(h2, outFileName + "-reduced-graph-proportion" + multithread_file_ending);
             cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
+            #endif
         }
         else if (command == "dist")
         {
@@ -468,7 +504,6 @@ void readCommand(const Graph &g, string filename)
             cin >> u;
             outFile << "Distance from " << v << " to " << u << ": " << graph_distance(g, v, u) << endl;
             cin.ignore(); //to clear up the whitespace
-
         }
         else if (command == "od") //onion decomp
         {
@@ -488,35 +523,37 @@ void readCommand(const Graph &g, string filename)
         }
         else if (command == "adiam"){
 
-            startTime = time(NULL);
-            auto adiam = approx_graph_diameter(g);
-            endTime = time(NULL);
+            vertices_size_type adiam;
 
+            #ifdef SEQ
+            startTime = time(NULL);
+            adiam = approx_graph_diameter(g);
+            endTime = time(NULL);
             outFile << "Approx Diameter: " << adiam << endl;
             cout << "Approx Diameter: " << adiam << endl;
-
-
             cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
             outFile<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
+            #endif
 
-
+            #ifdef TBB
             startTime = time(NULL);
             adiam = approx_graph_diameter_multithread(g);
             endTime = time(NULL);
-
             outFile << "Approx Diameter, Multithreaded: " << adiam  << endl;
             cout << "Approx Diameter, Multithreaded: " << adiam << endl;
-
-
             cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
             outFile<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
+            #endif
         }
         else if (command == "emdiam") outFile << "Exact Diameter (M): " << memory_graph_diamter(g) << endl;
         else if (command == "ediam") outFile << "Exact Diameter: " << simple_graph_diameter(g) << endl;
         else if (command == "etri"){
 
+            unsigned long etri;
+
+            #ifdef TBB
             startTime = time(NULL);
-            auto etri = exact_triangle_count_multithread(g);
+            etri = exact_triangle_count_multithread(g);
             endTime = time(NULL);
 
             outFile << "Exact Triangle Count, Multithreaded: " << etri  << endl;
@@ -524,8 +561,8 @@ void readCommand(const Graph &g, string filename)
 
             cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
             outFile<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
-
-
+            #endif
+            #ifdef SEQ
             startTime = time(NULL);
             etri = exact_triangle_count(g);
             endTime = time(NULL);
@@ -535,17 +572,11 @@ void readCommand(const Graph &g, string filename)
 
             cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
             outFile<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
+            #endif
         }
         else if (command == "vert") cout << "Num Vert: " << boost::num_vertices(g) << endl;
         else if (command == "edge") cout << "Num Edge: " << boost::num_edges(g) << endl;
         else if (command == "exit") break;
-
-
-        else if (command == "test")
-        {
-            cout << boost::edge(0,0, g).second <<endl;
-        }
-
         else cout << "Did not recognize command." << endl;
     }
     outFile.close();
