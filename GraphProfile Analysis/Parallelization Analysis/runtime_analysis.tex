@@ -1,6 +1,11 @@
 \documentclass[12pt]{article}
 
 \usepackage{fullpage,url,amssymb,epsfig,color,xspace,tikz,tikz-qtree, amsmath, pgfplots, multicol}
+
+\usepackage[parfill]{parskip}
+
+\setlength{\parindent}{0pt}
+
 \usetikzlibrary{positioning}
 %\usepackage{algpseudocode}
 %\usepackage{algorithmicx}
@@ -118,14 +123,27 @@ Concurrent Data Structures:
 
   concurrent\_unordered\_multimap is to create and store spanning minimum spanning trees to perform graph reductions on.
 
+  \item concurrent\_priority\_queue
+
+  Template class for a priority queue with concurrent operations. 
+
+  Used to add and remove vertices in order of their degree for BFS and graph reduction algorithms.
+
 \end{itemize}
 
 \section{Data Collection}
 
 Runtimes of each algorithm was measured using the \texttt{<time.h>} library provided by C, and is calculated as the difference between before the function was called and after, rounded to the nearest second. In the future, the \texttt{<chrono>} library can be used instead, to get a time difference in milliseconds, for more accurate results. See \url{https://stackoverflow.com/questions/31487876/getting-a-time-difference-in-milliseconds} for details.
 
-The parallelizeed and unparallelized versions of each algorithm were run 5 times each, on 6 different graphs with a varying number of vertices, edges, and density. The program was run on the waterloo student linux environment, on which 56-64 threads were consistently available. The runtimes were recorded, and averages were used for analysis.
+The parallelized and unparallelized versions of each algorithm were run 5 times each, on 6 different graphs. The program was run on the waterloo student linux environment, on which 56-64 threads were consistently available. The runtimes were recorded, and averages were used for analysis.
 
+For reduce and reducetri, edges to the top 3 neighbors of each vertex were chosen to be kept.
+
+For reducetreetop and reducehighdegreetop, the reduction was created from the spanning trees of the top 1\% of all vertices.
+
+For reducepercent, 50\% of vertices past the median were chosen to be kept.
+
+For the approximate betweeness centrality metric (abc), runtime was also measured based on the degree of the vertex chosen. 3 measurements were taken from a vertex of degree 1, 10, 100, 500 and 1000 from the largest 3 graphs.
 
 \begin{tabular}{|l|l|l|l|l}
 \cline{1-4}
@@ -146,9 +164,12 @@ epinions.txt           & 508837 & 75888    & 13.41021        \\
 \hline
 \end{tabular}
 
+
 \section{Results}
 
-The average runtimes and standard deviations for each algorithm are shown below, plotted against the number of edges in each graph.
+The average runtimes and uncertainties for each algorithm are shown below, plotted against the number of edges in each graph. For abc, the average runtimes were also plotted on the degree of the vertex chosen.
+
+\subsection{Runtime v.s. Graph Size}
 
 \begin{multicols}{2}
 
@@ -450,22 +471,117 @@ The average runtimes and standard deviations for each algorithm are shown below,
   \end{tikzpicture}
 \end{multicols}
 
-Some notes:
+Observations:
+
+abc runtimes varied wildly based on the vertex chosen. This is explained in section 5.2.
+
+bc is highly RAM intensive, and either crashes, or is killed by the kernel on larger graphs. 
+
+Most graphs follow a polynomial curve, which matches with the run time analysis of the algorithms.
+
+While cc, reduce, and reducepercent all look like they have inaccurate measurements, it is important to note that both the parallelized and unparallelized versions of these algorithms ran under 1 second on all graphs, meaning no noticable performance improvement could be observed.
 
 
-Betweeness Centrality is highly RAM intensive, and often crashes on larger graphs. 
+\subsection{abc - Runtime v.s. Vertex Degree }
+
+\begin{multicols}{2}
+  \begin{tikzpicture}
+  \begin{axis}[
+  title={abc on facebook\_combined.txt},
+  xlabel={Degree of vertex chosen},
+  ylabel={Runtime (s)},
+  xmin=0,
+  ymin=0,
+  legend pos=north east,
+  width=200 pt
+  ]
+  \addplot [color=blue, mark=o,]
+   plot [error bars/.cd, y dir = both, y explicit]
+   table[x =degree_fb, y =runtime_seq_fb, y error =err_seq_fb, col sep=comma]{abc_runtime_by_vertex.csv}
+   ;
+  \addplot [color=red, mark=o,]
+   plot [error bars/.cd, y dir = both, y explicit]
+   table[x =degree_fb, y =runtime_tbb_fb, y error =err_tbb_fb, col sep=comma]{abc_runtime_by_vertex.csv}
+   ;
+   \legend{Unparallelized, Parallelized}
+  \end{axis}
+  \end{tikzpicture}
+
+    \begin{tikzpicture}
+  \begin{axis}[
+  title={abc on enron.txt},
+  xlabel={Degree of vertex chosen},
+  ylabel={Runtime (s)},
+  xmin=0,
+  ymin=0,
+  legend pos=north east,
+  width=200 pt
+  ]
+  \addplot [color=blue, mark=o,]
+   plot [error bars/.cd, y dir = both, y explicit]
+   table[x =degree_enron, y =runtime_seq_enron, y error =err_seq_enron, col sep=comma]{abc_runtime_by_vertex.csv}
+   ;
+  \addplot [color=red, mark=o,]
+   plot [error bars/.cd, y dir = both, y explicit]
+   table[x =degree_enron, y =runtime_tbb_enron, y error =err_tbb_enron, col sep=comma]{abc_runtime_by_vertex.csv}
+   ;
+   \legend{Unparallelized, Parallelized}
+  \end{axis}
+  \end{tikzpicture}
+
+    \begin{tikzpicture}
+  \begin{axis}[
+  title={abc on epinions.txt},
+  xlabel={Degree of vertex chosen},
+  ylabel={Runtime (s)},
+  xmin=0,
+  ymin=0,
+  legend pos=north east,
+  width=200 pt
+  ]
+  \addplot [color=blue, mark=o,]
+   plot [error bars/.cd, y dir = both, y explicit]
+   table[x =degree_epinions, y =runtime_seq_epinions, y error =err_seq_epinions, col sep=comma]{abc_runtime_by_vertex.csv}
+   ;
+  \addplot [color=red, mark=o,]
+   plot [error bars/.cd, y dir = both, y explicit]
+   table[x =degree_epinions, y =runtime_tbb_epinions, y error =err_tbb_epinions, col sep=comma]{abc_runtime_by_vertex.csv}
+   ;
+   \legend{Unparallelized, Parallelized}
+  \end{axis}
+  \end{tikzpicture}
+\end{multicols}
+
+Observations:
+
+The runtimes of abc on all three graphs follow a very similar pattern - vertices with a low degree take much longer to run, whereas vertices with high degree run almost instantaneously. This can be explained by the nature of the algorithm.
+
+The algorithm works by repeatedly choosing a random vertex vi, calculating the shortest path to all other vertices from vi, and computing a dependency score based on how many times our original vertex chosen appears in a path. This is repeated until the sum of the dependency scores pass a threshold, or until 1000 iterations are reached.
+
+Vertices with many neighbors will appear in more paths and will reach the threshold much faster, so the algorithm will have a lower runtime on these vertices. On the other hand, vertices with little or no neighbors have a lower chance of appearing in a path, and go through more iterations - worst case running through all 1000 iterations, taking longer to run. This explains why vertices with higher degrees have lower runtimes than vertices with lower degrees.
+
 \section{Analysis}
 
+The improvement of the parallelized algorithms over the unparallelized versions is measured as number of times the parallelized version is faster than the unparallelized version - i.e. 
 
+$$ \text{improvement} = \frac{\text{runtime of unparallelized algorithm}}{\text{runtime of parallelized algorithm}} $$
+
+For example, if an algorithm had a runtime of 200s unparallelized, and 10s parallelized, the improvement in time would be 20, i.e. a 20x improvement, or the parallelized version runs 20 times faster.
+
+In our dataset, measurements where either versions of the algorithm ran in 1 second or under have been ommitted. This is because there is no way to accurately measure any runtimes under 1 second - even if measurements could be made in the milliseconds, they cannot be trusted.
+
+On average, runtime improved by $18.8 \pm 11.2$ times over all measurements.
+
+\subsection{Runtime Speedup By Command}
   \begin{tikzpicture}
   \begin{axis}[
   xbar, 
   xmin=0,
   title={\# Times Runtime Speedup, by Command},
   xlabel={Average \# Times Speedup},  
-  symbolic y coords={cc, reducepercent, reduce, reducetreetop, reducehighdegreetop, prank, lcc, reducetri, etri, abc, bc, aprank, adiam},
+  symbolic y coords={reducetreetop, reducehighdegreetop, abc, lcc, reducetri, bc, etri, adiam},
   width=350 pt,
-  height=275 pt,
+  height=200 pt,
   ytick=data
   ]
   \addplot [fill=blue,]
@@ -475,6 +591,9 @@ Betweeness Centrality is highly RAM intensive, and often crashes on larger graph
   \end{axis}
   \end{tikzpicture}
 
+Improvement varied widely both between commands, and within each command, based on the graph it was run on. In general, simpler algorithms, such as adiam saw much greater improvement than more complex algorithms, with many nested loops and complex control flow, such as abc, reducehighdegreetop, and reducetreetop.
+
+\subsection{Runtime Speedup By Graph Size}
   \begin{tikzpicture}
   \begin{axis}[
   ybar, 
@@ -482,7 +601,7 @@ Betweeness Centrality is highly RAM intensive, and often crashes on larger graph
   xlabel={\# Vertices in Graph},
   ylabel={Average \# Times Speedup},  
   width=350 pt,
-  height=275 pt,
+  height=200 pt,
   ymin=0,
   xtick=data,
   symbolic x coords={6, 51, 1904, 4039, 36692, 75888}
@@ -493,5 +612,33 @@ Betweeness Centrality is highly RAM intensive, and often crashes on larger graph
    ;
   \end{axis}
   \end{tikzpicture}
+
+Improvement also varied widely by the size of graph, and within each graph. The smaller graphs (5.txt, 50.txt, small test.txt) have been ommitted, as virtually all algorithms saw no improvement between parallelized and unparallelized versions when run on those graphs.
+
+From these data points, improvement seems to decrease as graph size increases. This may be due to the extra memory used and needed by these larger graphs, which may slow down the performance of the parallel functions.
+
+\subsection{Runtime Speedup By Number of Nested Loops Parallelized}
+
+One interesting anomaly showed up when parallelizing the betweeness centrality algorithm - increasing the number of nested loops parallelized slowed down the runtime of the algorithm:
+
+  \begin{tikzpicture}
+  \begin{axis}[
+  ybar, 
+  title={Average Runtime, by Number of Nested Loops Parallelized},
+  xlabel={\# Of Loops Parallelized},
+  ylabel={Average Runtime (s)},  
+  ymin=0,  
+  symbolic x coords={0, 2, 3},
+  xtick=data
+  ]
+  \addplot [fill=blue,]
+   plot [error bars/.cd, y dir = both, y explicit]
+   table[x =loops, y =average, y error =stdev, col sep=comma]{bc_anomaly.csv}
+   ;
+  \end{axis}
+  \end{tikzpicture}
+
+This may be due to multiple reasons - inefficient memory management, or additional overhead required for parallelization outweighing the time saved.
+
 
 \end{document}

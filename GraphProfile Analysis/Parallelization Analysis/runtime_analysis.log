@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (MiKTeX 2.9.6350 64-bit) (preloaded format=pdflatex 2017.9.11)  25 NOV 2017 18:17
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (MiKTeX 2.9.6350 64-bit) (preloaded format=pdflatex 2017.9.11)  26 NOV 2017 17:00
 entering extended mode
 **./runtime_analysis.tex
 (runtime_analysis.tex
@@ -666,6 +666,8 @@ Package: multicol 2017/04/11 v1.8q multicolumn formatting (FMi)
 \mult@nat@firstbox=\box65
 \colbreak@box=\box66
 \mc@col@check@num=\count138
+) ("C:\Program Files\MiKTeX 2.9\tex\latex\ltxmisc\parskip.sty"
+Package: parskip 2001/04/09 non-zero parskip adjustments
 )
 (C:\Users\boshe\AppData\Roaming\MiKTeX\2.9\tex\generic\pgf\frontendlayer\tikz\l
 ibraries\tikzlibrarypositioning.code.tex
@@ -901,20 +903,20 @@ File: pst-tree.tex 2017/02/18 1.13 `pst-tree' (tvz,hv)
  (runtime_analysis.aux)
 \openout1 = `runtime_analysis.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 19.
-LaTeX Font Info:    ... okay on input line 19.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 19.
-LaTeX Font Info:    ... okay on input line 19.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 19.
-LaTeX Font Info:    ... okay on input line 19.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 19.
-LaTeX Font Info:    ... okay on input line 19.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 19.
-LaTeX Font Info:    ... okay on input line 19.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 19.
-LaTeX Font Info:    ... okay on input line 19.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 19.
-LaTeX Font Info:    ... okay on input line 19.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
 
 (C:\Users\boshe\AppData\Roaming\MiKTeX\2.9\tex\context\base\supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
@@ -947,10 +949,10 @@ ABD: EveryShipout initializing macros
 Package pgfplots Warning: running in backwards compatibility mode (unsuitable t
 ick labels; missing features). Consider writing \pgfplotsset{compat=1.15} into 
 your preamble.
- on input line 19.
+ on input line 24.
 
 \AtBeginShipoutBox=\box73
-Package hyperref Info: Link coloring OFF on input line 19.
+Package hyperref Info: Link coloring OFF on input line 24.
 ("C:\Program Files\MiKTeX 2.9\tex\latex\hyperref\nameref.sty"
 Package: nameref 2016/05/21 v2.44 Cross-referencing by name of section
 
@@ -959,21 +961,21 @@ Package: gettitlestring 2016/05/16 v1.5 Cleanup title references (HO)
 )
 \c@section@level=\count189
 )
-LaTeX Info: Redefining \ref on input line 19.
-LaTeX Info: Redefining \pageref on input line 19.
-LaTeX Info: Redefining \nameref on input line 19.
+LaTeX Info: Redefining \ref on input line 24.
+LaTeX Info: Redefining \pageref on input line 24.
+LaTeX Info: Redefining \nameref on input line 24.
 
 (runtime_analysis.out) (runtime_analysis.out)
 \@outlinefile=\write4
 \openout4 = `runtime_analysis.out'.
 
-LaTeX Font Info:    Try loading font information for OMS+cmr on input line 34.
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 39.
 
 ("C:\Program Files\MiKTeX 2.9\tex\latex\base\omscmr.fd"
 File: omscmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <12> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 34.
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 39.
  [1
 Non-PDF special ignored!
 Non-PDF special ignored!
@@ -986,83 +988,188 @@ Non-PDF special ignored!
 Non-PDF special ignored!
 Non-PDF special ignored!
 Non-PDF special ignored!{C:/ProgramData/MiKTeX/2.9/pdftex/config/pdftex.map}]
-Overfull \hbox (43.2446pt too wide) in paragraph at lines 68--69
+Overfull \hbox (43.2446pt too wide) in paragraph at lines 73--74
 []\OT1/cmr/m/n/12 optimizing dou-bly or triply nested for loops when used in co
 n-junc-tion with blocked[]range2d
  []
 
-[2]
-LaTeX Font Info:    Try loading font information for U+msa on input line 123.
+[2] [3]
+LaTeX Font Info:    Try loading font information for U+msa on input line 136.
  ("C:\Program Files\MiKTeX 2.9\tex\latex\amsfonts\umsa.fd"
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Try loading font information for U+msb on input line 123.
+LaTeX Font Info:    Try loading font information for U+msb on input line 136.
 
 ("C:\Program Files\MiKTeX 2.9\tex\latex\amsfonts\umsb.fd"
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-) [3]
-PGFPlots: reading {runtime_data_clean.csv}
-PGFPlots: reading {runtime_data_clean.csv}
-PGFPlots: reading {runtime_data_clean.csv}
-PGFPlots: reading {runtime_data_clean.csv}
-PGFPlots: reading {runtime_data_clean.csv}
+) [4]
 PGFPlots: reading {runtime_data_clean.csv}
 PGFPlots: reading {runtime_data_clean.csv}
 
-NOTE: coordinate (367662,) has been dropped because of a coordinate filter. (se
-e also unbounded coords=jump). 
-NOTE: coordinate (508837,) has been dropped because of a coordinate filter. (se
-e also unbounded coords=jump). 
+Overfull \hbox (0.23544pt too wide) in paragraph at lines 196--197
+[][] 
+ []
+
+PGFPlots: reading {runtime_data_clean.csv}
+PGFPlots: reading {runtime_data_clean.csv}
+
+Overfull \hbox (0.23544pt too wide) in paragraph at lines 219--220
+[][] 
+ []
+
+PGFPlots: reading {runtime_data_clean.csv}
+PGFPlots: reading {runtime_data_clean.csv}
+
+Overfull \hbox (0.23544pt too wide) in paragraph at lines 242--243
+[][] 
+ []
+
 PGFPlots: reading {runtime_data_clean.csv}
 NOTE: coordinate (367662,) has been dropped because of a coordinate filter. (se
 e also unbounded coords=jump). 
 NOTE: coordinate (508837,) has been dropped because of a coordinate filter. (se
 e also unbounded coords=jump). 
 PGFPlots: reading {runtime_data_clean.csv}
+NOTE: coordinate (367662,) has been dropped because of a coordinate filter. (se
+e also unbounded coords=jump). 
+NOTE: coordinate (508837,) has been dropped because of a coordinate filter. (se
+e also unbounded coords=jump). 
+
+Overfull \hbox (0.23874pt too wide) in paragraph at lines 265--266
+[][] 
+ []
+
 PGFPlots: reading {runtime_data_clean.csv}
 PGFPlots: reading {runtime_data_clean.csv}
+[5]
+Overfull \hbox (0.23544pt too wide) in paragraph at lines 287--288
+[][] 
+ []
+
 PGFPlots: reading {runtime_data_clean.csv}
 PGFPlots: reading {runtime_data_clean.csv}
+
+Overfull \hbox (0.23544pt too wide) in paragraph at lines 310--311
+[][] 
+ []
+
 PGFPlots: reading {runtime_data_clean.csv}
 PGFPlots: reading {runtime_data_clean.csv}
-PGFPlots: reading {runtime_data_clean.csv}
-[4]
-PGFPlots: reading {runtime_data_clean.csv}
-PGFPlots: reading {runtime_data_clean.csv}
-PGFPlots: reading {runtime_data_clean.csv}
-PGFPlots: reading {runtime_data_clean.csv}
-PGFPlots: reading {runtime_data_clean.csv}
+
+Overfull \hbox (0.23544pt too wide) in paragraph at lines 333--334
+[][] 
+ []
+
 PGFPlots: reading {runtime_data_clean.csv}
 PGFPlots: reading {runtime_data_clean.csv}
+
+Overfull \hbox (0.23544pt too wide) in paragraph at lines 356--357
+[][] 
+ []
+
 PGFPlots: reading {runtime_data_clean.csv}
 PGFPlots: reading {runtime_data_clean.csv}
+
+Overfull \hbox (0.23544pt too wide) in paragraph at lines 379--380
+[][] 
+ []
+
 PGFPlots: reading {runtime_data_clean.csv}
- [5]
+PGFPlots: reading {runtime_data_clean.csv}
+[6]
+Overfull \hbox (0.23544pt too wide) in paragraph at lines 402--403
+[][] 
+ []
+
+PGFPlots: reading {runtime_data_clean.csv}
+PGFPlots: reading {runtime_data_clean.csv}
+
+Overfull \hbox (0.23544pt too wide) in paragraph at lines 425--426
+[][] 
+ []
+
+PGFPlots: reading {runtime_data_clean.csv}
+PGFPlots: reading {runtime_data_clean.csv}
+
+Overfull \hbox (0.23544pt too wide) in paragraph at lines 448--449
+[][] 
+ []
+
+PGFPlots: reading {runtime_data_clean.csv}
+PGFPlots: reading {runtime_data_clean.csv}
+
+Overfull \hbox (0.23544pt too wide) in paragraph at lines 471--472
+[][] 
+ []
+
+[7]
+Overfull \hbox (3.23631pt too wide) in paragraph at lines 478--479
+[]\OT1/cmr/m/n/12 bc is highly RAM in-ten-sive, and ei-ther crashes, or is kill
+ed by the ker-nel on larger graphs. 
+ []
+
+PGFPlots: reading {abc_runtime_by_vertex.csv}
+NOTE: coordinate (,) has been dropped because of a coordinate filter. (see also
+ unbounded coords=jump). 
+PGFPlots: reading {abc_runtime_by_vertex.csv}
+NOTE: coordinate (,) has been dropped because of a coordinate filter. (see also
+ unbounded coords=jump). 
+
+Overfull \hbox (3.80167pt too wide) in paragraph at lines 508--509
+[][] 
+ []
+
+PGFPlots: reading {abc_runtime_by_vertex.csv}
+NOTE: coordinate (,) has been dropped because of a coordinate filter. (see also
+ unbounded coords=jump). 
+PGFPlots: reading {abc_runtime_by_vertex.csv}
+NOTE: coordinate (,) has been dropped because of a coordinate filter. (see also
+ unbounded coords=jump). 
+
+Overfull \hbox (15.16568pt too wide) in paragraph at lines 530--531
+[][] 
+ []
+
+PGFPlots: reading {abc_runtime_by_vertex.csv}
+PGFPlots: reading {abc_runtime_by_vertex.csv}
+
+Overfull \hbox (1.20847pt too wide) in paragraph at lines 552--553
+[][] 
+ []
+
+[8]
 PGFPlots: reading {improvement_by_command.csv}
+ [9]
 PGFPlots: reading {improvement_by_graph.csv}
- [6] [7]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 487.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 487.
+
+Overfull \hbox (4.06398pt too wide) in paragraph at lines 616--617
+\OT1/cmr/m/n/12 im-prove-ment be-tween par-al-lelized and un-par-al-lelized ver
+-sions when run on those graphs. 
+ []
+
+[10]
+Overfull \hbox (8.07454pt too wide) in paragraph at lines 620--620
+[]\OT1/cmr/bx/n/14.4 Runtime Speedup By Num-ber of Nested Loops Par-al-lelized 
+
+ []
+
+PGFPlots: reading {bc_anomaly.csv}
+[11]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 644.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 644.
  (runtime_analysis.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 487.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 487.
-
-
-Package rerunfilecheck Warning: File `runtime_analysis.out' has changed.
-(rerunfilecheck)                Rerun to get outlines right
-(rerunfilecheck)                or use package `bookmark'.
-
-Package rerunfilecheck Info: Checksums for `runtime_analysis.out':
-(rerunfilecheck)             Before: D41D8CD98F00B204E9800998ECF8427E;0
-(rerunfilecheck)             After:  06BA36758D5D06BE83449E7CA665EF5D;286.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 487.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 644.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 644.
+Package rerunfilecheck Info: File `runtime_analysis.out' has not changed.
+(rerunfilecheck)             Checksum: E2366F11111D3D3130C446EF81BF2B85;711.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 644.
  ) 
 Here is how much of TeX's memory you used:
- 29231 strings out of 493323
- 695818 string characters out of 3139066
- 1047970 words of memory out of 3000000
- 32266 multiletter control sequences out of 15000+200000
- 9367 words of font info for 36 fonts, out of 3000000 for 9000
+ 29332 strings out of 493323
+ 698434 string characters out of 3139066
+ 1131033 words of memory out of 3000000
+ 32351 multiletter control sequences out of 15000+200000
+ 9972 words of font info for 38 fonts, out of 3000000 for 9000
  1141 hyphenation exceptions out of 8191
  62i,17n,96p,980b,2422s stack positions out of 5000i,500n,10000p,200000b,50000s
 <C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmbx12.pfb><C:/Pr
@@ -1071,9 +1178,9 @@ les/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Program Files/MiKTe
 X 2.9/fonts/type1/public/amsfonts/cm/cmr8.pfb><C:/Program Files/MiKTeX 2.9/font
 s/type1/public/amsfonts/cm/cmsy10.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/
 public/amsfonts/cm/cmtt12.pfb>
-Output written on runtime_analysis.pdf (7 pages, 103291 bytes).
+Output written on runtime_analysis.pdf (11 pages, 128452 bytes).
 PDF statistics:
- 73 PDF objects out of 1000 (max. 8388607)
- 14 named destinations out of 1000 (max. 500000)
- 13 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 131 PDF objects out of 1000 (max. 8388607)
+ 23 named destinations out of 1000 (max. 500000)
+ 101 words of extra memory for PDF output out of 10000 (max. 10000000)
 

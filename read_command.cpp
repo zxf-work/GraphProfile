@@ -19,6 +19,7 @@
 #include "shortest_path.hpp"
 #include "onion_decomp.hpp"
 #include "read_command.hpp"
+#include "degrees.hpp"
 
 #ifdef TBB
 #include "tbb/tbb.h"
@@ -55,7 +56,7 @@ void readCommand(const Graph &g, string filename)
     bool b = true;
     while (b)
     {
-        cout << "Select modes available: abc, adiam, aprank, bbc, bc, cc, dist, ediam, emdiam, edge, etri, kdiam, lcc, od, prank, vert, reduce, reducetri, reducetree, reducetreetop, reducehighdegree, reducehighdegreetop, reducepercent (type exit to quit)" << endl;
+        cout << "Select modes available: abc, adiam, aprank, bbc, bc, cc, dist, degrees, ediam, emdiam, edge, etri, kdiam, lcc, od, prank, vert, reduce, reducetri, reducetree, reducetreetop, reducehighdegree, reducehighdegreetop, reducepercent (type exit to quit)" << endl;
         string command;
         getline(cin, command);
 
@@ -576,6 +577,25 @@ void readCommand(const Graph &g, string filename)
         }
         else if (command == "vert") cout << "Num Vert: " << boost::num_vertices(g) << endl;
         else if (command == "edge") cout << "Num Edge: " << boost::num_edges(g) << endl;
+        else if (command == "degrees"){
+
+            vector<pair<int, Vertex>> degrees;
+            ofstream degreeFile;
+
+            vertex_degrees(g, degrees);
+
+            degreeFile.open(outFileName + "-vertex-degrees.txt", ios_base::out | ios_base::app);
+            degreeFile.precision(10);
+            degreeFile << filename << endl;
+            degreeFile << "degree, vertex" << endl;
+            for(auto it = degrees.begin(); it != degrees.end(); ++it)
+            {
+                degreeFile << it->first <<", "<<it->second << endl;
+            }
+            degreeFile.close();
+
+            cout << "Degrees computed." << endl;
+        }
         else if (command == "exit") break;
         else cout << "Did not recognize command." << endl;
     }

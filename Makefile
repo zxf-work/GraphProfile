@@ -27,6 +27,7 @@ OBJECTS = adjacency_list_read.o \
 					shortest_path.o \
 					suite_test.o \
 					triangle_count.o \
+					degrees.o \
 					main.o
 
 # compile both parallelized and non parallelized versions of functions

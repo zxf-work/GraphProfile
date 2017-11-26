@@ -1,6 +1,11 @@
 \BOOKMARK [1][-]{section.1}{Introduction}{}% 1
 \BOOKMARK [1][-]{section.2}{Algorithms}{}% 2
 \BOOKMARK [1][-]{section.3}{Parallelization Techniques}{}% 3
-\BOOKMARK [1][-]{section.4}{Testing}{}% 4
+\BOOKMARK [1][-]{section.4}{Data Collection}{}% 4
 \BOOKMARK [1][-]{section.5}{Results}{}% 5
-\BOOKMARK [1][-]{section.6}{Analysis}{}% 6
+\BOOKMARK [2][-]{subsection.5.1}{Runtime v.s. Graph Size}{section.5}% 6
+\BOOKMARK [2][-]{subsection.5.2}{abc - Runtime v.s. Vertex Degree }{section.5}% 7
+\BOOKMARK [1][-]{section.6}{Analysis}{}% 8
+\BOOKMARK [2][-]{subsection.6.1}{Runtime Speedup By Command}{section.6}% 9
+\BOOKMARK [2][-]{subsection.6.2}{Runtime Speedup By Graph Size}{section.6}% 10
+\BOOKMARK [2][-]{subsection.6.3}{Runtime Speedup By Number of Nested Loops Parallelized}{section.6}% 11
