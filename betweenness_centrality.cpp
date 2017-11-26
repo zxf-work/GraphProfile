@@ -114,12 +114,10 @@ float approx_betweenness_centrality(const Graph &g, const Vertex &v)
     while(sum < float(c*n))
     {
         ++iterations;
-        if(iterations > 10000)
+        if(iterations > 1000)
         {
             break;
         }
-
-        if(iterations % 1000 == 0) std::cout<<"computing..."<<std::endl;
 
         // select a random vertex to calculate abc on
         // if randomly selected vertex is the one we are calculating abc on,
@@ -399,7 +397,7 @@ float approx_betweenness_centrality_multithread(const Graph &g, const Vertex &v)
     float target = 0.5*n;
     srand(time(NULL));
 
-    tbb::parallel_for(0, 10000,
+    tbb::parallel_for(0, 1000,
         [&g, &v, &n, &iterations, &sum, &target](int i){
             if(sum >= target)
             {
