@@ -69,7 +69,7 @@ void readCommand(const Graph &g, string filename)
             endTime = time(NULL);
             outFile << "Connected Components: " << connectedCompCount.at(0) << endl;
             cout << "Connected Components: " << connectedCompCount.at(0) << endl;
-            cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
+            cerr<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
 
             outFile << "Largest Component Sizes: ";
             for(std::vector<unsigned>::iterator i = connectedCompCount.begin() + 1; i != connectedCompCount.end(); ++i)
@@ -86,7 +86,7 @@ void readCommand(const Graph &g, string filename)
             endTime = time(NULL);
             outFile << "Connected Components, Multithreaded: " << connectedCompCount.at(0) << endl;
             cout << "Connected Components, Multithreaded: " << connectedCompCount.at(0) << endl;
-            cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
+            cerr<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
 
             outFile << "Largest Component Sizes, Multithreaded: ";
             for(std::vector<unsigned>::iterator i = connectedCompCount.begin() + 1; i != connectedCompCount.end(); ++i)
@@ -113,7 +113,7 @@ void readCommand(const Graph &g, string filename)
 
                 outFile << "Average LCC: " << lcc << endl;
                 cout<< "Average LCC: " << lcc << endl;
-                cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
+                cerr<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
                 #endif
                 #ifdef TBB
                 // startTime = time(NULL);
@@ -122,7 +122,7 @@ void readCommand(const Graph &g, string filename)
 
                 // outFile << "Average LCC, Multithreaded: " << lcc << endl;
                 // cout<< "Average LCC, Multithreaded: " << lcc << endl;
-                // cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
+                // cerr<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
 
 
                 startTime = time(NULL);
@@ -131,7 +131,7 @@ void readCommand(const Graph &g, string filename)
 
                 outFile << "Average LCC, reduce: " << lcc << endl;
                 cout<< "Average LCC, reduce: " << lcc << endl;
-                cout<<"Time elapsed, reduce: "<<difftime(endTime, startTime)<<endl;
+                cerr<<"Time elapsed, reduce: "<<difftime(endTime, startTime)<<endl;
                 #endif
             }
             else{
@@ -142,7 +142,7 @@ void readCommand(const Graph &g, string filename)
 
                 outFile << "LCC of vertex " << v << ": " << lcc << endl;
                 cout<< "LCC of vertex " << v << ": " << lcc << endl;
-                cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
+                cerr<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
                 #endif
                 #ifdef TBB
                 startTime = time(NULL);
@@ -151,7 +151,7 @@ void readCommand(const Graph &g, string filename)
 
                 outFile << "LCC of vertex " << v << ", Multithreaded: " << lcc << endl;
                 cout << "LCC of vertex " << v << ", Multithreaded: " << lcc << endl;
-                cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
+                cerr<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
                 #endif
             }
 
@@ -166,7 +166,7 @@ void readCommand(const Graph &g, string filename)
             startTime = time(NULL);
             page_rank_multithread(g, pageRank);
             endTime = time(NULL);
-            cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
+            cerr<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
 
             pRankFile.open(outFileName + "-page-rank" + multithread_file_ending, ios_base::out | ios_base::app);
             pRankFile.precision(10);
@@ -181,7 +181,7 @@ void readCommand(const Graph &g, string filename)
             startTime = time(NULL);
             page_rank(g, pageRank);
             endTime = time(NULL);
-            cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
+            cerr<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
 
             pRankFile.open(outFileName + "-page-rank.txt", ios_base::out | ios_base::app);
             pRankFile.precision(10);
@@ -203,7 +203,7 @@ void readCommand(const Graph &g, string filename)
             startTime = time(NULL);
             approx_page_rank_multithread(g, pageRank);
             endTime = time(NULL);
-            cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
+            cerr<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
 
             pRankFile.open(outFileName + "-approximate-page-rank" + multithread_file_ending, ios_base::out | ios_base::app);
             pRankFile.precision(10);
@@ -218,7 +218,7 @@ void readCommand(const Graph &g, string filename)
             startTime = time(NULL);
             approx_page_rank(g, pageRank);
             endTime = time(NULL);
-            cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
+            cerr<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
 
             pRankFile.open(outFileName + "-approximate-page-rank.txt", ios_base::out | ios_base::app);
             pRankFile.precision(10);
@@ -247,7 +247,7 @@ void readCommand(const Graph &g, string filename)
             endTime = time(NULL);
             outFile << "Approx Betweenness Centrality, Multithreaded " << abc<< endl;
             cout << "Approx Betweenness Centrality, Multithreaded " << abc << endl;
-            cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
+            cerr<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
             #endif
             #ifdef SEQ
             startTime = time(NULL);
@@ -255,7 +255,7 @@ void readCommand(const Graph &g, string filename)
             endTime = time(NULL);
             outFile << "Approx Betweenness Centrality " << abc<< endl;
             cout << "Approx Betweenness Centrality " << abc << endl;
-            cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
+            cerr<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
             #endif
         }
         else if (command == "bc") //betweenness centrality, outputs to separate file
@@ -272,21 +272,21 @@ void readCommand(const Graph &g, string filename)
             betweenness_centrality_multithread(g, centralityVector);
             endTime = time(NULL);
 
-            cout<<"Time elapsed, Multithreaded, double parallel_for: "<<difftime(endTime, startTime)<<endl;
+            cerr<<"Time elapsed, Multithreaded, double parallel_for: "<<difftime(endTime, startTime)<<endl;
 
 
             // startTime = time(NULL);
             // betweenness_centrality_multithread_3parallel(g, centralityVector);
             // endTime = time(NULL);
 
-            // cout<<"Time elapsed, Multithreaded, triple parallel_for: "<<difftime(endTime, startTime)<<endl;
+            // cerr<<"Time elapsed, Multithreaded, triple parallel_for: "<<difftime(endTime, startTime)<<endl;
             #endif
             #ifdef SEQ
             startTime = time(NULL);
             betweenness_centrality(g, centralityVector);
             endTime = time(NULL);
 
-            cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
+            cerr<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
             #endif
             for(auto it = centralityVector.begin(); it != centralityVector.end(); ++it)
             {
@@ -327,14 +327,14 @@ void readCommand(const Graph &g, string filename)
             graph_reduction(g, h1, x);
             endTime = time(NULL);
             edge_list_print_file(h1, outFileName + "-reduced-graph.txt");
-            cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
+            cerr<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
             #endif
             #ifdef TBB
             startTime = time(NULL);
             graph_reduction_multithread(g, h2, x);
             endTime = time(NULL);
             edge_list_print_file(h2, outFileName + "-reduced-graph" + multithread_file_ending);
-            cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
+            cerr<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
             #endif
         }
         else if (command == "reducetree")
@@ -359,14 +359,14 @@ void readCommand(const Graph &g, string filename)
             graph_reduction_spanning_tree(g, h1, roots);
             endTime = time(NULL);
             edge_list_print_file(h1, outFileName + "-reduced-graph-tree.txt");
-            cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
+            cerr<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
             #endif
             #ifdef TBB
             startTime = time(NULL);
             graph_reduction_spanning_tree_multithread(g, h2, roots);
             endTime = time(NULL);
             edge_list_print_file(h2, outFileName + "-reduced-graph-tree" + multithread_file_ending);
-            cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
+            cerr<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
             #endif
         }
         else if (command == "reducetreetop")
@@ -381,14 +381,14 @@ void readCommand(const Graph &g, string filename)
             graph_reduction_spanning_tree(g, h1, high_degree_vertices(g, x));
             endTime = time(NULL);
             edge_list_print_file(h1, outFileName + "-reduced-graph-tree2.txt");
-            cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
+            cerr<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
             #endif
             #ifdef TBB
             startTime = time(NULL);
             graph_reduction_spanning_tree_multithread(g, h2, high_degree_vertices_multithread(g, x));
             endTime = time(NULL);
             edge_list_print_file(h2, outFileName + "-reduced-graph-tree2" + multithread_file_ending);
-            cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
+            cerr<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
             #endif
         }
         else if (command == "reducehighdegree")
@@ -413,7 +413,7 @@ void readCommand(const Graph &g, string filename)
             graph_reduction_high_degree_tree(g, h1, roots);
             endTime = time(NULL);
             edge_list_print_file(h1, outFileName + "-reduced-graph-high-degree.txt");
-            cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
+            cerr<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
             #endif
 
             #ifdef TBB
@@ -421,7 +421,7 @@ void readCommand(const Graph &g, string filename)
             graph_reduction_high_degree_tree_multithread(g, h2, roots);
             endTime = time(NULL);
             edge_list_print_file(h2, outFileName + "-reduced-graph-high-degree" + multithread_file_ending);
-            cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
+            cerr<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
             #endif
         }
         else if (command == "reducehighdegreetop")
@@ -436,7 +436,7 @@ void readCommand(const Graph &g, string filename)
             graph_reduction_high_degree_tree(g, h1, high_degree_vertices(g, x));
             endTime = time(NULL);
             edge_list_print_file(h1, outFileName + "-reduced-graph-high-degree2.txt");
-            cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
+            cerr<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
             #endif
 
             #ifdef TBB
@@ -444,7 +444,7 @@ void readCommand(const Graph &g, string filename)
             graph_reduction_high_degree_tree_multithread(g, h2, high_degree_vertices_multithread(g, x));
             endTime = time(NULL);
             edge_list_print_file(h2, outFileName + "-reduced-graph-high-degree2" + multithread_file_ending);
-            cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
+            cerr<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
             #endif
         }
         else if (command == "reducetri")
@@ -460,14 +460,14 @@ void readCommand(const Graph &g, string filename)
             graph_reduction_triangle_avoid_multithread(g, h2, x);
             endTime = time(NULL);
             edge_list_print_file(h2, outFileName + "-reduced-graph-triangle" + multithread_file_ending);
-            cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
+            cerr<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
             #endif
             #ifdef SEQ
             startTime = time(NULL);
             graph_reduction_triangle_avoid(g, h1, x);
             endTime = time(NULL);
             edge_list_print_file(h1, outFileName + "-reduced-graph-triangle.txt");
-            cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
+            cerr<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
             #endif
         }
         else if (command == "reducepercent")
@@ -483,7 +483,7 @@ void readCommand(const Graph &g, string filename)
             graph_reduction_percentage(g, h1, median_cutoff(g), x);
             endTime = time(NULL);
             edge_list_print_file(h1, outFileName + "-reduced-graph-proportion.txt");
-            cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
+            cerr<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
             #endif
 
             #ifdef TBB
@@ -491,7 +491,7 @@ void readCommand(const Graph &g, string filename)
             graph_reduction_percentage_multithread(g, h2, median_cutoff(g), x);
             endTime = time(NULL);
             edge_list_print_file(h2, outFileName + "-reduced-graph-proportion" + multithread_file_ending);
-            cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
+            cerr<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
             #endif
         }
         else if (command == "dist")
@@ -531,7 +531,7 @@ void readCommand(const Graph &g, string filename)
             endTime = time(NULL);
             outFile << "Approx Diameter: " << adiam << endl;
             cout << "Approx Diameter: " << adiam << endl;
-            cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
+            cerr<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
             outFile<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
             #endif
 
@@ -541,7 +541,7 @@ void readCommand(const Graph &g, string filename)
             endTime = time(NULL);
             outFile << "Approx Diameter, Multithreaded: " << adiam  << endl;
             cout << "Approx Diameter, Multithreaded: " << adiam << endl;
-            cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
+            cerr<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
             outFile<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
             #endif
         }
@@ -559,7 +559,7 @@ void readCommand(const Graph &g, string filename)
             outFile << "Exact Triangle Count, Multithreaded: " << etri  << endl;
             cout << "Exact Triangle Count, Multithreaded: " << etri << endl;
 
-            cout<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
+            cerr<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
             outFile<<"Time elapsed, Multithreaded: "<<difftime(endTime, startTime)<<endl;
             #endif
             #ifdef SEQ
@@ -570,7 +570,7 @@ void readCommand(const Graph &g, string filename)
             outFile << "Exact Triangle Count: "  << etri << endl;
             cout << "Exact Triangle Count: "  << etri << endl;
 
-            cout<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
+            cerr<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
             outFile<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
             #endif
         }
