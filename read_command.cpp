@@ -575,8 +575,14 @@ void readCommand(const Graph &g, string filename)
             outFile<<"Time elapsed: "<<difftime(endTime, startTime)<<endl;
             #endif
         }
-        else if (command == "vert") cout << "Num Vert: " << boost::num_vertices(g) << endl;
-        else if (command == "edge") cout << "Num Edge: " << boost::num_edges(g) << endl;
+        else if (command == "vert"){
+            cout << "Num Vert: " << boost::num_vertices(g) << endl;
+            outFile << "Num Vert: " << boost::num_vertices(g) << endl;
+        }
+        else if (command == "edge"){
+            cout << "Num Edge: " << boost::num_edges(g) << endl;
+            outFile << "Num Edge: " << boost::num_edges(g) << endl;
+        }
         else if (command == "degrees"){
 
             vector<pair<int, Vertex>> degrees;
