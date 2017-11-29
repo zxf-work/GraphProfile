@@ -2,44 +2,24 @@
 #define LOCAL_CLUSTERING_COEFF_HPP_INCLUDED
 
 #include "common.h"
-#include <utility>
 
 using namespace boost;
 
+#ifdef SEQ
 //computes LCC of a vertex
 //LCC is the proportion of pair of neighbours that form a triangle
-double local_cluster_coeff(const Vertex &v, const Graph &g)
-{
-    double localTriCount = 0;
+double local_cluster_coeff(const Vertex &v, const Graph &g);
 
-    int deg = degree(v, g);
-    if (deg != 0 && deg != 1)
-    {
-        //check every pair of neighbours
-        std::pair<AdjacencyIterator, AdjacencyIterator> neighbourIter = adjacent_vertices(v, g);
-        for(AdjacencyIterator ni1 = neighbourIter.first; ni1 != --neighbourIter.second; ++ni1)
-        {
-            for(AdjacencyIterator ni2 = ++ni1; ni2 != neighbourIter.second; ++ni2)
-            {
-                std::pair<Edge, bool> e = edge(*ni1, *ni2, g);
-                if(e.second) localTriCount++;
-            }
-        }
-    }
-    else return 0;
-    double maxTriangle = (double)deg * (deg-1) / 2;
-    return localTriCount / maxTriangle;
+double average_cluster_coeff(const Graph &g);
+#endif
 
-}
+#ifdef TBB
+//multithreaded implementations
+double local_cluster_coeff_multithread(const Vertex &v, const Graph &g);
 
-double average_cluster_coeff(const Graph &g)
-{
-    double sum = 0;
-    for(VertexIterator vi = vertices(g).first; vi != vertices(g).second; ++vi)
-    {
-        sum = sum + local_cluster_coeff(*vi, g);
-    }
-    return sum / num_vertices(g);
-}
+double average_cluster_coeff_multithread(const Graph &g);
+
+double average_cluster_coeff_multithread_reduce(const Graph &g);
+#endif
 
 #endif // LOCAL_CLUSTERING_COEFF_HPP_INCLUDED

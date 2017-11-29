@@ -1,0 +1,644 @@
+\documentclass[12pt]{article}
+
+\usepackage{fullpage,url,amssymb,epsfig,color,xspace,tikz,tikz-qtree, amsmath, pgfplots, multicol}
+
+\usepackage[parfill]{parskip}
+
+\setlength{\parindent}{0pt}
+
+\usetikzlibrary{positioning}
+%\usepackage{algpseudocode}
+%\usepackage{algorithmicx}
+\usepackage{hyperref}
+\RequirePackage{pstricks,pst-node,pst-tree} % draw trees, requires using xetex
+\newlength{\nodeLength}
+\newcommand{\Node}{A}
+\newcommand{\setnode}[1]{
+  \settowidth{\nodeLength}{#1}
+  \renewcommand{\Node}[1]{
+    \Tcircle[name=#1]{\makebox[\nodeLength]{##1}}
+  }
+}
+\setnode{99}
+
+\begin{document}
+
+\begin{center}
+{\Large\bf Performance of Parallel Graph Profiling Algorithms}\\
+\end{center}
+
+\section{Introduction}
+
+This article will be examining how parallelization and multithreading techniques affect the runtime of graph profiling and reduction algorithms. Using Intel's Thread Building Blocks (TBB) Library, we can use high level parallel algorithms and data structures to take full advantage of multicore performance, and optimize computationally heavy, long running code.
+
+\section{Algorithms}
+
+This article focuses on parallelizing several graph profiling algorithms. The algorithms considered are:
+
+\begin{itemize}
+  \item abc: approximate betweenness centrality of a vertex - approximation of the number of shortest paths from all vertices to all others that pass through the node
+  \item adiam: approximate diameter - approximation of the longest shortest path in the graph
+  \item aprank: approximate page rank of the vertices of a graph
+  \item bc: betweenness centrality of all vertices in a graph
+  \item cc: connected components - the number of connected components and their sizes
+  \item etri: exact triangle count - the number of triangles in a graph
+  \item lcc: average local clustering coefficient - degree of which nodes in a graph tend to cluster together
+  \item prank: page rank of the vertices of a graph
+\end{itemize}
+
+In addition, several graph reduction algorithms are also analyzed:
+\begin{itemize}
+  \item reduce: create a reduced graph by keeping the top x neighbors of each vertex, ordered by their degree
+  \item reducetri: similar to reduce, but avoiding triangles when possible
+  \item reducetreetop: create a reduced graph from the spanning trees of the top x vertices, ordered by their degree
+  \item reducehighdegreetop: similar to reducetreetop, but using a different BFS algorithm
+  \item reducepercent: create a reduced graph by keeping the top x\% of vertices past the median degree of all vertices
+\end{itemize}
+
+\section{Parallelization Techniques}
+
+TBB provides several high level parallel functions and data structures that can be used. This section highlights how some of these tools were used.
+
+Parallel Functions:
+\begin{itemize}
+  \item parallel\_for
+
+  Most commonly used loop - performs parallel iteration over a range of values, which can be specified with a start and end value, or with a blocked\_range object.
+
+  Useful for: 
+
+  \begin{itemize}
+    \item repeatedly performing a calculation for an approximation (e.g. repeatedly selecting a vertex and computing a dependency score to calculate an approximate betweeness centrality)
+    \item performing an operation on every element of an array (e.g. calculating the page rank for each vertex, calculating heuristics for graph reduction algorithms)
+    \item optimizing doubly or triply nested for loops when used in conjunction with blocked\_range2d or blocked\_range3d (e.g. when counting triangles, or calculating betweenness centrality of every vertex)
+  \end{itemize}
+
+  \item parallel\_for\_each
+
+  Performs parallel iteration over sequences that do not have random access (for example, lists), at the cost of additional overhead. The sequence is specified with iterators pointing to the start and end of the range of the range to iterate over.
+
+  It is useful as many functions in the boost graph library used by this project returns lists. For example, \texttt{boost::adjacent\_vertices} returns a pair of iterators to a list of vertices adjacent to a specified vertex, and is used in calculating betweenness centrality, clustering coefficients, connected components, spanning trees, triangle counts, and graph reductions.
+
+  It is important to note that parallel\_for\_each comes with significant overhead. Intel's documentation suggests that "For good performance with input streams that do not have random access, execution of B::operator() should take at least ~100,000 clock cycles. If it is less, overhead of parallel\_for\_each may outweigh performance benefits."
+
+  \item parallel\_reduce
+
+  Computes a reduction over a range - for example finding the sum of an array. It works by first recursively splitting the range into subranges, performing the body operation (specified by the user) on each of these ranges, and then joining these ranges together (how these values are joined together is also specified by the user).
+
+  It is used over, say, a parallel\_for loop, as a parallel\_for loop may end up having multiple threads writing to the same variable (in this case, the running sum, or value being aggregated from the range) at the same time, or overwriting each other, leading to innaccurate results or segmentation faults. If a mutex is used in a parallel\_for loop to protect the variable, then runtime is slowed down, and in worst case, the loop becomes serial.
+
+  In this project, it is used to calculate the number of triangles and clustering coefficient.
+
+  \item parallel\_do
+
+  Function that processes work items in parallel, in which new items can be added as current items are processed by using the parallel\_do\_feeder classes. Similar to parallel\_for\_each, it comes with additional overhead. 
+
+  Used in parallel bfs algorithm - unvisited neighbors of visited vertices are added to a queue, as the parallel\_do loop searches through the queue in parallel.
+
+  \item parallel\_sort
+
+  Sorts a sequence or a container in parallel, in a non stable, non deterministic fashion. Used in graph reduction algorithms, where vertices are sorted by their degree.
+
+  \item blocked\_range, blocked\_range2d, blocked\_range3d
+
+  blocked\_range is not a function, but rather an object that can be used to represent a range of values to iterate over. When used in conjunction with parallel\_for, or parallel\_reduce, it splits itself into multiple, smaller blocked ranges, which can be iterated over serially in seperate threads.
+
+  Using blocked ranges can help optimize code, as it allows the user to specify an optimal grain size for the smaller blocked ranges to improve runtime, and also lets the user write optimized nested for loops without having to nest parallel\_for or parallel\_reduce functions.
+
+\end{itemize}
+
+Concurrent Data Structures:
+\begin{itemize}
+  \item concurrent\_vector
+
+  Template class for a vector that can be concurrently grown and accessed (i.e. multiple threads can append elements and access elements at the same time). 
+
+  Useful for calculating and creating the edges for a reduced graph in parallel, as many edges can be calculated in parallel, and added to the vector.
+
+  \item concurrent\_unordered\_map, concurrent\_unordered\_multimap
+
+  Template classes that support concurrent insertion and traversal, but not concurrent erasure. 
+
+  concurrent\_unordered\_map is used to store heuristics about vertices while an algorithm is runnning - for example, the "priority" of a vertex during graph reduction, and whether or not a vertex has been visited in BFS.
+
+  concurrent\_unordered\_multimap is to create and store spanning minimum spanning trees to perform graph reductions on.
+
+  \item concurrent\_priority\_queue
+
+  Template class for a priority queue with concurrent operations. 
+
+  Used to add and remove vertices in order of their degree for BFS and graph reduction algorithms.
+
+\end{itemize}
+
+\section{Data Collection}
+
+Runtimes of each algorithm was measured using the \texttt{<time.h>} library provided by C, and is calculated as the difference between before the function was called and after, rounded to the nearest second. In the future, the \texttt{<chrono>} library can be used instead, to get a time difference in milliseconds, for more accurate results. See \url{https://stackoverflow.com/questions/31487876/getting-a-time-difference-in-milliseconds} for details.
+
+The parallelized and unparallelized versions of each algorithm were run 5 times each, on 6 different graphs. The program was run on the waterloo student linux environment, on which 56-64 threads were consistently available. The runtimes were recorded, and averages were used for analysis.
+
+For reduce and reducetri, edges to the top 3 neighbors of each vertex were chosen to be kept.
+
+For reducetreetop and reducehighdegreetop, the reduction was created from the spanning trees of the top 1\% of all vertices.
+
+For reducepercent, 50\% of vertices past the median were chosen to be kept.
+
+For the approximate betweeness centrality metric (abc), runtime was also measured based on the degree of the vertex chosen. 3 measurements were taken from a vertex of degree 1, 10, 100, 500 and 1000 from the largest 3 graphs.
+
+\begin{tabular}{|l|l|l|l|l}
+\cline{1-4}
+\hline
+Graph Name          & Num. Edges  & Num. Vertices & Average Degree \\
+\hline
+5.txt                  & 5      & 6        & 1.666667        \\
+\hline
+50.txt                 & 50     & 51       & 1.960784        \\
+\hline
+small\_test.txt        & 55     & 1904     & 0.057773        \\
+\hline
+facebook\_combined.txt & 88234  & 4039     & 43.69101        \\
+\hline
+enron.txt              & 367662 & 36692    & 20.04044        \\
+\hline
+epinions.txt           & 508837 & 75888    & 13.41021        \\
+\hline
+\end{tabular}
+
+
+\section{Results}
+
+The average runtimes and uncertainties for each algorithm are shown below, plotted against the number of edges in each graph. For abc, the average runtimes were also plotted on the degree of the vertex chosen.
+
+\subsection{Runtime v.s. Graph Size}
+
+\begin{multicols}{2}
+
+  \begin{tikzpicture}
+  \begin{axis}[
+  title={abc},
+  xlabel={Number of edges},
+  ylabel={Runtime (s)},
+  xmin=0,
+  ymin=0,
+  legend pos=north west,
+  width=200 pt
+  ]
+  \addplot [color=blue, mark=o,]
+   plot [error bars/.cd, y dir = both, y explicit]
+   table[x =edges, y =abc_seq_time, y error =abc_seq_err, col sep=comma]{runtime_data_clean.csv}
+   ;
+  \addplot [color=red, mark=o,]
+   plot [error bars/.cd, y dir = both, y explicit]
+   table[x =edges, y =abc_tbb_time, y error =abc_tbb_err, col sep=comma]{runtime_data_clean.csv}
+   ;
+   \legend{Unparallelized, Parallelized}
+  \end{axis}
+  \end{tikzpicture}
+
+
+  \begin{tikzpicture}
+  \begin{axis}[
+  title={adiam},
+  xlabel={Number of edges},
+  ylabel={Runtime (s)},
+  xmin=0,
+  ymin=0,
+  legend pos=north west,
+  width=200 pt
+  ]
+  \addplot [color=blue, mark=o,]
+   plot [error bars/.cd, y dir = both, y explicit]
+   table[x =edges, y =adiam_seq_time, y error =adiam_seq_err, col sep=comma]{runtime_data_clean.csv}
+   ;
+  \addplot [color=red, mark=o,]
+   plot [error bars/.cd, y dir = both, y explicit]
+   table[x =edges, y =adiam_tbb_time, y error =adiam_tbb_err, col sep=comma]{runtime_data_clean.csv}
+   ;
+   \legend{Unparallelized, Parallelized}
+  \end{axis}
+  \end{tikzpicture}
+
+
+  \begin{tikzpicture}
+  \begin{axis}[
+  title={aprank},
+  xlabel={Number of edges},
+  ylabel={Runtime (s)},
+  xmin=0,
+  ymin=0,
+  legend pos=north west,
+  width=200 pt
+  ]
+  \addplot [color=blue, mark=o,]
+   plot [error bars/.cd, y dir = both, y explicit]
+   table[x =edges, y =aprank_seq_time, y error =aprank_seq_err, col sep=comma]{runtime_data_clean.csv}
+   ;
+  \addplot [color=red, mark=o,]
+   plot [error bars/.cd, y dir = both, y explicit]
+   table[x =edges, y =aprank_tbb_time, y error =aprank_tbb_err, col sep=comma]{runtime_data_clean.csv}
+   ;
+   \legend{Unparallelized, Parallelized}
+  \end{axis}
+  \end{tikzpicture}
+
+
+  \begin{tikzpicture}
+  \begin{axis}[
+  title={bc},
+  xlabel={Number of edges},
+  ylabel={Runtime (s)},
+  xmin=0,
+  ymin=0,
+  legend pos=north west,
+  width=200 pt
+  ]
+  \addplot [color=blue, mark=o,]
+   plot [error bars/.cd, y dir = both, y explicit]
+   table[x =edges, y =bc_seq_time, y error =bc_seq_err, col sep=comma]{runtime_data_clean.csv}
+   ;
+  \addplot [color=red, mark=o,]
+   plot [error bars/.cd, y dir = both, y explicit]
+   table[x =edges, y =bc_tbb_time, y error =bc_tbb_err, col sep=comma]{runtime_data_clean.csv}
+   ;
+   \legend{Unparallelized, Parallelized}
+  \end{axis}
+  \end{tikzpicture}
+
+  \begin{tikzpicture}
+  \begin{axis}[
+  title={cc},
+  xlabel={Number of edges},
+  ylabel={Runtime (s)},
+  xmin=0,
+  ymin=0,
+  legend pos=north west,
+  width=200 pt
+  ]
+  \addplot [color=blue, mark=o,]
+   plot [error bars/.cd, y dir = both, y explicit]
+   table[x =edges, y =cc_seq_time, y error =cc_seq_err, col sep=comma]{runtime_data_clean.csv}
+   ;
+  \addplot [color=red, mark=o,]
+   plot [error bars/.cd, y dir = both, y explicit]
+   table[x =edges, y =cc_tbb_time, y error =cc_tbb_err, col sep=comma]{runtime_data_clean.csv}
+   ;
+   \legend{Unparallelized, Parallelized}
+  \end{axis}
+  \end{tikzpicture}
+
+
+  \begin{tikzpicture}
+  \begin{axis}[
+  title={etri},
+  xlabel={Number of edges},
+  ylabel={Runtime (s)},
+  xmin=0,
+  ymin=0,
+  legend pos=north west,
+  width=200 pt
+  ]
+  \addplot [color=blue, mark=o,]
+   plot [error bars/.cd, y dir = both, y explicit]
+   table[x =edges, y =etri_seq_time, y error =etri_seq_err, col sep=comma]{runtime_data_clean.csv}
+   ;
+  \addplot [color=red, mark=o,]
+   plot [error bars/.cd, y dir = both, y explicit]
+   table[x =edges, y =etri_tbb_time, y error =etri_tbb_err, col sep=comma]{runtime_data_clean.csv}
+   ;
+   \legend{Unparallelized, Parallelized}
+  \end{axis}
+  \end{tikzpicture}
+
+
+  \begin{tikzpicture}
+  \begin{axis}[
+  title={lcc},
+  xlabel={Number of edges},
+  ylabel={Runtime (s)},
+  xmin=0,
+  ymin=0,
+  legend pos=north west,
+  width=200 pt
+  ]
+  \addplot [color=blue, mark=o,]
+   plot [error bars/.cd, y dir = both, y explicit]
+   table[x =edges, y =lcc_seq_time, y error =lcc_seq_err, col sep=comma]{runtime_data_clean.csv}
+   ;
+  \addplot [color=red, mark=o,]
+   plot [error bars/.cd, y dir = both, y explicit]
+   table[x =edges, y =lcc_tbb_time, y error =lcc_tbb_err, col sep=comma]{runtime_data_clean.csv}
+   ;
+   \legend{Unparallelized, Parallelized}
+  \end{axis}
+  \end{tikzpicture}
+
+
+  \begin{tikzpicture}
+  \begin{axis}[
+  title={prank},
+  xlabel={Number of edges},
+  ylabel={Runtime (s)},
+  xmin=0,
+  ymin=0,
+  legend pos=north west,
+  width=200 pt
+  ]
+  \addplot [color=blue, mark=o,]
+   plot [error bars/.cd, y dir = both, y explicit]
+   table[x =edges, y =prank_seq_time, y error =prank_seq_err, col sep=comma]{runtime_data_clean.csv}
+   ;
+  \addplot [color=red, mark=o,]
+   plot [error bars/.cd, y dir = both, y explicit]
+   table[x =edges, y =prank_tbb_time, y error =prank_tbb_err, col sep=comma]{runtime_data_clean.csv}
+   ;
+   \legend{Unparallelized, Parallelized}
+  \end{axis}
+  \end{tikzpicture}
+
+
+  \begin{tikzpicture}
+  \begin{axis}[
+  title={reduce},
+  xlabel={Number of edges},
+  ylabel={Runtime (s)},
+  xmin=0,
+  ymin=0,
+  legend pos=north west,
+  width=200 pt
+  ]
+  \addplot [color=blue, mark=o,]
+   plot [error bars/.cd, y dir = both, y explicit]
+   table[x =edges, y =reduce_seq_time, y error =reduce_seq_err, col sep=comma]{runtime_data_clean.csv}
+   ;
+  \addplot [color=red, mark=o,]
+   plot [error bars/.cd, y dir = both, y explicit]
+   table[x =edges, y =reduce_tbb_time, y error =reduce_tbb_err, col sep=comma]{runtime_data_clean.csv}
+   ;
+   \legend{Unparallelized, Parallelized}
+  \end{axis}
+  \end{tikzpicture}
+
+
+  \begin{tikzpicture}
+  \begin{axis}[
+  title={reducetri},
+  xlabel={Number of edges},
+  ylabel={Runtime (s)},
+  xmin=0,
+  ymin=0,
+  legend pos=north west,
+  width=200 pt
+  ]
+  \addplot [color=blue, mark=o,]
+   plot [error bars/.cd, y dir = both, y explicit]
+   table[x =edges, y =reducetri_seq_time, y error =reducetri_seq_err, col sep=comma]{runtime_data_clean.csv}
+   ;
+  \addplot [color=red, mark=o,]
+   plot [error bars/.cd, y dir = both, y explicit]
+   table[x =edges, y =reducetri_tbb_time, y error =reducetri_tbb_err, col sep=comma]{runtime_data_clean.csv}
+   ;
+   \legend{Unparallelized, Parallelized}
+  \end{axis}
+  \end{tikzpicture}
+
+
+  \begin{tikzpicture}
+  \begin{axis}[
+  title={reducetreetop},
+  xlabel={Number of edges},
+  ylabel={Runtime (s)},
+  xmin=0,
+  ymin=0,
+  legend pos=north west,
+  width=200 pt
+  ]
+  \addplot [color=blue, mark=o,]
+   plot [error bars/.cd, y dir = both, y explicit]
+   table[x =edges, y =reducetreetop_seq_time, y error =reducetreetop_seq_err, col sep=comma]{runtime_data_clean.csv}
+   ;
+  \addplot [color=red, mark=o,]
+   plot [error bars/.cd, y dir = both, y explicit]
+   table[x =edges, y =reducetreetop_tbb_time, y error =reducetreetop_tbb_err, col sep=comma]{runtime_data_clean.csv}
+   ;
+   \legend{Unparallelized, Parallelized}
+  \end{axis}
+  \end{tikzpicture}
+
+
+  \begin{tikzpicture}
+  \begin{axis}[
+  title={reducehighdegreetop},
+  xlabel={Number of edges},
+  ylabel={Runtime (s)},
+  xmin=0,
+  ymin=0,
+  legend pos=north west,
+  width=200 pt
+  ]
+  \addplot [color=blue, mark=o,]
+   plot [error bars/.cd, y dir = both, y explicit]
+   table[x =edges, y =reducehighdegreetop_seq_time, y error =reducehighdegreetop_seq_err, col sep=comma]{runtime_data_clean.csv}
+   ;
+  \addplot [color=red, mark=o,]
+   plot [error bars/.cd, y dir = both, y explicit]
+   table[x =edges, y =reducehighdegreetop_tbb_time, y error =reducehighdegreetop_tbb_err, col sep=comma]{runtime_data_clean.csv}
+   ;
+   \legend{Unparallelized, Parallelized}
+  \end{axis}
+  \end{tikzpicture}
+
+
+  \begin{tikzpicture}
+  \begin{axis}[
+  title={reducepercent},
+  xlabel={Number of edges},
+  ylabel={Runtime (s)},
+  xmin=0,
+  ymin=0,
+  legend pos=north west,
+  width=200 pt
+  ]
+  \addplot [color=blue, mark=o,]
+   plot [error bars/.cd, y dir = both, y explicit]
+   table[x =edges, y =reducepercent_seq_time, y error =reducepercent_seq_err, col sep=comma]{runtime_data_clean.csv}
+   ;
+  \addplot [color=red, mark=o,]
+   plot [error bars/.cd, y dir = both, y explicit]
+   table[x =edges, y =reducepercent_tbb_time, y error =reducepercent_tbb_err, col sep=comma]{runtime_data_clean.csv}
+   ;
+   \legend{Unparallelized, Parallelized}
+  \end{axis}
+  \end{tikzpicture}
+\end{multicols}
+
+Observations:
+
+abc runtimes varied wildly based on the vertex chosen. This is explained in section 5.2.
+
+bc is highly RAM intensive, and either crashes, or is killed by the kernel on larger graphs. 
+
+Most graphs follow a polynomial curve, which matches with the run time analysis of the algorithms.
+
+While cc, reduce, and reducepercent all look like they have inaccurate measurements, it is important to note that both the parallelized and unparallelized versions of these algorithms ran under 1 second on all graphs, meaning no noticable performance improvement could be observed.
+
+
+\subsection{abc - Runtime v.s. Vertex Degree }
+
+\begin{multicols}{2}
+  \begin{tikzpicture}
+  \begin{axis}[
+  title={abc on facebook\_combined.txt},
+  xlabel={Degree of vertex chosen},
+  ylabel={Runtime (s)},
+  xmin=0,
+  ymin=0,
+  legend pos=north east,
+  width=200 pt
+  ]
+  \addplot [color=blue, mark=o,]
+   plot [error bars/.cd, y dir = both, y explicit]
+   table[x =degree_fb, y =runtime_seq_fb, y error =err_seq_fb, col sep=comma]{abc_runtime_by_vertex.csv}
+   ;
+  \addplot [color=red, mark=o,]
+   plot [error bars/.cd, y dir = both, y explicit]
+   table[x =degree_fb, y =runtime_tbb_fb, y error =err_tbb_fb, col sep=comma]{abc_runtime_by_vertex.csv}
+   ;
+   \legend{Unparallelized, Parallelized}
+  \end{axis}
+  \end{tikzpicture}
+
+    \begin{tikzpicture}
+  \begin{axis}[
+  title={abc on enron.txt},
+  xlabel={Degree of vertex chosen},
+  ylabel={Runtime (s)},
+  xmin=0,
+  ymin=0,
+  legend pos=north east,
+  width=200 pt
+  ]
+  \addplot [color=blue, mark=o,]
+   plot [error bars/.cd, y dir = both, y explicit]
+   table[x =degree_enron, y =runtime_seq_enron, y error =err_seq_enron, col sep=comma]{abc_runtime_by_vertex.csv}
+   ;
+  \addplot [color=red, mark=o,]
+   plot [error bars/.cd, y dir = both, y explicit]
+   table[x =degree_enron, y =runtime_tbb_enron, y error =err_tbb_enron, col sep=comma]{abc_runtime_by_vertex.csv}
+   ;
+   \legend{Unparallelized, Parallelized}
+  \end{axis}
+  \end{tikzpicture}
+
+    \begin{tikzpicture}
+  \begin{axis}[
+  title={abc on epinions.txt},
+  xlabel={Degree of vertex chosen},
+  ylabel={Runtime (s)},
+  xmin=0,
+  ymin=0,
+  legend pos=north east,
+  width=200 pt
+  ]
+  \addplot [color=blue, mark=o,]
+   plot [error bars/.cd, y dir = both, y explicit]
+   table[x =degree_epinions, y =runtime_seq_epinions, y error =err_seq_epinions, col sep=comma]{abc_runtime_by_vertex.csv}
+   ;
+  \addplot [color=red, mark=o,]
+   plot [error bars/.cd, y dir = both, y explicit]
+   table[x =degree_epinions, y =runtime_tbb_epinions, y error =err_tbb_epinions, col sep=comma]{abc_runtime_by_vertex.csv}
+   ;
+   \legend{Unparallelized, Parallelized}
+  \end{axis}
+  \end{tikzpicture}
+\end{multicols}
+
+Observations:
+
+The runtimes of abc on all three graphs follow a very similar pattern - vertices with a low degree take much longer to run, whereas vertices with high degree run almost instantaneously. This can be explained by the nature of the algorithm.
+
+The algorithm works by repeatedly choosing a random vertex vi, calculating the shortest path to all other vertices from vi, and computing a dependency score based on how many times our original vertex chosen appears in a path. This is repeated until the sum of the dependency scores pass a threshold, or until 1000 iterations are reached.
+
+Vertices with many neighbors will appear in more paths and will reach the threshold much faster, so the algorithm will have a lower runtime on these vertices. On the other hand, vertices with little or no neighbors have a lower chance of appearing in a path, and go through more iterations - worst case running through all 1000 iterations, taking longer to run. This explains why vertices with higher degrees have lower runtimes than vertices with lower degrees.
+
+\section{Analysis}
+
+The improvement of the parallelized algorithms over the unparallelized versions is measured as number of times the parallelized version is faster than the unparallelized version - i.e. 
+
+$$ \text{improvement} = \frac{\text{runtime of unparallelized algorithm}}{\text{runtime of parallelized algorithm}} $$
+
+For example, if an algorithm had a runtime of 200s unparallelized, and 10s parallelized, the improvement in time would be 20, i.e. a 20x improvement, or the parallelized version runs 20 times faster.
+
+In our dataset, measurements where either versions of the algorithm ran in 1 second or under have been ommitted. This is because there is no way to accurately measure any runtimes under 1 second - even if measurements could be made in the milliseconds, they cannot be trusted.
+
+On average, runtime improved by $18.8 \pm 11.2$ times over all measurements.
+
+\subsection{Runtime Speedup By Command}
+  \begin{tikzpicture}
+  \begin{axis}[
+  xbar, 
+  xmin=0,
+  title={\# Times Runtime Speedup, by Command},
+  xlabel={Average \# Times Speedup},  
+  symbolic y coords={reducetreetop, reducehighdegreetop, abc, lcc, reducetri, bc, etri, adiam},
+  width=350 pt,
+  height=200 pt,
+  ytick=data
+  ]
+  \addplot [fill=blue,]
+   plot [error bars/.cd, x dir = both, x explicit]
+   table[x =improvement, x error =stdev, y =command, col sep=comma]{improvement_by_command.csv}
+   ;
+  \end{axis}
+  \end{tikzpicture}
+
+Improvement varied widely both between commands, and within each command, based on the graph it was run on. In general, simpler algorithms, such as adiam saw much greater improvement than more complex algorithms, with many nested loops and complex control flow, such as abc, reducehighdegreetop, and reducetreetop.
+
+\subsection{Runtime Speedup By Graph Size}
+  \begin{tikzpicture}
+  \begin{axis}[
+  ybar, 
+  title={\# Times Runtime Speedup, by Graph Size},
+  xlabel={\# Vertices in Graph},
+  ylabel={Average \# Times Speedup},  
+  width=350 pt,
+  height=200 pt,
+  ymin=0,
+  xtick=data,
+  symbolic x coords={6, 51, 1904, 4039, 36692, 75888}
+  ]
+  \addplot [fill=blue,]
+   plot [error bars/.cd, y dir = both, y explicit]
+   table[x =vertices, y =improvement, y error =stdev, col sep=comma]{improvement_by_graph.csv}
+   ;
+  \end{axis}
+  \end{tikzpicture}
+
+Improvement also varied widely by the size of graph, and within each graph. The smaller graphs (5.txt, 50.txt, small test.txt) have been ommitted, as virtually all algorithms saw no improvement between parallelized and unparallelized versions when run on those graphs.
+
+From these data points, improvement seems to decrease as graph size increases. This may be due to the extra memory used and needed by these larger graphs, which may slow down the performance of the parallel functions.
+
+\subsection{Runtime Speedup By Number of Nested Loops Parallelized}
+
+One interesting anomaly showed up when parallelizing the betweeness centrality algorithm - increasing the number of nested loops parallelized slowed down the runtime of the algorithm:
+
+  \begin{tikzpicture}
+  \begin{axis}[
+  ybar, 
+  title={Average Runtime, by Number of Nested Loops Parallelized},
+  xlabel={\# Of Loops Parallelized},
+  ylabel={Average Runtime (s)},  
+  ymin=0,  
+  symbolic x coords={0, 2, 3},
+  xtick=data
+  ]
+  \addplot [fill=blue,]
+   plot [error bars/.cd, y dir = both, y explicit]
+   table[x =loops, y =average, y error =stdev, col sep=comma]{bc_anomaly.csv}
+   ;
+  \end{axis}
+  \end{tikzpicture}
+
+This may be due to multiple reasons - inefficient memory management, or additional overhead required for parallelization outweighing the time saved.
+
+
+\end{document}

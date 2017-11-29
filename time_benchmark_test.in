@@ -1,0 +1,39 @@
+./Graph Data/facebook_combined.txt
+abc
+11
+abc
+707
+abc
+1163
+abc
+3437
+abc
+107
+exit
+./Graph Data/enron.txt
+abc
+0
+abc
+6772
+abc
+313
+abc
+443
+abc
+5038
+exit
+./Graph Data/epinions.txt
+abc
+179
+abc
+6337
+abc
+302
+abc
+650
+abc
+118
+abc
+18
+exit
+exit

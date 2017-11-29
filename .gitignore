@@ -1,0 +1,16 @@
+*\.o
+*\.d
+*\.exe
+
+*-graph-properties\.txt
+*-page-rank\.txt
+*-approximate-page-rank\.txt
+*-betweenness-centrality\.txt
+*-brandes-BC\.txt
+*-reduced-graph\.txt
+*-reduced-graph5\.txt
+*-reduced-graph5\.txt
+*-reduced-graph Tree\.txt
+*-reduced-graph-tree2\.txt
+*-reduced-graph-triangle\.txt
+*-reduced-graph-proportion\.txt
