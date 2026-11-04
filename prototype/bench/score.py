@@ -210,6 +210,12 @@ def score_answer(q: dict, res: dict, graphs: dict | None = None) -> tuple[float,
         return 0.0, f"length {length} expected {c['length']}"
 
     if t == "choice":
+        if isinstance(ans, dict) and ans.get("greater") is not None:
+            ans = ans["greater"]
+        elif isinstance(ans, dict) and ans.get("node") is not None:
+            ans = ans["node"]
+        elif isinstance(ans, dict) and len(ans) == 1 and isinstance(list(ans.values())[0], dict) and list(ans.values())[0].get("node") is not None:
+            ans = list(ans.values())[0]["node"]
         s = json.dumps(ans, default=str)
         toks = set(re.findall(r"[A-Za-z0-9]+", s))
         if str(c["value"]) in toks and (c.get("other") is None or str(c["other"]) not in toks or s.strip('"').strip().startswith(str(c["value"]))):

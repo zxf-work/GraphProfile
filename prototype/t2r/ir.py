@@ -20,9 +20,10 @@ class Step(BaseModel):
 
 class Answer(BaseModel):
     """Which step(s) hold the answer and how to present it."""
-    step: str
+    step: Optional[str] = None            # single answer step
     field: Optional[str] = None           # e.g. "count", "largest", "length"
-    kind: str = "scalar"                  # scalar | list | table | bool | ranking
+    steps: Optional[dict[str, str]] = None  # multi-valued answer: {"label": "step_id" or "step_id.field"}
+    kind: str = "scalar"                  # scalar | list | table | bool | ranking | path
 
 
 class Plan(BaseModel):
@@ -32,6 +33,39 @@ class Plan(BaseModel):
     steps: list[Step] = Field(default_factory=list)
     answer: Optional[Answer] = None
     rationale: Optional[str] = None
+
+
+SCALAR_TYPES = ("Scalar", "number", "int", "float", "str", "bool")
+
+
+def _ref_of(v: Any) -> Optional[tuple[str, Optional[str], Optional[int]]]:
+    """Parse a field reference: 'step.field', 'step.field[3]' or {"ref": step, "field": f, "index": i}. Returns (step, field, index) or None."""
+    if isinstance(v, dict) and ("ref" in v or "step" in v):
+        return (v.get("ref") or v.get("step"), v.get("field"), v.get("index", v.get("row")))
+    if isinstance(v, str) and "." in v and " " not in v:
+        step, _, rest = v.partition(".")
+        idx = None
+        if rest.endswith("]") and "[" in rest:
+            rest, _, i = rest[:-1].partition("[")
+            idx = int(i)
+        return (step, rest or None, idx)
+    return None
+
+
+def resolve_ref(ctx, v: Any) -> Any:
+    r = _ref_of(v)
+    if r is None or r[0] not in ctx.values:
+        return v
+    step, field, idx = r
+    val = ctx.values[step]
+    if idx is not None and isinstance(val, list):
+        val = val[idx]
+    if field is not None:
+        if isinstance(val, dict):
+            val = val.get(field)
+        elif isinstance(val, list) and val and isinstance(val[0], dict):
+            val = [e.get(field) for e in val]
+    return val
 
 
 # cost model: rough operation counts from the profile card -----------------
@@ -84,12 +118,30 @@ def validate(plan: Plan, lg: LoadedGraph, budget_ops: float = 2e9) -> list[str]:
                     if p in ("map", "partition", "node", "source", "target"):
                         problems.append(f"step {st.id}: missing required argument {p}")
                 continue
+            ref = _ref_of(v)
+            if ref is not None:
+                if ref[0] not in types:
+                    problems.append(f"step {st.id}: argument {p} references unknown step {ref[0]}")
+                elif types[ref[0]] not in ("Table", "Partition", "Path", "NodeSet"):
+                    problems.append(f"step {st.id}: argument {p} references a field of {ref[0]} which is a {types[ref[0]]}, not a Table/Partition/Path")
+                continue
             if base in ("Graph", "NodeMap", "Partition", "NodeSet") and isinstance(v, str):
                 if v not in types:
-                    problems.append(f"step {st.id}: argument {p} refers to unknown step {v}")
-                elif types[v] != base and not (base == "NodeSet" and types[v] in ("NodeSet",)):
+                    if base == "NodeSet":
+                        problems.append(f"step {st.id}: argument {p} refers to unknown step {v} (a literal NodeSet must be a JSON list)")
+                    else:
+                        problems.append(f"step {st.id}: argument {p} refers to unknown step {v}")
+                elif types[v] != base and not (base == "NodeSet" and types[v] in ("NodeSet", "Table")):
                     problems.append(f"step {st.id}: argument {p} expects {base} but {v} is {types[v]}")
-            if base == "NodeRef":
+            elif base in ("Graph", "NodeMap", "Partition") and not isinstance(v, str):
+                problems.append(f"step {st.id}: argument {p} must be a step id of type {base}")
+            elif base == "NodeSet" and not isinstance(v, (str, list)):
+                problems.append(f"step {st.id}: argument {p} must be a step id or a JSON list of node ids")
+            elif base in SCALAR_TYPES and isinstance(v, (dict, list)):
+                problems.append(f"step {st.id}: argument {p} must be a number/string or a 'step.field' reference, not {type(v).__name__}")
+            if base == "NodeRef" and isinstance(v, (dict, list)):
+                problems.append(f"step {st.id}: argument {p} must be a single node id or label")
+            if base == "NodeRef" and not isinstance(v, (dict, list)):
                 r = lg.resolve(v)
                 if r["matched"] is None:
                     problems.append(f"step {st.id}: node '{v}' not found (candidates {r['candidates']})")
@@ -105,8 +157,16 @@ def validate(plan: Plan, lg: LoadedGraph, budget_ops: float = 2e9) -> list[str]:
         elif cost > budget_ops * 10:
             problems.append(f"step {st.id}: {st.op} estimated at {cost:.1e} operations, too expensive for this graph")
         types[st.id] = spec.returns
-    if plan.answer is not None and plan.answer.step not in types:
-        problems.append(f"answer refers to unknown step {plan.answer.step}")
+    if plan.answer is not None:
+        if plan.answer.step is not None and plan.answer.step not in types:
+            problems.append(f"answer refers to unknown step {plan.answer.step}")
+        for lab, ref in (plan.answer.steps or {}).items():
+            r = _ref_of(ref)
+            sid = r[0] if r else ref
+            if sid not in types:
+                problems.append(f"answer.steps[{lab}] refers to unknown step {sid}")
+        if plan.answer.step is None and not plan.answer.steps:
+            problems.append("answer must name a step or steps")
     if plan.answer is None and plan.clarification is None:
         problems.append("plan has neither an answer step nor a clarification")
     return problems
@@ -131,11 +191,12 @@ def execute(plan: Plan, lg: LoadedGraph, seed: int = 1, cache: Optional[dict] = 
         spec = CATALOGUE[st.op]
         key = (lg.facts.sha1, st.op, repr(sorted(st.args.items())))
         t0 = time.time()
-        cached = cache is not None and key in cache and all(not (isinstance(v, str) and v in ctx.values and v != "G") for v in st.args.values())
+        args = {k: resolve_ref(ctx, v) for k, v in st.args.items()}
+        cached = cache is not None and key in cache and all(not (isinstance(v, str) and v in ctx.values and v != "G") for v in st.args.values()) and args == st.args
         if cached:
             val = cache[key]
         else:
-            val = spec.fn(ctx, **st.args)
+            val = spec.fn(ctx, **args)
             if cache is not None and not cached and all(not (isinstance(v, str) and v in ctx.values and v != "G") for v in st.args.values()):
                 cache[key] = val
         ctx.values[st.id] = val
@@ -172,10 +233,19 @@ def summarise(val: Any, limit: int = 12) -> Any:
     return val
 
 
+def _clean(val: Any) -> Any:
+    return summarise(val, limit=100) if not isinstance(val, (int, float, str, bool)) else (val if val != math.inf else "inf")
+
+
 def extract_answer(plan: Plan, ctx: Ctx) -> Any:
     if plan.answer is None:
         return None
+    if plan.answer.steps:
+        out = {}
+        for lab, ref in plan.answer.steps.items():
+            out[lab] = _clean(resolve_ref(ctx, ref) if _ref_of(ref) else ctx.values.get(ref))
+        return out
     val = ctx.values.get(plan.answer.step)
     if plan.answer.field and isinstance(val, dict):
         val = val.get(plan.answer.field)
-    return summarise(val, limit=100) if not isinstance(val, (int, float, str, bool)) else (val if val != math.inf else "inf")
+    return _clean(val)

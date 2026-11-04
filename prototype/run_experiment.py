@@ -22,7 +22,8 @@ sys.path.insert(0, os.path.join(HERE, "bench"))
 from score import score_answer, score_plan  # noqa: E402
 
 QUESTIONS = json.load(open(os.path.join(HERE, "bench", "questions.json")))
-RAW = os.path.join(HERE, "results", "raw")
+RESULTS = os.path.join(HERE, os.environ.get("T2R_RESULTS", "results"))
+RAW = os.path.join(RESULTS, "raw")
 SYSTEMS_ALL = ["full", "no_verify", "no_interp", "flat", "codegen"]
 
 
@@ -63,7 +64,7 @@ def summarise(systems: list[str]) -> str:
             rows.append({"qid": q["id"], "family": q["family"], "dataset": q["dataset"], "system": s, "answer_score": a, "plan_score": pl,
                          "note": note, "plan_note": pnote, "calls": r.get("llm_calls", 0), "tokens": (r.get("tokens_in", 0) or 0) + (r.get("tokens_out", 0) or 0),
                          "cost": r.get("cost_usd", 0.0) or 0.0, "seconds": r.get("seconds", 0.0) or 0.0, "error": r.get("error"), "clarification": r.get("clarification")})
-    json.dump(rows, open(os.path.join(HERE, "results", "scores.json"), "w"), indent=1)
+    json.dump(rows, open(os.path.join(RESULTS, "scores.json"), "w"), indent=1)
     fams = []
     for q in QUESTIONS:
         if q["family"] not in fams:
@@ -72,7 +73,7 @@ def summarise(systems: list[str]) -> str:
     for r in rows:
         by[(r["system"], r["family"])].append(r)
         by[(r["system"], "ALL")].append(r)
-    md = ["# Headline experiment results\n", f"Questions: {len(QUESTIONS)}. Systems: {', '.join(systems)}. Model: {os.environ.get('T2R_MODEL', 'claude-opus-5-5')}.\n",
+    md = ["# Headline experiment results\n", f"Questions: {len(QUESTIONS)}. Systems: {', '.join(systems)}. Model: {os.environ.get('T2R_MODEL', 'claude-opus-5-5')}. Results dir: {os.path.basename(RESULTS)}.\n",
           "## Answer accuracy by family (mean score, 0 to 1)\n", "| family | n | " + " | ".join(systems) + " |", "|---|---|" + "---|" * len(systems)]
     for f in fams + ["ALL"]:
         n = len(by[(systems[0], f)]) if by[(systems[0], f)] else len([q for q in QUESTIONS if q["family"] == f])
@@ -106,7 +107,7 @@ def summarise(systems: list[str]) -> str:
         if r["answer_score"] < 1:
             md.append(f"- {r['system']} {r['qid']} ({r['family']}): score {r['answer_score']:.1f}: {r['note']}" + (f" [error: {r['error'][:100]}]" if r["error"] else ""))
     text = "\n".join(md) + "\n"
-    open(os.path.join(HERE, "results", "summary.md"), "w").write(text)
+    os.makedirs(RESULTS, exist_ok=True); open(os.path.join(RESULTS, "summary.md"), "w").write(text)
     return text
 
 

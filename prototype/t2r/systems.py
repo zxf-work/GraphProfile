@@ -103,7 +103,8 @@ PLAN FORMAT (JSON only, no prose outside the JSON):
  "clarification": null | "<question to the user>",
  "variants": ["<label of an alternative measure also computed>", ...],
  "steps": [ {{"id": "s1", "op": "<op name>", "args": {{...}}, "note": "<why>"}}, ... ],
- "answer": {{"step": "<id of the step holding the answer>", "field": null | "<field of a Table/Partition>", "kind": "scalar|list|table|bool|ranking|path"}},
+ "answer": {{"step": "<id of the step holding the answer>", "field": null | "<field of a Table/Partition>", "kind": "scalar|list|table|bool|ranking|path"}}
+            OR for a multi-part answer: {{"steps": {{"<label>": "<step id or step.field>", ...}}, "kind": "table"}},
  "rationale": "<one or two sentences: which algorithm and why>"
 }}
 
@@ -116,7 +117,9 @@ RULES
 6. Weighted graphs: use weights for shortest paths only when the weights are distances/costs. Weights that are counts or strengths must NOT be used as path lengths.
 7. Directed graphs: distances and reachability follow edge direction unless the user says otherwise; in-degree and out-degree are different questions.
 8. Node references: use the ids/labels exactly as in sample_node_ids style; the engine resolves case and close spellings and will reject unknown nodes.
-9. The answer must be the output of a step. Never compute in your head.
+9. The answer must be the output of a step. Never compute in your head. Yes/no questions need a Bool step (is_connected, is_reachable, is_finite, compare); a distance alone is not a yes/no answer.
+10. Scalar arguments may reference a field of an earlier Table/Partition/Path step with "step.field" (e.g. "s1.modularity", "s2.value[9]" for the 10th row's value). A Table from top_k can be passed where a NodeSet is expected. Literal node sets are JSON lists.
+11. When the question asks for several quantities (e.g. in-degree and out-degree), use the multi-part answer form so every value is reported.
 """
 
 INTERPRETER_SYSTEM = """You write the final answer of a graph analysis system for the user. You receive the question, the executed plan with every step's result summary, the verification findings, and the structured answer extracted from the plan.
@@ -144,8 +147,9 @@ def run_full(qid: str, lg_path: str, name: str, description: Optional[str], ques
         user = f"PROFILE CARD:\n{json.dumps(card, default=str)}\n\n{user_message(os.path.basename(lg_path), description, question)}"
         reply = llm.chat(system, user)
         plan = Plan.model_validate(parse_json(reply.text))
-        # the planner may override the interpretation (e.g. settle an 'ask' using the description)
-        if interp:
+        # the planner may override the interpretation (e.g. settle an 'ask' using the description);
+        # without an interpretation stage this is the only way semantics get set
+        if True:
             ov = {}
             for k in ("directed", "weighted"):
                 v = plan.interpretation.get(k)
@@ -154,7 +158,9 @@ def run_full(qid: str, lg_path: str, name: str, description: Optional[str], ques
                         continue
                     ov[k] = v
             if ov:
+                strict = lg.strict
                 lg = load_graph(name, lg_path, description or "", override=ov)
+                lg.strict = strict
         problems = validate(plan, lg, budget_ops)
         if problems:
             fix = llm.chat(system, user + f"\n\nYour previous plan had these problems, return a corrected full plan:\n" + "\n".join(problems) + f"\n\nPrevious plan:\n{plan.model_dump_json()}")

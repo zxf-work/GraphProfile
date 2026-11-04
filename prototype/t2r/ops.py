@@ -68,6 +68,33 @@ class Ctx:
         return self.lg.labels[idx]
 
 
+def _vid(ctx: Ctx, g: ig.Graph, ref: Any) -> int:
+    """Vertex index of a node reference *in graph g* (which may be a subgraph with its own indexing)."""
+    if g is ctx.lg.g:
+        return ctx.node(ref)
+    label = ctx.label(ctx.node(ref))
+    idx = g.vs.find(name=label).index if label in set(g.vs["name"]) else None
+    if idx is None:
+        raise ValueError(f"node '{ref}' is not in this subgraph")
+    return idx
+
+
+def _lab(g: ig.Graph, idx: int) -> str:
+    return g.vs[idx]["name"]
+
+
+def _nodeset(ctx: Ctx, x: Any) -> list[str]:
+    """Coerce a NodeSet reference, a Table with a node column, or a literal list to a list of labels."""
+    v = ctx.values[x] if isinstance(x, str) and x in ctx.values else x
+    if isinstance(v, dict) and "membership" in v:
+        raise ValueError("a Partition is not a NodeSet; use largest_block or block_of")
+    if isinstance(v, list):
+        return [str(e["node"]) if isinstance(e, dict) and "node" in e else str(e) for e in v]
+    if isinstance(v, dict):
+        return [str(k) for k in v.keys()]
+    raise ValueError(f"not a NodeSet: {x}")
+
+
 def _graph(ctx: Ctx, g: Any) -> ig.Graph:
     if isinstance(g, ig.Graph):
         return g
@@ -116,7 +143,7 @@ def degree(ctx, graph="G", mode="all"):
 @op("node_degree", "Degree of one node. mode in {all,in,out}.", {"graph": "Graph", "node": "NodeRef", "mode": "str"}, "Scalar", "O(1)")
 def node_degree(ctx, node, graph="G", mode="all"):
     g = _graph(ctx, graph)
-    return g.degree(ctx.node(node), mode=mode)
+    return g.degree(_vid(ctx, g, node), mode=mode)
 
 
 @op("reciprocity", "Fraction of directed edges whose reverse also exists. Directed graphs only.",
@@ -132,7 +159,7 @@ def components(ctx, graph="G", mode="weak"):
     g = _graph(ctx, graph)
     c = g.connected_components(mode=mode)
     sizes = sorted(c.sizes(), reverse=True)
-    return {"count": len(c), "sizes": sizes[:20], "largest": sizes[0], "membership": c.membership, "_kind": "components", "_mode": mode}
+    return {"count": len(c), "sizes": sizes[:20], "largest": sizes[0], "membership": c.membership, "_names": g.vs["name"], "_kind": "components", "_mode": mode}
 
 
 @op("largest_component", "Induced subgraph of the largest (weakly) connected component.", {"graph": "Graph", "mode": "str: weak|strong"}, "Graph", "O(n+m)")
@@ -173,7 +200,7 @@ def diameter(ctx, graph="G", largest_component_only=True, tier="exact", k=20):
     {"graph": "Graph", "source": "NodeRef", "target": "NodeRef", "use_weights": "bool (default false)"}, "Path", "O(n+m)")
 def shortest_path(ctx, source, target, graph="G", use_weights=False):
     g = _graph(ctx, graph)
-    s, t = ctx.node(source), ctx.node(target)
+    s, t = _vid(ctx, g, source), _vid(ctx, g, target)
     w = "weight" if (use_weights and "weight" in g.es.attributes()) else None
     paths = g.get_shortest_paths(s, to=t, weights=w, mode="out", output="vpath")
     p = paths[0]
@@ -183,40 +210,47 @@ def shortest_path(ctx, source, target, graph="G", use_weights=False):
         length = sum(g.es[g.get_eid(p[i], p[i + 1])]["weight"] for i in range(len(p) - 1))
     else:
         length = len(p) - 1
-    return {"length": length, "path": [ctx.label(i) for i in p], "reachable": True, "hops": len(p) - 1}
+    return {"length": length, "path": [_lab(g, i) for i in p], "reachable": True, "hops": len(p) - 1}
 
 
 @op("distance", "Shortest-path distance (hops) from source to target; inf if unreachable.",
     {"graph": "Graph", "source": "NodeRef", "target": "NodeRef"}, "Scalar", "O(n+m)")
 def distance(ctx, source, target, graph="G"):
     g = _graph(ctx, graph)
-    d = g.distances(source=ctx.node(source), target=ctx.node(target), mode="out")[0][0]
+    d = g.distances(source=_vid(ctx, g, source), target=_vid(ctx, g, target), mode="out")[0][0]
     return d if d != math.inf else math.inf
+
+
+@op("is_reachable", "Whether target can be reached from source (following edge direction in directed graphs).",
+    {"graph": "Graph", "source": "NodeRef", "target": "NodeRef"}, "Bool", "O(n+m)")
+def is_reachable(ctx, source, target, graph="G"):
+    g = _graph(ctx, graph)
+    return g.distances(source=_vid(ctx, g, source), target=_vid(ctx, g, target), mode="out")[0][0] != math.inf
 
 
 @op("reachable_set", "All nodes reachable from source (following edge direction in directed graphs, within max_hops if given).",
     {"graph": "Graph", "source": "NodeRef", "max_hops": "int or null"}, "NodeSet", "O(n+m)")
 def reachable_set(ctx, source, graph="G", max_hops=None):
     g = _graph(ctx, graph)
-    s = ctx.node(source)
+    s = _vid(ctx, g, source)
     order = max_hops if max_hops is not None else g.vcount()
     nb = g.neighborhood(s, order=order, mode="out")
-    return [ctx.label(i) for i in nb if i != s]
+    return [_lab(g, i) for i in nb if i != s]
 
 
 @op("k_hop_neighbourhood", "Nodes within k hops of a node (excluding the node). mode in {all,in,out}.",
     {"graph": "Graph", "node": "NodeRef", "k": "int", "mode": "str"}, "NodeSet", "O(k*m)")
 def k_hop_neighbourhood(ctx, node, k, graph="G", mode="all"):
     g = _graph(ctx, graph)
-    s = ctx.node(node)
+    s = _vid(ctx, g, node)
     nb = g.neighborhood(s, order=int(k), mode=mode)
-    return [ctx.label(i) for i in nb if i != s]
+    return [_lab(g, i) for i in nb if i != s]
 
 
 @op("neighbours", "Direct neighbours of a node. mode in {all,in,out}.", {"graph": "Graph", "node": "NodeRef", "mode": "str"}, "NodeSet", "O(deg)")
 def neighbours(ctx, node, graph="G", mode="all"):
     g = _graph(ctx, graph)
-    return [ctx.label(i) for i in g.neighbors(ctx.node(node), mode=mode)]
+    return [_lab(g, i) for i in g.neighbors(_vid(ctx, g, node), mode=mode)]
 
 
 # --------------------------------------------------------------------------- clustering
@@ -336,34 +370,36 @@ def communities(ctx, graph="G", method="leiden", resolution=1.0):
         raise ValueError(f"unknown method {method}")
     sizes = sorted(cl.sizes(), reverse=True)
     return {"count": len(cl), "sizes": sizes[:20], "largest": sizes[0], "modularity": float(u.modularity(cl, weights=w)),
-            "membership": cl.membership, "method": method, "_kind": "communities"}
+            "membership": cl.membership, "_names": g.vs["name"], "method": method, "_kind": "communities"}
 
 
 @op("largest_block", "Node set of the largest block of a Partition (component or community).", {"partition": "Partition"}, "NodeSet", "O(n)")
 def largest_block(ctx, partition):
     p = ctx.values[partition] if isinstance(partition, str) else partition
     mem = p["membership"]
+    names = p.get("_names") or ctx.lg.labels
     counts: dict[int, int] = {}
     for c in mem:
         counts[c] = counts.get(c, 0) + 1
     big = max(counts, key=counts.get)
-    return [ctx.label(i) for i, c in enumerate(mem) if c == big]
+    return [names[i] for i, c in enumerate(mem) if c == big]
 
 
 @op("block_of", "Node set of the block containing a given node.", {"partition": "Partition", "node": "NodeRef"}, "NodeSet", "O(n)")
 def block_of(ctx, partition, node):
     p = ctx.values[partition] if isinstance(partition, str) else partition
     mem = p["membership"]
-    c = mem[ctx.node(node)]
-    return [ctx.label(i) for i, x in enumerate(mem) if x == c]
+    names = p.get("_names") or ctx.lg.labels
+    c = mem[names.index(ctx.label(ctx.node(node)))]
+    return [names[i] for i, x in enumerate(mem) if x == c]
 
 
 # --------------------------------------------------------------------------- set / map algebra
 @op("induced_subgraph", "Subgraph induced by a NodeSet.", {"graph": "Graph", "nodes": "NodeSet"}, "Graph", "O(n+m)")
 def induced_subgraph(ctx, nodes, graph="G"):
     g = _graph(ctx, graph)
-    ns = ctx.values[nodes] if isinstance(nodes, str) else nodes
-    idx = [ctx.node(x) for x in ns]
+    ns = _nodeset(ctx, nodes)
+    idx = [_vid(ctx, g, x) for x in ns]
     return g.induced_subgraph(idx)
 
 
@@ -381,11 +417,41 @@ def map_value(ctx, map, node):
     return m[ctx.label(ctx.node(node))]
 
 
+@op("set_intersection", "Nodes in both NodeSets.", {"a": "NodeSet", "b": "NodeSet"}, "NodeSet", "O(n)")
+def set_intersection(ctx, a, b):
+    sb = set(_nodeset(ctx, b))
+    return [x for x in _nodeset(ctx, a) if x in sb]
+
+
+@op("set_union", "Nodes in either NodeSet.", {"a": "NodeSet", "b": "NodeSet"}, "NodeSet", "O(n)")
+def set_union(ctx, a, b):
+    seen = set(); out = []
+    for x in _nodeset(ctx, a) + _nodeset(ctx, b):
+        if x not in seen:
+            seen.add(x); out.append(x)
+    return out
+
+
+@op("set_difference", "Nodes in a but not in b.", {"a": "NodeSet", "b": "NodeSet"}, "NodeSet", "O(n)")
+def set_difference(ctx, a, b):
+    sb = set(_nodeset(ctx, b))
+    return [x for x in _nodeset(ctx, a) if x not in sb]
+
+
+@op("argmax", "Node with the largest NodeMap value (optionally within a NodeSet). Returns {node, value}.",
+    {"map": "NodeMap", "nodes": "NodeSet or null"}, "Table", "O(n)")
+def argmax(ctx, map, nodes=None):
+    m = ctx.values[map] if isinstance(map, str) else map
+    keys = _nodeset(ctx, nodes) if nodes is not None else list(m.keys())
+    best = max(keys, key=lambda k: m[k])
+    return {"node": best, "value": m[best]}
+
+
 @op("filter_nodes", "Subset of a NodeSet (or all nodes) whose NodeMap value satisfies op in {>,>=,<,<=,==} threshold.",
     {"map": "NodeMap", "op": "str", "threshold": "number", "nodes": "NodeSet or null"}, "NodeSet", "O(n)")
 def filter_nodes(ctx, map, op, threshold, nodes=None):
     m = ctx.values[map] if isinstance(map, str) else map
-    ns = (ctx.values[nodes] if isinstance(nodes, str) else nodes) if nodes is not None else list(m.keys())
+    ns = _nodeset(ctx, nodes) if nodes is not None else list(m.keys())
     f = {">": lambda a, b: a > b, ">=": lambda a, b: a >= b, "<": lambda a, b: a < b, "<=": lambda a, b: a <= b, "==": lambda a, b: a == b}[op]
     return [n for n in ns if f(m[n], threshold)]
 
@@ -393,7 +459,7 @@ def filter_nodes(ctx, map, op, threshold, nodes=None):
 @op("restrict_map", "Restrict a NodeMap to a NodeSet.", {"map": "NodeMap", "nodes": "NodeSet"}, "NodeMap", "O(n)")
 def restrict_map(ctx, map, nodes):
     m = ctx.values[map] if isinstance(map, str) else map
-    ns = ctx.values[nodes] if isinstance(nodes, str) else nodes
+    ns = _nodeset(ctx, nodes)
     return {n: m[n] for n in ns if n in m}
 
 
@@ -406,16 +472,15 @@ def map_stats(ctx, map):
 
 @op("set_size", "Number of elements in a NodeSet.", {"nodes": "NodeSet"}, "Scalar", "O(1)")
 def set_size(ctx, nodes):
-    ns = ctx.values[nodes] if isinstance(nodes, str) else nodes
-    return len(ns)
+    return len(_nodeset(ctx, nodes))
 
 
 @op("pairwise_distances", "Distances between all pairs in a NodeSet; returns the pair with the largest distance and the full matrix.",
     {"graph": "Graph", "nodes": "NodeSet"}, "Table", "O(|S|(n+m))")
 def pairwise_distances(ctx, nodes, graph="G"):
     g = _graph(ctx, graph)
-    ns = ctx.values[nodes] if isinstance(nodes, str) else nodes
-    idx = [ctx.node(x) for x in ns]
+    ns = _nodeset(ctx, nodes)
+    idx = [_vid(ctx, g, x) for x in ns]
     d = g.distances(source=idx, target=idx, mode="out")
     best = (-1, None, None)
     for i, a in enumerate(ns):
@@ -425,11 +490,24 @@ def pairwise_distances(ctx, nodes, graph="G"):
     return {"max_distance": best[0], "pair": [best[1], best[2]], "matrix": [[(x if x != math.inf else None) for x in row] for row in d]}
 
 
-@op("compare", "Compare two scalars: returns {a, b, a_greater, ratio}.", {"a": "Scalar", "b": "Scalar"}, "Table", "O(1)")
-def compare(ctx, a, b):
+@op("compare", "Compare two scalars (step refs, 'step.field' refs, or literals), optionally labelled: returns {a, b, a_greater, greater: label, ratio}.",
+    {"a": "Scalar", "b": "Scalar", "label_a": "str or null", "label_b": "str or null"}, "Table", "O(1)")
+def compare(ctx, a, b, label_a=None, label_b=None):
     av = ctx.values[a] if isinstance(a, str) and a in ctx.values else a
     bv = ctx.values[b] if isinstance(b, str) and b in ctx.values else b
-    return {"a": av, "b": bv, "a_greater": av > bv, "ratio": (av / bv) if bv else None}
+    av = float(av); bv = float(bv)
+    la = label_a if label_a is not None else (a if isinstance(a, str) else "a")
+    lb = label_b if label_b is not None else (b if isinstance(b, str) else "b")
+    return {"a": av, "b": bv, "label_a": la, "label_b": lb, "a_greater": av > bv, "greater": la if av > bv else lb, "ratio": (av / bv) if bv else None}
+
+
+@op("is_finite", "True if a scalar is a finite number (e.g. a distance that is not inf).", {"value": "Scalar"}, "Bool", "O(1)")
+def is_finite(ctx, value):
+    v = ctx.values[value] if isinstance(value, str) and value in ctx.values else value
+    try:
+        return math.isfinite(float(v))
+    except (TypeError, ValueError):
+        return False
 
 
 def catalogue_text(include_tiers: bool = True) -> str:
