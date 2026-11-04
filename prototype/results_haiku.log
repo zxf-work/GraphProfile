@@ -115,3 +115,6 @@
 [114/300 1001s] flat       T6    $0.003 24s ok
 [115/300 1018s] no_verify  T7    $0.001 17s ok
 [116/300 1019s] full       T7    $0.002 25s ok
+184 runs with 3 workers
+[1/184 21s] no_interp  T7    $0.001 20s ok
+[2/184 24s] flat       T1    $0.002 24s ok
