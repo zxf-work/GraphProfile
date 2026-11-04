@@ -1,5 +1,6 @@
 results*/raw/
 results*/run.log
 results*/check_gold.log
+results_haiku.log
 __pycache__/
 *.pyc
