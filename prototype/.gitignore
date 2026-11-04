@@ -1,0 +1,5 @@
+results/raw/
+results/run.log
+results/check_gold.log
+__pycache__/
+*.pyc

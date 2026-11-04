@@ -1,0 +1,32 @@
+{
+  "facebook": {
+    "path": "../Graph Data/facebook_combined.txt",
+    "description": "SNAP ego-Facebook: anonymised friendship circles, each undirected edge listed once",
+    "directed": false, "weighted": false, "multigraph": false, "labels": false,
+    "edge_semantics": "friendship (symmetric)"
+  },
+  "enron": {
+    "path": "../Graph Data/enron.txt",
+    "description": "SNAP email-Enron: email communication network, undirected, each edge stored in both directions",
+    "directed": false, "weighted": false, "multigraph": false, "labels": false,
+    "edge_semantics": "at least one email exchanged (symmetric)"
+  },
+  "epinions": {
+    "path": "../Graph Data/epinions.txt",
+    "description": "SNAP soc-Epinions1: who-trusts-whom network, directed (source trusts target)",
+    "directed": true, "weighted": false, "multigraph": false, "labels": false,
+    "edge_semantics": "source trusts target (asymmetric)"
+  },
+  "lesmis": {
+    "path": "bench/data/lesmis.csv",
+    "description": "Les Miserables character co-appearance network (Knuth), undirected, weight = number of chapters in which the two characters co-appear",
+    "directed": false, "weighted": true, "weight_semantics": "strength", "multigraph": false, "labels": true,
+    "edge_semantics": "co-appearance in a chapter (symmetric); weight is a strength, not a distance"
+  },
+  "karate": {
+    "path": "bench/data/karate.csv",
+    "description": "Zachary karate club, undirected, unweighted",
+    "directed": false, "weighted": false, "multigraph": false, "labels": false,
+    "edge_semantics": "friendship (symmetric)"
+  }
+}

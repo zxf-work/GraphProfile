@@ -1,0 +1,25 @@
+"""Cross-check a subset of igraph ground truth against NetworkX."""
+import json, networkx as nx, time
+Q = {q["id"]: q for q in json.load(open("bench/questions.json"))}
+fb = nx.read_edgelist("/home/user/GraphProfile/Graph Data/facebook_combined.txt", nodetype=str)
+en = nx.read_edgelist("/home/user/GraphProfile/Graph Data/enron.txt", nodetype=str)
+ep = nx.read_edgelist("/home/user/GraphProfile/Graph Data/epinions.txt", nodetype=str, create_using=nx.DiGraph)
+lm = nx.les_miserables_graph()
+def rep(qid, nxv):
+    g = Q[qid]["checker"]; print(qid, "gold", g.get("value", g.get("facts", g.get("length"))), "| nx", nxv)
+rep("S3", sum(nx.triangles(fb).values())//3)
+rep("S5", nx.number_strongly_connected_components(ep))
+rep("S8", max(nx.core_number(en).values()))
+rep("S9", nx.transitivity(lm))
+rep("S12", (nx.number_connected_components(en), len(max(nx.connected_components(en), key=len))))
+rep("T1", sorted(fb.degree, key=lambda x: -x[1])[:10])
+rep("T4", [n for n,_ in sorted(ep.in_degree, key=lambda x:-x[1])[:10]])
+rep("T6", sorted(nx.betweenness_centrality(lm).items(), key=lambda x:-x[1])[:5])
+rep("PA1", nx.shortest_path_length(fb, "0", "4038"))
+rep("PA3", nx.has_path(ep, "0", "5000"))
+rep("N1", len(nx.single_source_shortest_path_length(fb, "0", cutoff=2)) - 1)
+rep("I3", len(nx.descendants(ep, "1")))
+rep("CO4", ep.subgraph([n for n,_ in sorted(ep.in_degree, key=lambda x:-x[1])[:20]]).number_of_edges())
+rep("NR4", nx.betweenness_centrality(lm, normalized=False)["Gavroche"])
+rep("S7", nx.degree_assortativity_coefficient(nx.karate_club_graph()))
+t=time.time(); lcc = en.subgraph(max(nx.connected_components(en), key=len)); rep("CL2", nx.diameter(lcc)); print("diam", round(time.time()-t), "s")

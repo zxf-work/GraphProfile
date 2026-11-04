@@ -1,0 +1,1528 @@
+[
+ {
+  "id": "P1",
+  "family": "profile",
+  "dataset": "facebook",
+  "file": "/home/user/GraphProfile/Graph Data/facebook_combined.txt",
+  "description": "SNAP ego-Facebook friendship network, undirected, each edge listed once",
+  "question": "Give me a basic profile of this network.",
+  "checker": {
+   "type": "facts",
+   "facts": {
+    "n": 4039,
+    "m": 88234,
+    "components": 1,
+    "max_degree": 1045
+   }
+  },
+  "expected_ops": [
+   [
+    "node_count",
+    "edge_count"
+   ],
+   [
+    "degree_stats"
+   ],
+   [
+    "components"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "P2",
+  "family": "profile",
+  "dataset": "epinions",
+  "file": "/home/user/GraphProfile/Graph Data/epinions.txt",
+  "description": "SNAP soc-Epinions1 who-trusts-whom network; a row 'u v' means u trusts v",
+  "question": "Profile this graph: size, connectivity and degree distribution.",
+  "checker": {
+   "type": "facts",
+   "facts": {
+    "n": 75879,
+    "m": 508837,
+    "weak_components": 2
+   }
+  },
+  "expected_ops": [
+   [
+    "components"
+   ]
+  ],
+  "expected_assumptions": {
+   "directed": true
+  }
+ },
+ {
+  "id": "P3",
+  "family": "profile",
+  "dataset": "lesmis",
+  "file": "/home/user/GraphProfile/prototype/bench/data/lesmis.csv",
+  "description": "Les Miserables character co-appearance network; the weight is the number of chapters the two characters share",
+  "question": "Summarise the structure of this network.",
+  "checker": {
+   "type": "facts",
+   "facts": {
+    "n": 77,
+    "m": 254,
+    "max_degree": 36
+   }
+  },
+  "expected_ops": [
+   [
+    "node_count"
+   ],
+   [
+    "edge_count"
+   ],
+   [
+    "degree_stats"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "S1",
+  "family": "metric",
+  "dataset": "facebook",
+  "file": "/home/user/GraphProfile/Graph Data/facebook_combined.txt",
+  "description": "SNAP ego-Facebook friendship network, undirected, each edge listed once",
+  "question": "How many nodes and edges are there?",
+  "checker": {
+   "type": "facts",
+   "facts": {
+    "n": 4039,
+    "m": 88234
+   }
+  },
+  "expected_ops": [
+   [
+    "node_count",
+    "edge_count"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "S2",
+  "family": "metric",
+  "dataset": "facebook",
+  "file": "/home/user/GraphProfile/Graph Data/facebook_combined.txt",
+  "description": "SNAP ego-Facebook friendship network, undirected, each edge listed once",
+  "question": "What is the diameter of the network?",
+  "checker": {
+   "type": "scalar",
+   "value": 8,
+   "tol": 0
+  },
+  "expected_ops": [
+   [
+    "diameter"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "S3",
+  "family": "metric",
+  "dataset": "facebook",
+  "file": "/home/user/GraphProfile/Graph Data/facebook_combined.txt",
+  "description": "SNAP ego-Facebook friendship network, undirected, each edge listed once",
+  "question": "How many triangles does the graph contain?",
+  "checker": {
+   "type": "scalar",
+   "value": 1612010,
+   "tol": 0
+  },
+  "expected_ops": [
+   [
+    "triangle_count"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "S4",
+  "family": "metric",
+  "dataset": "facebook",
+  "file": "/home/user/GraphProfile/Graph Data/facebook_combined.txt",
+  "description": "SNAP ego-Facebook friendship network, undirected, each edge listed once",
+  "question": "What is the average clustering coefficient?",
+  "checker": {
+   "type": "scalar",
+   "value": 0.6055467186200871,
+   "tol": 0.01
+  },
+  "expected_ops": [
+   [
+    "average_clustering"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "S5",
+  "family": "metric",
+  "dataset": "epinions",
+  "file": "/home/user/GraphProfile/Graph Data/epinions.txt",
+  "description": "SNAP soc-Epinions1 who-trusts-whom network; a row 'u v' means u trusts v",
+  "question": "How many strongly connected components are there?",
+  "checker": {
+   "type": "scalar",
+   "value": 42176,
+   "tol": 0
+  },
+  "expected_ops": [
+   [
+    "components"
+   ]
+  ],
+  "expected_assumptions": {
+   "directed": true,
+   "mode": "strong"
+  }
+ },
+ {
+  "id": "S6",
+  "family": "metric",
+  "dataset": "epinions",
+  "file": "/home/user/GraphProfile/Graph Data/epinions.txt",
+  "description": "SNAP soc-Epinions1 who-trusts-whom network; a row 'u v' means u trusts v",
+  "question": "What fraction of users is in the largest strongly connected component?",
+  "checker": {
+   "type": "scalar",
+   "value": 0.42466295022338196,
+   "tol": 0.01,
+   "alt": [
+    32223
+   ]
+  },
+  "expected_ops": [
+   [
+    "components"
+   ]
+  ],
+  "expected_assumptions": {
+   "directed": true
+  }
+ },
+ {
+  "id": "S7",
+  "family": "metric",
+  "dataset": "karate",
+  "file": "/home/user/GraphProfile/prototype/bench/data/karate.csv",
+  "description": "Zachary karate club friendship network",
+  "question": "What is the degree assortativity coefficient?",
+  "checker": {
+   "type": "scalar",
+   "value": -0.47561309768461435,
+   "tol": 0.01
+  },
+  "expected_ops": [
+   [
+    "assortativity"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "S8",
+  "family": "metric",
+  "dataset": "enron",
+  "file": "/home/user/GraphProfile/Graph Data/enron.txt",
+  "description": "SNAP email-Enron communication network, undirected; the file lists each edge in both directions",
+  "question": "What is the largest k for which the graph has a non-empty k-core?",
+  "checker": {
+   "type": "scalar",
+   "value": 43,
+   "tol": 0
+  },
+  "expected_ops": [
+   [
+    "max_core"
+   ],
+   [
+    "core_number"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "S9",
+  "family": "metric",
+  "dataset": "lesmis",
+  "file": "/home/user/GraphProfile/prototype/bench/data/lesmis.csv",
+  "description": "Les Miserables character co-appearance network; the weight is the number of chapters the two characters share",
+  "question": "What is the global clustering coefficient (transitivity)?",
+  "checker": {
+   "type": "scalar",
+   "value": 0.49893162393162394,
+   "tol": 0.01
+  },
+  "expected_ops": [
+   [
+    "transitivity"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "S10",
+  "family": "metric",
+  "dataset": "epinions",
+  "file": "/home/user/GraphProfile/Graph Data/epinions.txt",
+  "description": "SNAP soc-Epinions1 who-trusts-whom network; a row 'u v' means u trusts v",
+  "question": "What is the reciprocity of the trust relationships?",
+  "checker": {
+   "type": "scalar",
+   "value": 0.40522603505641297,
+   "tol": 0.02
+  },
+  "expected_ops": [
+   [
+    "reciprocity"
+   ]
+  ],
+  "expected_assumptions": {
+   "directed": true
+  }
+ },
+ {
+  "id": "S11",
+  "family": "metric",
+  "dataset": "facebook",
+  "file": "/home/user/GraphProfile/Graph Data/facebook_combined.txt",
+  "description": "SNAP ego-Facebook friendship network, undirected, each edge listed once",
+  "question": "Is the network connected?",
+  "checker": {
+   "type": "bool",
+   "value": true
+  },
+  "expected_ops": [
+   [
+    "is_connected"
+   ],
+   [
+    "components"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "S12",
+  "family": "metric",
+  "dataset": "enron",
+  "file": "/home/user/GraphProfile/Graph Data/enron.txt",
+  "description": "SNAP email-Enron communication network, undirected; the file lists each edge in both directions",
+  "question": "How many connected components are there, and how large is the largest one?",
+  "checker": {
+   "type": "facts",
+   "facts": {
+    "count": 1065,
+    "largest": 33696
+   }
+  },
+  "expected_ops": [
+   [
+    "components"
+   ]
+  ],
+  "expected_assumptions": {
+   "directed": false
+  }
+ },
+ {
+  "id": "S13",
+  "family": "metric",
+  "dataset": "facebook",
+  "file": "/home/user/GraphProfile/Graph Data/facebook_combined.txt",
+  "description": "SNAP ego-Facebook friendship network, undirected, each edge listed once",
+  "question": "What is the edge density?",
+  "checker": {
+   "type": "scalar",
+   "value": 0.010819963503439287,
+   "tol": 0.01
+  },
+  "expected_ops": [
+   [
+    "density"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "S14",
+  "family": "metric",
+  "dataset": "lesmis",
+  "file": "/home/user/GraphProfile/prototype/bench/data/lesmis.csv",
+  "description": "Les Miserables character co-appearance network; the weight is the number of chapters the two characters share",
+  "question": "How many triangles are there?",
+  "checker": {
+   "type": "scalar",
+   "value": 467,
+   "tol": 0
+  },
+  "expected_ops": [
+   [
+    "triangle_count"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "T1",
+  "family": "topk",
+  "dataset": "facebook",
+  "file": "/home/user/GraphProfile/Graph Data/facebook_combined.txt",
+  "description": "SNAP ego-Facebook friendship network, undirected, each edge listed once",
+  "question": "Which 10 nodes have the highest degree?",
+  "checker": {
+   "type": "ranking",
+   "value": [
+    "107",
+    "1684",
+    "1912",
+    "3437",
+    "0",
+    "2543",
+    "2347",
+    "1888",
+    "1800",
+    "1663"
+   ],
+   "min_overlap": 0.9
+  },
+  "expected_ops": [
+   [
+    "degree",
+    "top_k"
+   ],
+   [
+    "degree_stats"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "T2",
+  "family": "topk",
+  "dataset": "facebook",
+  "file": "/home/user/GraphProfile/Graph Data/facebook_combined.txt",
+  "description": "SNAP ego-Facebook friendship network, undirected, each edge listed once",
+  "question": "Who are the top 10 nodes by PageRank?",
+  "checker": {
+   "type": "ranking",
+   "value": [
+    "3437",
+    "107",
+    "1684",
+    "0",
+    "1912",
+    "348",
+    "686",
+    "3980",
+    "414",
+    "483"
+   ],
+   "min_overlap": 0.8
+  },
+  "expected_ops": [
+   [
+    "pagerank",
+    "top_k"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "T3",
+  "family": "topk",
+  "dataset": "facebook",
+  "file": "/home/user/GraphProfile/Graph Data/facebook_combined.txt",
+  "description": "SNAP ego-Facebook friendship network, undirected, each edge listed once",
+  "question": "List the 10 nodes with the highest betweenness centrality.",
+  "checker": {
+   "type": "ranking",
+   "value": [
+    "107",
+    "1684",
+    "3437",
+    "1912",
+    "1085",
+    "0",
+    "698",
+    "567",
+    "58",
+    "428"
+   ],
+   "min_overlap": 0.7
+  },
+  "expected_ops": [
+   [
+    "betweenness",
+    "top_k"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "T4",
+  "family": "topk",
+  "dataset": "epinions",
+  "file": "/home/user/GraphProfile/Graph Data/epinions.txt",
+  "description": "SNAP soc-Epinions1 who-trusts-whom network; a row 'u v' means u trusts v",
+  "question": "Which 10 users are trusted by the most other users?",
+  "checker": {
+   "type": "ranking",
+   "value": [
+    "18",
+    "143",
+    "737",
+    "790",
+    "136",
+    "1179",
+    "1719",
+    "118",
+    "4416",
+    "780"
+   ],
+   "min_overlap": 0.9
+  },
+  "expected_ops": [
+   [
+    "degree",
+    "top_k"
+   ]
+  ],
+  "expected_assumptions": {
+   "directed": true,
+   "mode": "in"
+  }
+ },
+ {
+  "id": "T5",
+  "family": "topk",
+  "dataset": "epinions",
+  "file": "/home/user/GraphProfile/Graph Data/epinions.txt",
+  "description": "SNAP soc-Epinions1 who-trusts-whom network; a row 'u v' means u trusts v",
+  "question": "Who are the top 10 users by PageRank?",
+  "checker": {
+   "type": "ranking",
+   "value": [
+    "18",
+    "737",
+    "118",
+    "1719",
+    "136",
+    "790",
+    "143",
+    "40",
+    "1619",
+    "725"
+   ],
+   "min_overlap": 0.8
+  },
+  "expected_ops": [
+   [
+    "pagerank",
+    "top_k"
+   ]
+  ],
+  "expected_assumptions": {
+   "directed": true
+  }
+ },
+ {
+  "id": "T6",
+  "family": "topk",
+  "dataset": "lesmis",
+  "file": "/home/user/GraphProfile/prototype/bench/data/lesmis.csv",
+  "description": "Les Miserables character co-appearance network; the weight is the number of chapters the two characters share",
+  "question": "Which five characters have the highest betweenness centrality?",
+  "checker": {
+   "type": "ranking",
+   "value": [
+    "Valjean",
+    "Myriel",
+    "Gavroche",
+    "Marius",
+    "Fantine"
+   ],
+   "min_overlap": 0.8
+  },
+  "expected_ops": [
+   [
+    "betweenness",
+    "top_k"
+   ]
+  ],
+  "expected_assumptions": {
+   "use_weights": false
+  }
+ },
+ {
+  "id": "T7",
+  "family": "topk",
+  "dataset": "facebook",
+  "file": "/home/user/GraphProfile/Graph Data/facebook_combined.txt",
+  "description": "SNAP ego-Facebook friendship network, undirected, each edge listed once",
+  "question": "Which 10 nodes have the highest closeness centrality?",
+  "checker": {
+   "type": "ranking",
+   "value": [
+    "107",
+    "1684",
+    "1912",
+    "58",
+    "428",
+    "563",
+    "0",
+    "483",
+    "348",
+    "1577"
+   ],
+   "min_overlap": 0.6
+  },
+  "expected_ops": [
+   [
+    "closeness",
+    "top_k"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "C1",
+  "family": "community",
+  "dataset": "facebook",
+  "file": "/home/user/GraphProfile/Graph Data/facebook_combined.txt",
+  "description": "SNAP ego-Facebook friendship network, undirected, each edge listed once",
+  "question": "How many communities are there, and what is the modularity of that partition?",
+  "checker": {
+   "type": "facts",
+   "facts": {
+    "modularity": 0.8358258047622553
+   },
+   "tol": 0.04,
+   "ranges": {
+    "count": [
+     10.2,
+     27.200000000000003
+    ]
+   }
+  },
+  "expected_ops": [
+   [
+    "communities"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "C2",
+  "family": "community",
+  "dataset": "lesmis",
+  "file": "/home/user/GraphProfile/prototype/bench/data/lesmis.csv",
+  "description": "Les Miserables character co-appearance network; the weight is the number of chapters the two characters share",
+  "question": "Run community detection: how big is the largest community?",
+  "checker": {
+   "type": "scalar",
+   "value": 22,
+   "tol": 0.35
+  },
+  "expected_ops": [
+   [
+    "communities"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "C3",
+  "family": "community",
+  "dataset": "karate",
+  "file": "/home/user/GraphProfile/prototype/bench/data/karate.csv",
+  "description": "Zachary karate club friendship network",
+  "question": "Detect communities; how many members are in the same community as member 0?",
+  "checker": {
+   "type": "scalar",
+   "value": 11,
+   "tol": 0.35
+  },
+  "expected_ops": [
+   [
+    "communities",
+    "block_of"
+   ],
+   [
+    "communities"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "C4",
+  "family": "community",
+  "dataset": "enron",
+  "file": "/home/user/GraphProfile/Graph Data/enron.txt",
+  "description": "SNAP email-Enron communication network, undirected; the file lists each edge in both directions",
+  "question": "What modularity does the best community partition you can find achieve?",
+  "checker": {
+   "type": "scalar",
+   "value": 0.6267811285133572,
+   "tol": 0.08
+  },
+  "expected_ops": [
+   [
+    "communities"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "PA1",
+  "family": "path",
+  "dataset": "facebook",
+  "file": "/home/user/GraphProfile/Graph Data/facebook_combined.txt",
+  "description": "SNAP ego-Facebook friendship network, undirected, each edge listed once",
+  "question": "What is the shortest path between node 0 and node 4038?",
+  "checker": {
+   "type": "path",
+   "length": 5,
+   "dataset": "facebook",
+   "source": "0",
+   "target": "4038"
+  },
+  "expected_ops": [
+   [
+    "shortest_path"
+   ],
+   [
+    "distance"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "PA2",
+  "family": "path",
+  "dataset": "lesmis",
+  "file": "/home/user/GraphProfile/prototype/bench/data/lesmis.csv",
+  "description": "Les Miserables character co-appearance network; the weight is the number of chapters the two characters share",
+  "question": "How many steps separate Gavroche and Cosette?",
+  "checker": {
+   "type": "scalar",
+   "value": 2,
+   "tol": 0
+  },
+  "expected_ops": [
+   [
+    "distance"
+   ],
+   [
+    "shortest_path"
+   ]
+  ],
+  "expected_assumptions": {
+   "use_weights": false
+  }
+ },
+ {
+  "id": "PA3",
+  "family": "path",
+  "dataset": "epinions",
+  "file": "/home/user/GraphProfile/Graph Data/epinions.txt",
+  "description": "SNAP soc-Epinions1 who-trusts-whom network; a row 'u v' means u trusts v",
+  "question": "How many hops does it take to get from user 0 to user 5000 following trust edges?",
+  "checker": {
+   "type": "scalar",
+   "value": Infinity,
+   "tol": 0,
+   "reverse": 3
+  },
+  "expected_ops": [
+   [
+    "distance"
+   ],
+   [
+    "shortest_path"
+   ]
+  ],
+  "expected_assumptions": {
+   "directed": true
+  }
+ },
+ {
+  "id": "PA4",
+  "family": "path",
+  "dataset": "epinions",
+  "file": "/home/user/GraphProfile/Graph Data/epinions.txt",
+  "description": "SNAP soc-Epinions1 who-trusts-whom network; a row 'u v' means u trusts v",
+  "question": "Can user 100 reach user 7 by following trust links?",
+  "checker": {
+   "type": "bool",
+   "value": true
+  },
+  "expected_ops": [
+   [
+    "distance"
+   ],
+   [
+    "shortest_path"
+   ],
+   [
+    "reachable_set"
+   ]
+  ],
+  "expected_assumptions": {
+   "directed": true
+  }
+ },
+ {
+  "id": "PA5",
+  "family": "path",
+  "dataset": "enron",
+  "file": "/home/user/GraphProfile/Graph Data/enron.txt",
+  "description": "SNAP email-Enron communication network, undirected; the file lists each edge in both directions",
+  "question": "Is there a path between node 0 and node 36000?",
+  "checker": {
+   "type": "bool",
+   "value": true
+  },
+  "expected_ops": [
+   [
+    "distance"
+   ],
+   [
+    "shortest_path"
+   ],
+   [
+    "components"
+   ],
+   [
+    "reachable_set"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "N1",
+  "family": "neighbourhood",
+  "dataset": "facebook",
+  "file": "/home/user/GraphProfile/Graph Data/facebook_combined.txt",
+  "description": "SNAP ego-Facebook friendship network, undirected, each edge listed once",
+  "question": "How many nodes are within 2 hops of node 0?",
+  "checker": {
+   "type": "scalar",
+   "value": 1518,
+   "tol": 0
+  },
+  "expected_ops": [
+   [
+    "k_hop_neighbourhood"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "N2",
+  "family": "neighbourhood",
+  "dataset": "epinions",
+  "file": "/home/user/GraphProfile/Graph Data/epinions.txt",
+  "description": "SNAP soc-Epinions1 who-trusts-whom network; a row 'u v' means u trusts v",
+  "question": "How many users does user 0 trust, and how many users trust user 0?",
+  "checker": {
+   "type": "facts",
+   "facts": {
+    "out": 139,
+    "in": 636
+   }
+  },
+  "expected_ops": [
+   [
+    "node_degree"
+   ],
+   [
+    "degree"
+   ],
+   [
+    "neighbours"
+   ]
+  ],
+  "expected_assumptions": {
+   "directed": true
+  }
+ },
+ {
+  "id": "N3",
+  "family": "neighbourhood",
+  "dataset": "facebook",
+  "file": "/home/user/GraphProfile/Graph Data/facebook_combined.txt",
+  "description": "SNAP ego-Facebook friendship network, undirected, each edge listed once",
+  "question": "How many of node 107's friends have more than 100 friends themselves?",
+  "checker": {
+   "type": "scalar",
+   "value": 179,
+   "tol": 0
+  },
+  "expected_ops": [
+   [
+    "neighbours",
+    "filter_nodes"
+   ],
+   [
+    "neighbours",
+    "degree"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "N4",
+  "family": "neighbourhood",
+  "dataset": "lesmis",
+  "file": "/home/user/GraphProfile/prototype/bench/data/lesmis.csv",
+  "description": "Les Miserables character co-appearance network; the weight is the number of chapters the two characters share",
+  "question": "Which characters appear together with both Valjean and Cosette?",
+  "checker": {
+   "type": "set",
+   "value": [
+    "Gillenormand",
+    "Javert",
+    "Marius",
+    "MlleGillenormand",
+    "MmeThenardier",
+    "Thenardier",
+    "Toussaint",
+    "Woman2"
+   ],
+   "min_jaccard": 0.9
+  },
+  "expected_ops": [
+   [
+    "neighbours"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "CM1",
+  "family": "comparative",
+  "dataset": "facebook",
+  "file": "/home/user/GraphProfile/Graph Data/facebook_combined.txt",
+  "description": "SNAP ego-Facebook friendship network, undirected, each edge listed once",
+  "question": "Which of node 0 and node 107 has the higher betweenness centrality?",
+  "checker": {
+   "type": "choice",
+   "value": "107",
+   "other": "0"
+  },
+  "expected_ops": [
+   [
+    "betweenness"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "CM2",
+  "family": "comparative",
+  "dataset": "facebook",
+  "file": "/home/user/GraphProfile/Graph Data/facebook_combined.txt",
+  "description": "SNAP ego-Facebook friendship network, undirected, each edge listed once",
+  "question": "Is the average clustering coefficient of the 20-core higher than that of the whole graph?",
+  "checker": {
+   "type": "bool",
+   "value": true,
+   "facts": {
+    "core": 0.628741169414854,
+    "whole": 0.6055467186200871
+   }
+  },
+  "expected_ops": [
+   [
+    "k_core",
+    "average_clustering"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "CO1",
+  "family": "compositional",
+  "dataset": "facebook",
+  "file": "/home/user/GraphProfile/Graph Data/facebook_combined.txt",
+  "description": "SNAP ego-Facebook friendship network, undirected, each edge listed once",
+  "question": "Among the 10 highest-degree nodes, which two are farthest apart, and what is their distance?",
+  "checker": {
+   "type": "pair_distance",
+   "distance": 4,
+   "pairs": [
+    [
+     "3437",
+     "2543"
+    ],
+    [
+     "3437",
+     "2347"
+    ]
+   ]
+  },
+  "expected_ops": [
+   [
+    "degree",
+    "top_k",
+    "pairwise_distances"
+   ],
+   [
+    "degree",
+    "top_k",
+    "distance"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "CO2",
+  "family": "compositional",
+  "dataset": "enron",
+  "file": "/home/user/GraphProfile/Graph Data/enron.txt",
+  "description": "SNAP email-Enron communication network, undirected; the file lists each edge in both directions",
+  "question": "What is the average degree of the nodes in the largest connected component?",
+  "checker": {
+   "type": "scalar",
+   "value": 10.731896961063628,
+   "tol": 0.01
+  },
+  "expected_ops": [
+   [
+    "largest_component",
+    "degree_stats"
+   ],
+   [
+    "largest_component",
+    "degree",
+    "map_stats"
+   ],
+   [
+    "components"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "CO3",
+  "family": "compositional",
+  "dataset": "facebook",
+  "file": "/home/user/GraphProfile/Graph Data/facebook_combined.txt",
+  "description": "SNAP ego-Facebook friendship network, undirected, each edge listed once",
+  "question": "How many triangles are there inside the 50-core of the graph?",
+  "checker": {
+   "type": "scalar",
+   "value": 1208867,
+   "tol": 0
+  },
+  "expected_ops": [
+   [
+    "k_core",
+    "triangle_count"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "CO4",
+  "family": "compositional",
+  "dataset": "epinions",
+  "file": "/home/user/GraphProfile/Graph Data/epinions.txt",
+  "description": "SNAP soc-Epinions1 who-trusts-whom network; a row 'u v' means u trusts v",
+  "question": "How many trust edges exist among the 20 users with the highest in-degree?",
+  "checker": {
+   "type": "scalar",
+   "value": 119,
+   "tol": 0
+  },
+  "expected_ops": [
+   [
+    "degree",
+    "top_k",
+    "induced_subgraph",
+    "edge_count"
+   ]
+  ],
+  "expected_assumptions": {
+   "directed": true,
+   "mode": "in"
+  }
+ },
+ {
+  "id": "CO5",
+  "family": "compositional",
+  "dataset": "lesmis",
+  "file": "/home/user/GraphProfile/prototype/bench/data/lesmis.csv",
+  "description": "Les Miserables character co-appearance network; the weight is the number of chapters the two characters share",
+  "question": "Among the characters who appear directly with Valjean, who has the highest betweenness centrality in the whole network?",
+  "checker": {
+   "type": "choice",
+   "value": "Myriel"
+  },
+  "expected_ops": [
+   [
+    "neighbours",
+    "betweenness"
+   ],
+   [
+    "betweenness",
+    "neighbours"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "I1",
+  "family": "interpretation",
+  "dataset": "enron",
+  "file": "/home/user/GraphProfile/Graph Data/enron.txt",
+  "description": "SNAP email-Enron communication network, undirected; the file lists each edge in both directions",
+  "question": "How many edges does this network have?",
+  "checker": {
+   "type": "scalar",
+   "value": 183831,
+   "tol": 0,
+   "wrong": [
+    367662
+   ]
+  },
+  "expected_ops": [
+   [
+    "edge_count"
+   ]
+  ],
+  "expected_assumptions": {
+   "directed": false
+  }
+ },
+ {
+  "id": "I2",
+  "family": "interpretation",
+  "dataset": "enron",
+  "file": "/home/user/GraphProfile/Graph Data/enron.txt",
+  "description": null,
+  "question": "How many edges does this network have?",
+  "checker": {
+   "type": "scalar",
+   "value": 183831,
+   "tol": 0,
+   "wrong": [
+    367662
+   ],
+   "accept_clarification": true
+  },
+  "expected_ops": [
+   [
+    "edge_count"
+   ]
+  ],
+  "expected_assumptions": {
+   "directed": false
+  }
+ },
+ {
+  "id": "I3",
+  "family": "interpretation",
+  "dataset": "epinions",
+  "file": "/home/user/GraphProfile/Graph Data/epinions.txt",
+  "description": "SNAP soc-Epinions1 who-trusts-whom network; a row 'u v' means u trusts v",
+  "question": "How many users can user 1 reach by following trust links?",
+  "checker": {
+   "type": "scalar",
+   "value": 47675,
+   "tol": 0,
+   "alt": [
+    47676
+   ]
+  },
+  "expected_ops": [
+   [
+    "reachable_set"
+   ],
+   [
+    "components"
+   ]
+  ],
+  "expected_assumptions": {
+   "directed": true
+  }
+ },
+ {
+  "id": "I4",
+  "family": "interpretation",
+  "dataset": "epinions",
+  "file": "/home/user/GraphProfile/Graph Data/epinions.txt",
+  "description": null,
+  "question": "What is the in-degree of node 0?",
+  "checker": {
+   "type": "scalar",
+   "value": 636,
+   "tol": 0,
+   "accept_clarification": true
+  },
+  "expected_ops": [
+   [
+    "node_degree"
+   ],
+   [
+    "degree"
+   ]
+  ],
+  "expected_assumptions": {
+   "directed": true
+  }
+ },
+ {
+  "id": "I5",
+  "family": "interpretation",
+  "dataset": "lesmis",
+  "file": "/home/user/GraphProfile/prototype/bench/data/lesmis.csv",
+  "description": "Les Miserables character co-appearance network; the weight is the number of chapters the two characters share",
+  "question": "What is the shortest path length from Valjean to Marius?",
+  "checker": {
+   "type": "scalar",
+   "value": 1,
+   "tol": 0,
+   "accept_clarification": true
+  },
+  "expected_ops": [
+   [
+    "distance"
+   ],
+   [
+    "shortest_path"
+   ]
+  ],
+  "expected_assumptions": {
+   "use_weights": false
+  }
+ },
+ {
+  "id": "I6",
+  "family": "interpretation",
+  "dataset": "facebook",
+  "file": "/home/user/GraphProfile/Graph Data/facebook_combined.txt",
+  "description": "SNAP ego-Facebook friendship network, undirected, each edge listed once",
+  "question": "What is the in-degree of node 0?",
+  "checker": {
+   "type": "scalar",
+   "value": 347,
+   "tol": 0,
+   "accept_clarification": true
+  },
+  "expected_ops": [
+   [
+    "node_degree"
+   ],
+   [
+    "degree"
+   ]
+  ],
+  "expected_assumptions": {
+   "directed": false
+  }
+ },
+ {
+  "id": "I7",
+  "family": "interpretation",
+  "dataset": "karate",
+  "file": "/home/user/GraphProfile/prototype/bench/data/karate.csv",
+  "description": null,
+  "question": "How many edges does this network have?",
+  "checker": {
+   "type": "scalar",
+   "value": 78,
+   "tol": 0,
+   "accept_clarification": true
+  },
+  "expected_ops": [
+   [
+    "edge_count"
+   ]
+  ],
+  "expected_assumptions": {
+   "directed": false
+  }
+ },
+ {
+  "id": "CL1",
+  "family": "clarification",
+  "dataset": "karate",
+  "file": "/home/user/GraphProfile/prototype/bench/data/karate.csv",
+  "description": "Zachary karate club friendship network",
+  "question": "Who are the 3 most important members?",
+  "checker": {
+   "type": "clarify",
+   "acceptable": [
+    "0",
+    "2",
+    "32",
+    "33"
+   ],
+   "k": 3
+  },
+  "expected_ops": [
+   [
+    "degree"
+   ],
+   [
+    "pagerank"
+   ],
+   [
+    "betweenness"
+   ],
+   [
+    "closeness"
+   ],
+   [
+    "eigenvector_centrality"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "CL2",
+  "family": "clarification",
+  "dataset": "enron",
+  "file": "/home/user/GraphProfile/Graph Data/enron.txt",
+  "description": "SNAP email-Enron communication network, undirected; the file lists each edge in both directions",
+  "question": "What is the diameter?",
+  "checker": {
+   "type": "scalar",
+   "value": 13,
+   "tol": 0,
+   "accept_clarification": true,
+   "alt": [
+    "inf"
+   ],
+   "requires_assumption": "largest_component_only"
+  },
+  "expected_ops": [
+   [
+    "diameter"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "CL3",
+  "family": "clarification",
+  "dataset": "epinions",
+  "file": "/home/user/GraphProfile/Graph Data/epinions.txt",
+  "description": "SNAP soc-Epinions1 who-trusts-whom network; a row 'u v' means u trusts v",
+  "question": "What is the degree of node 0?",
+  "checker": {
+   "type": "facts_or_clarify",
+   "facts": {
+    "in": 636,
+    "out": 139
+   },
+   "single_ok": [
+    775
+   ]
+  },
+  "expected_ops": [
+   [
+    "node_degree"
+   ],
+   [
+    "degree"
+   ]
+  ],
+  "expected_assumptions": {
+   "directed": true
+  }
+ },
+ {
+  "id": "CL4",
+  "family": "clarification",
+  "dataset": "lesmis",
+  "file": "/home/user/GraphProfile/prototype/bench/data/lesmis.csv",
+  "description": "Les Miserables character co-appearance network; the weight is the number of chapters the two characters share",
+  "question": "Who is the most central character?",
+  "checker": {
+   "type": "clarify",
+   "acceptable": [
+    "Gavroche",
+    "Valjean"
+   ],
+   "k": 1
+  },
+  "expected_ops": [
+   [
+    "degree"
+   ],
+   [
+    "pagerank"
+   ],
+   [
+    "betweenness"
+   ],
+   [
+    "closeness"
+   ],
+   [
+    "eigenvector_centrality"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "NR1",
+  "family": "resolution",
+  "dataset": "lesmis",
+  "file": "/home/user/GraphProfile/prototype/bench/data/lesmis.csv",
+  "description": "Les Miserables character co-appearance network; the weight is the number of chapters the two characters share",
+  "question": "What is the degree of valjean?",
+  "checker": {
+   "type": "scalar",
+   "value": 36,
+   "tol": 0
+  },
+  "expected_ops": [
+   [
+    "node_degree"
+   ],
+   [
+    "degree"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "NR2",
+  "family": "resolution",
+  "dataset": "lesmis",
+  "file": "/home/user/GraphProfile/prototype/bench/data/lesmis.csv",
+  "description": "Les Miserables character co-appearance network; the weight is the number of chapters the two characters share",
+  "question": "How far is Marius from Cosete?",
+  "checker": {
+   "type": "scalar",
+   "value": 1,
+   "tol": 0
+  },
+  "expected_ops": [
+   [
+    "distance"
+   ],
+   [
+    "shortest_path"
+   ]
+  ],
+  "expected_assumptions": {
+   "use_weights": false
+  }
+ },
+ {
+  "id": "NR3",
+  "family": "resolution",
+  "dataset": "lesmis",
+  "file": "/home/user/GraphProfile/prototype/bench/data/lesmis.csv",
+  "description": "Les Miserables character co-appearance network; the weight is the number of chapters the two characters share",
+  "question": "Who are the neighbours of Jean Valjean?",
+  "checker": {
+   "type": "set",
+   "value": [
+    "Babet",
+    "Bamatabois",
+    "Bossuet",
+    "Brevet",
+    "Champmathieu",
+    "Chenildieu",
+    "Claquesous",
+    "Cochepaille",
+    "Cosette",
+    "Enjolras",
+    "Fantine",
+    "Fauchelevent",
+    "Gavroche",
+    "Gervais",
+    "Gillenormand",
+    "Gueulemer",
+    "Isabeau",
+    "Javert",
+    "Judge",
+    "Labarre",
+    "Marguerite",
+    "Marius",
+    "MlleBaptistine",
+    "MlleGillenormand",
+    "MmeDeR",
+    "MmeMagloire",
+    "MmeThenardier",
+    "Montparnasse",
+    "MotherInnocent",
+    "Myriel",
+    "Scaufflaire",
+    "Simplice",
+    "Thenardier",
+    "Toussaint",
+    "Woman1",
+    "Woman2"
+   ],
+   "min_jaccard": 0.9
+  },
+  "expected_ops": [
+   [
+    "neighbours"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "NR4",
+  "family": "resolution",
+  "dataset": "lesmis",
+  "file": "/home/user/GraphProfile/prototype/bench/data/lesmis.csv",
+  "description": "Les Miserables character co-appearance network; the weight is the number of chapters the two characters share",
+  "question": "What is the betweenness centrality of Gavroche?",
+  "checker": {
+   "type": "scalar",
+   "value": 470.5706319136659,
+   "tol": 0.01,
+   "alt": [
+    0.16511250242584768
+   ]
+  },
+  "expected_ops": [
+   [
+    "betweenness",
+    "map_value"
+   ],
+   [
+    "betweenness"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "NR5",
+  "family": "resolution",
+  "dataset": "lesmis",
+  "file": "/home/user/GraphProfile/prototype/bench/data/lesmis.csv",
+  "description": "Les Miserables character co-appearance network; the weight is the number of chapters the two characters share",
+  "question": "What is the PageRank score of Javer?",
+  "checker": {
+   "type": "scalar",
+   "value": 0.030302735905813585,
+   "tol": 0.02
+  },
+  "expected_ops": [
+   [
+    "pagerank",
+    "map_value"
+   ],
+   [
+    "pagerank"
+   ]
+  ],
+  "expected_assumptions": {}
+ }
+]
