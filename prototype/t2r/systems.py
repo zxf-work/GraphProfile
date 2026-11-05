@@ -21,7 +21,7 @@ import time
 from dataclasses import dataclass, field, asdict
 from typing import Any, Optional
 
-from .graphs import LoadedGraph, load_graph, profile_card, raw_card, read_raw
+from .graphs import LoadedGraph, load_graph, profile_card, raw_card, read_facts
 from .ir import Plan, validate, auto_tier, execute, extract_answer, summarise
 from .llm import LLM, parse_json
 from .ops import CATALOGUE, Ctx, catalogue_text
@@ -237,7 +237,7 @@ def run_flat(qid: str, lg_path: str, name: str, description: Optional[str], ques
     res = Result(system="flat", qid=qid)
     system = FLAT_SYSTEM.format(catalogue=catalogue_text(), schema=ANSWER_SCHEMA)
     convo = user_message(os.path.basename(lg_path), description, question)
-    facts, _ = read_raw(lg_path)
+    facts = read_facts(lg_path)
     lg: Optional[LoadedGraph] = None
     ctx: Optional[Ctx] = None
     try:
@@ -299,7 +299,7 @@ Reply with only the script inside a ```python fence."""
 def run_codegen(qid: str, lg_path: str, name: str, description: Optional[str], question: str, llm: LLM, timeout: int = 600, cache: Optional[dict] = None) -> Result:
     t0 = time.time(); mark = _usage_mark(llm)
     res = Result(system="codegen", qid=qid)
-    facts, _ = read_raw(lg_path)
+    facts = read_facts(lg_path)
     fx = {k: v for k, v in asdict(facts).items() if k not in ("sha1",)}
     user = f"File path: {os.path.abspath(lg_path)}\nFile facts: {json.dumps(fx, default=str)}\n{user_message(os.path.basename(lg_path), description, question)}"
     system = CODEGEN_SYSTEM.format(schema=ANSWER_SCHEMA)

@@ -172,6 +172,15 @@ def read_raw_fast(path: str) -> tuple[RawFacts, Any]:
     return facts, (u, v, w)
 
 
+def read_facts(path: str) -> RawFacts:
+    """File facts only (no graph). Uses the chunked numpy path for big files so the row list is never materialised."""
+    if os.path.getsize(path) > BIG_FILE_BYTES:
+        facts, _ = read_raw_fast(path)
+        return facts
+    facts, _ = read_raw(path)
+    return facts
+
+
 def read_raw(path: str) -> tuple[RawFacts, list[tuple[str, str, Optional[float]]]]:
     rows: list[tuple[str, str, Optional[float]]] = []
     header = None
