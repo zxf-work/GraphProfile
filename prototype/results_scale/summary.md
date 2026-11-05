@@ -1,32 +1,34 @@
 # Headline experiment results
 
-Questions: 10. Systems: full, flat, codegen. Model: claude-opus-5-5. Results dir: results_scale.
+Questions: 16. Systems: full, flat, codegen. Model: claude-opus-5-5. Results dir: results_scale.
 
 ## Answer accuracy by family (mean score, 0 to 1)
 
 | family | n | full | flat | codegen |
 |---|---|---|---|---|
-| metric | 5 | 1.00 | 1.00 | 1.00 |
-| topk | 4 | 1.00 | 1.00 | 1.00 |
+| metric | 8 | 1.00 | 0.62 | 0.62 |
+| topk | 6 | 1.00 | 0.67 | 0.67 |
 | interpretation | 1 | 1.00 | 1.00 | 1.00 |
-| ALL | 10 | 1.00 | 1.00 | 1.00 |
+| path | 1 | 1.00 | 0.00 | 0.00 |
+| ALL | 16 | 1.00 | 0.62 | 0.62 |
 
 ## Plan correctness (mean, 0 to 1; n/a for codegen)
 
 | family | full | flat | codegen |
 |---|---|---|---|
-| metric | 1.00 | 0.90 | n/a |
-| topk | 1.00 | 1.00 | n/a |
+| metric | 1.00 | 0.75 | n/a |
+| topk | 1.00 | 0.83 | n/a |
 | interpretation | 1.00 | 1.00 | n/a |
-| ALL | 1.00 | 0.95 | n/a |
+| path | 1.00 | 0.50 | n/a |
+| ALL | 1.00 | 0.78 | n/a |
 
 ## Cost per question (means)
 
 | system | LLM calls | tokens | USD | seconds | errors/timeouts |
 |---|---|---|---|---|---|
-| full | 2.0 | 9403 | 0.047 | 140 | 0 |
-| flat | 3.4 | 20346 | 0.054 | 214 | 0 |
-| codegen | 1.0 | 3193 | 0.033 | 129 | 0 |
+| full | 2.1 | 9852 | 0.050 | 293 | 0 |
+| flat | 2.1 | 12717 | 0.034 | 164 | 6 |
+| codegen | 0.6 | 1996 | 0.020 | 111 | 6 |
 
 ## Per-question scores
 
@@ -42,6 +44,24 @@ Questions: 10. Systems: full, flat, codegen. Model: claude-opus-5-5. Results dir
 | X8 | topk | 1.0 | 1.0 | 1.0 |
 | X9 | interpretation | 1.0 | 1.0 | 1.0 |
 | X10 | metric | 1.0 | 1.0 | 1.0 |
+| X11 | metric | 1.0 | 0.0 | 0.0 |
+| X12 | topk | 1.0 | 0.0 | 0.0 |
+| X13 | metric | 1.0 | 0.0 | 0.0 |
+| X14 | metric | 1.0 | 0.0 | 0.0 |
+| X15 | topk | 1.0 | 0.0 | 0.0 |
+| X16 | path | 1.0 | 0.0 | 0.0 |
 
 ## Failure notes (score < 1)
 
+- flat X11 (metric): score 0.0: error: runner failed rc=-9:  [error: runner failed rc=-9: ]
+- codegen X11 (metric): score 0.0: error: runner failed rc=-9:  [error: runner failed rc=-9: ]
+- flat X12 (topk): score 0.0: error: runner failed rc=-9:  [error: runner failed rc=-9: ]
+- codegen X12 (topk): score 0.0: error: runner failed rc=-9:  [error: runner failed rc=-9: ]
+- flat X13 (metric): score 0.0: error: runner failed rc=-9:  [error: runner failed rc=-9: ]
+- codegen X13 (metric): score 0.0: error: runner failed rc=-9:  [error: runner failed rc=-9: ]
+- flat X14 (metric): score 0.0: error: runner failed rc=-9:  [error: runner failed rc=-9: ]
+- codegen X14 (metric): score 0.0: error: runner failed rc=-9:  [error: runner failed rc=-9: ]
+- flat X15 (topk): score 0.0: error: runner failed rc=-9:  [error: runner failed rc=-9: ]
+- codegen X15 (topk): score 0.0: error: runner failed rc=-9:  [error: runner failed rc=-9: ]
+- flat X16 (path): score 0.0: error: runner failed rc=-9:  [error: runner failed rc=-9: ]
+- codegen X16 (path): score 0.0: error: runner failed rc=-9:  [error: runner failed rc=-9: ]
