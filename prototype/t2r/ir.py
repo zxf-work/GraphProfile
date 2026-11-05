@@ -137,6 +137,13 @@ def validate(plan: Plan, lg: LoadedGraph, budget_ops: float = 2e9) -> list[str]:
                 problems.append(f"step {st.id}: argument {p} must be a step id of type {base}")
             elif base == "NodeSet" and not isinstance(v, (str, list)):
                 problems.append(f"step {st.id}: argument {p} must be a step id or a JSON list of node ids")
+            elif base == "NodeSet" and isinstance(v, list):
+                for x in v:
+                    rr = _ref_of(x)
+                    if rr is not None and rr[0] not in types:
+                        problems.append(f"step {st.id}: argument {p} references unknown step {rr[0]}")
+                    elif rr is None and isinstance(x, (str, int)) and lg.resolve(x)["matched"] is None:
+                        problems.append(f"step {st.id}: node '{x}' not found")
             elif base in SCALAR_TYPES and isinstance(v, (dict, list)):
                 problems.append(f"step {st.id}: argument {p} must be a number/string or a 'step.field' reference, not {type(v).__name__}")
             if base == "NodeRef" and isinstance(v, (dict, list)):
@@ -198,7 +205,7 @@ def execute(plan: Plan, lg: LoadedGraph, seed: int = 1, cache: Optional[dict] = 
         spec = CATALOGUE[st.op]
         key = (lg.facts.sha1, st.op, repr(sorted(st.args.items())))
         t0 = time.time()
-        args = {k: resolve_ref(ctx, v) for k, v in st.args.items()}
+        args = {k: ([resolve_ref(ctx, x) for x in v] if isinstance(v, list) else resolve_ref(ctx, v)) for k, v in st.args.items()}
         cached = cache is not None and key in cache and all(not (isinstance(v, str) and v in ctx.values and v != "G") for v in st.args.values()) and args == st.args
         if cached:
             val = cache[key]

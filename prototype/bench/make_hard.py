@@ -144,8 +144,9 @@ sp_w = run("roads", "shortest_path", source="J0", target="J299", use_weights=Tru
 sp_h = run("roads", "shortest_path", source="J0", target="J299", use_weights=False)
 add("H1", "interpretation", "roads", "What is the shortest route from J0 to J299, and how long is it?",
     {"type": "scalar", "value": sp_w["length"], "tol": 0.01, "wrong": [sp_h["length"]]}, [["shortest_path"]], {"use_weights": True})
+_bw = run("roads", "betweenness", use_weights=True)
 add("H2", "interpretation", "roads", "Which junction is the most central in terms of lying on the most shortest routes?",
-    {"type": "choice", "value": topk("roads", "betweenness", 1)[0]}, [["betweenness"]])
+    {"type": "clarify", "acceptable": sorted({topk("roads", "betweenness", 1)[0], max(_bw, key=_bw.get)}), "k": 1}, [["betweenness"]])
 add("H3", "metric", "roads", "How many junctions and road segments are there?",
     {"type": "facts", "facts": {"n": rg.g.vcount(), "m": rg.g.ecount()}}, [["node_count", "edge_count"]])
 

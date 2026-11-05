@@ -31,8 +31,12 @@
   "description": null,
   "question": "Which junction is the most central in terms of lying on the most shortest routes?",
   "checker": {
-   "type": "choice",
-   "value": "J288"
+   "type": "clarify",
+   "acceptable": [
+    "J288",
+    "J49"
+   ],
+   "k": 1
   },
   "expected_ops": [
    [

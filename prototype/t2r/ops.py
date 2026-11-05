@@ -172,6 +172,28 @@ def _rows_cache(ctx):
     return ctx._rows
 
 
+@op("heaviest_edges", "The k edges with the largest weight (e.g. most shared neighbours in a projection, most interactions in a simplified multigraph). Returns ordered list of {source, target, weight}.",
+    {"graph": "Graph", "k": "int"}, "Table", "O(m log m)")
+def heaviest_edges(ctx, graph="G", k=10):
+    g = _graph(ctx, graph)
+    if "weight" not in g.es.attributes():
+        raise ValueError("graph has no edge weights")
+    es = sorted(g.es, key=lambda e: -e["weight"])[: int(k)]
+    return [{"source": g.vs[e.source]["name"], "target": g.vs[e.target]["name"], "weight": e["weight"]} for e in es]
+
+
+@op("strongest_ties", "A node's neighbours ordered by edge weight (or by number of parallel edges in a multigraph), strongest first. mode in {all,in,out}. Returns list of {node, weight}.",
+    {"graph": "Graph", "node": "NodeRef", "k": "int", "mode": "str"}, "Table", "O(deg)")
+def strongest_ties(ctx, node, graph="G", k=10, mode="all"):
+    g = _graph(ctx, graph)
+    v = _vid(ctx, g, node)
+    acc: dict[int, float] = {}
+    for e in g.es[g.incident(v, mode=mode)]:
+        other = e.target if e.source == v else e.source
+        acc[other] = acc.get(other, 0.0) + (e["weight"] if "weight" in g.es.attributes() else 1.0)
+    return [{"node": g.vs[o]["name"], "weight": w} for o, w in sorted(acc.items(), key=lambda kv: -kv[1])[: int(k)]]
+
+
 @op("density", "Edge density: m / possible edges.", {"graph": "Graph"}, "Scalar", "O(1)")
 def density(ctx, graph="G"):
     return _graph(ctx, graph).density()
@@ -382,15 +404,16 @@ def pagerank(ctx, graph="G", damping=0.85):
     return _nodemap(ctx, g.pagerank(damping=damping, directed=g.is_directed()), g)
 
 
-@op("betweenness", "Betweenness centrality as NodeMap. tier exact O(nm); tier approx samples k pivot sources (default 500).",
-    {"graph": "Graph", "tier": "exact|approx", "k": "int pivots for approx"}, "NodeMap", "O(nm)", tiers=["exact", "approx"])
-def betweenness(ctx, graph="G", tier="exact", k=500):
+@op("betweenness", "Betweenness centrality as NodeMap. tier exact O(nm); tier approx samples k pivot sources (default 500). use_weights=true treats edge weights as distances (only for distance-like weights).",
+    {"graph": "Graph", "tier": "exact|approx", "k": "int pivots for approx", "use_weights": "bool (default false)"}, "NodeMap", "O(nm)", tiers=["exact", "approx"])
+def betweenness(ctx, graph="G", tier="exact", k=500, use_weights=False):
     g = _graph(ctx, graph)
+    w = "weight" if (use_weights and "weight" in g.es.attributes()) else None
     if tier == "exact":
-        return _nodemap(ctx, g.betweenness(directed=g.is_directed()), g)
+        return _nodemap(ctx, g.betweenness(directed=g.is_directed(), weights=w), g)
     rng = random.Random(ctx.seed)
     pivots = rng.sample(range(g.vcount()), min(int(k), g.vcount()))
-    vals = g.betweenness(directed=g.is_directed(), sources=pivots)
+    vals = g.betweenness(directed=g.is_directed(), sources=pivots, weights=w)
     scale = g.vcount() / len(pivots)
     return _nodemap(ctx, [v * scale for v in vals], g)
 

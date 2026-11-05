@@ -56,12 +56,13 @@ top_pr = [n for n, _ in sorted(pr.items(), key=lambda kv: -kv[1])[:10]]
 add("X4", "topk", "ba_10m", "Who are the top 10 nodes by PageRank?", {"type": "ranking", "value": top_pr, "min_overlap": 0.8}, [["pagerank", "top_k"]])
 diam = timed("diameter approx k=60", lambda: CATALOGUE["diameter"].fn(ctx, tier="approx", k=60))
 add("X5", "metric", "ba_10m", "What is the diameter of the network (an estimate is acceptable)?", {"type": "scalar", "value": diam, "tol": 0.15}, [["diameter"]])
-bc = timed("betweenness approx k=1500", lambda: CATALOGUE["betweenness"].fn(ctx, tier="approx", k=1500))
+bc = timed("betweenness approx k=800", lambda: CATALOGUE["betweenness"].fn(ctx, tier="approx", k=800))
 top_bc = [n for n, _ in sorted(bc.items(), key=lambda kv: -kv[1])[:10]]
 add("X6", "topk", "ba_10m", "List the 10 nodes with the highest betweenness centrality (an approximation is acceptable).", {"type": "ranking", "value": top_bc, "min_overlap": 0.6}, [["betweenness", "top_k"]])
 core = timed("max_core", lambda: CATALOGUE["max_core"].fn(ctx))
 add("X7", "metric", "ba_10m", "What is the largest k for which a non-empty k-core exists?", {"type": "scalar", "value": core["k"], "tol": 0}, [["max_core"], ["core_number"]])
 del lg, g, ctx, deg, pr, bc
+json.dump(Q, open(os.path.join(HERE, "questions_scale.partial.json"), "w"), indent=1, default=str)
 
 # ---------------------------------------------------------------- 12M directed
 t = time.time(); lg = load_graph("ba_12m_directed", DS["ba_12m_directed"]["path"], "", override={"directed": True, "weighted": False}); print("loaded 12m dir", round(time.time() - t))
@@ -74,6 +75,7 @@ add("X9", "interpretation", "ba_12m_directed", "How many nodes can node 2999999 
 scc = timed("scc", lambda: CATALOGUE["components"].fn(ctx, mode="strong"))
 add("X10", "metric", "ba_12m_directed", "How many strongly connected components are there?", {"type": "scalar", "value": scc["count"], "tol": 0}, [["components"]], {"directed": True, "mode": "strong"})
 del lg, g, ctx, indeg, scc
+json.dump(Q, open(os.path.join(HERE, "questions_scale.partial.json"), "w"), indent=1, default=str)
 
 # ---------------------------------------------------------------- 50M undirected
 t = time.time(); lg = load_graph("ba_50m", DS["ba_50m"]["path"], "", override={"directed": False, "weighted": False}); print("loaded 50m", round(time.time() - t))
@@ -85,9 +87,9 @@ add("X12", "topk", "ba_50m", "Which 10 nodes have the highest degree?", {"type":
 del deg
 acc = timed("avg clustering", lambda: CATALOGUE["average_clustering"].fn(ctx))
 add("X13", "metric", "ba_50m", "What is the average clustering coefficient?", {"type": "scalar", "value": acc, "tol": 0.02}, [["average_clustering"]])
-diam = timed("diameter approx k=30", lambda: CATALOGUE["diameter"].fn(ctx, tier="approx", k=30))
+diam = timed("diameter approx k=10", lambda: CATALOGUE["diameter"].fn(ctx, tier="approx", k=10))
 add("X14", "metric", "ba_50m", "Roughly what is the diameter of the network?", {"type": "scalar", "value": diam, "tol": 0.15}, [["diameter"]])
-bc = timed("betweenness approx k=600", lambda: CATALOGUE["betweenness"].fn(ctx, tier="approx", k=600))
+bc = timed("betweenness approx k=200", lambda: CATALOGUE["betweenness"].fn(ctx, tier="approx", k=200))
 top_bc = [n for n, _ in sorted(bc.items(), key=lambda kv: -kv[1])[:10]]
 add("X15", "topk", "ba_50m", "Which 10 nodes have the highest betweenness centrality? An approximation is fine.", {"type": "ranking", "value": top_bc, "min_overlap": 0.5}, [["betweenness", "top_k"]])
 d0 = timed("distance", lambda: CATALOGUE["distance"].fn(ctx, source="0", target="9999999"))
