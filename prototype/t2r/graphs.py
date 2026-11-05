@@ -100,11 +100,20 @@ def read_raw_fast(path: str) -> tuple[RawFacts, Any]:
     delim = "," if "," in first else r"\s+"
     toks = [x.strip() for x in (first.strip().split(",") if delim == "," else first.split())]
     header = toks if (len(toks) >= 2 and not all(_is_number(x) for x in toks[:2]) and not first.startswith("#")) else None
-    df = pd.read_csv(path, sep=delim, header=0 if header else None, comment="#", engine="c", dtype=str if header else None)
-    raw_sample = df.head(200).astype(str).values.tolist()
-    si, ti, wi, row_index = _pick_columns(header, raw_sample)
-    cols = list(df.columns)
-    u = df[cols[si]].to_numpy(); v = df[cols[ti]].to_numpy()
+    # Read in chunks: a single frame for a 50M-row file peaks at several GB; chunks bound the peak to one chunk plus the column arrays.
+    us, vs, ws = [], [], []
+    raw_sample = None; cols = None; si = ti = wi = row_index = None
+    for df in pd.read_csv(path, sep=delim, header=0 if header else None, comment="#", engine="c", dtype=str if header else None, chunksize=5_000_000):
+        if raw_sample is None:
+            raw_sample = df.head(200).astype(str).values.tolist()
+            si, ti, wi, row_index = _pick_columns(header, raw_sample)
+            cols = list(df.columns)
+        us.append(df[cols[si]].to_numpy()); vs.append(df[cols[ti]].to_numpy())
+        if wi is not None and wi < len(cols):
+            ws.append(df[cols[wi]])
+        del df
+    u = np.concatenate(us); v = np.concatenate(vs); del us, vs
+    wcol = pd.concat(ws, ignore_index=True) if ws else None; del ws
     try:
         u = u.astype(np.int64); v = v.astype(np.int64); numeric = True
     except (ValueError, TypeError):
@@ -112,7 +121,7 @@ def read_raw_fast(path: str) -> tuple[RawFacts, Any]:
     w = None
     if wi is not None and wi < len(cols):
         try:
-            w = pd.to_numeric(df[cols[wi]], errors="coerce").to_numpy(dtype=float)
+            w = pd.to_numeric(wcol, errors="coerce").to_numpy(dtype=float)
             if np.isnan(w).any():
                 w = None
         except Exception:
@@ -120,10 +129,24 @@ def read_raw_fast(path: str) -> tuple[RawFacts, Any]:
     n_rows = len(u)
     if numeric:
         N = int(max(u.max(), v.max())) + 1
+        # presence arrays instead of np.unique over the concatenation: O(N) bytes rather than a sorted 2m-element copy
+        if N <= 50 * n_rows + 1000:
+            seen_u = np.zeros(N, dtype=bool); seen_u[u] = True
+            seen_v = np.zeros(N, dtype=bool); seen_v[v] = True
+            n_ids = int((seen_u | seen_v).sum())
+            srcs_tgts_disjoint = not bool((seen_u & seen_v).any())
+            del seen_u, seen_v
+        else:
+            n_ids = len(np.unique(np.concatenate([u, v])))
+            srcs_tgts_disjoint = len(np.intersect1d(np.unique(u), np.unique(v))) == 0
+        self_loops = int((u == v).sum())
+        lo = np.minimum(u, v); hi = np.maximum(u, v)
+        n_dedup_u = len(np.unique(lo * N + hi))
+        del lo, hi
         key_d = u * N + v
         uniq_d = np.unique(key_d)
-        lo = np.minimum(u, v); hi = np.maximum(u, v)
-        uniq_u = np.unique(lo * N + hi)
+        del key_d
+        n_dedup_d = len(uniq_d)
         rng = np.random.default_rng(0)
         idx = rng.choice(n_rows, size=min(200_000, n_rows), replace=False)
         su, sv = u[idx], v[idx]
@@ -132,10 +155,7 @@ def read_raw_fast(path: str) -> tuple[RawFacts, Any]:
         pos = np.searchsorted(uniq_d, rev)
         pos[pos >= len(uniq_d)] = 0
         recip = float(np.mean(uniq_d[pos] == rev)) if nonloop.any() else 0.0
-        n_ids = len(np.unique(np.concatenate([u, v])))
-        self_loops = int((u == v).sum())
-        srcs_tgts_disjoint = len(np.intersect1d(np.unique(u), np.unique(v))) == 0
-        n_dedup_d, n_dedup_u = len(uniq_d), len(uniq_u)
+        del uniq_d, rev, pos
     else:
         n_ids = len(set(u) | set(v)); self_loops = int((u == v).sum()); recip = 0.0
         n_dedup_d = n_rows; n_dedup_u = n_rows; srcs_tgts_disjoint = False
@@ -417,29 +437,84 @@ def load_graph(name: str, path: str, description: str = "", override: Optional[d
                        lower_index={l.lower(): i for l, i in index.items()})
 
 
+class _RangeIndex:
+    """label -> index mapping for contiguous integer ids 0..N-1 without a 10M-entry dict."""
+
+    def __init__(self, n: int):
+        self.n = n
+
+    def _key(self, k: Any) -> Optional[int]:
+        try:
+            i = int(k)
+        except (TypeError, ValueError):
+            return None
+        return i if 0 <= i < self.n and str(i) == str(k).strip() else None
+
+    def __contains__(self, k: Any) -> bool:
+        return self._key(k) is not None
+
+    def __getitem__(self, k: Any) -> int:
+        i = self._key(k)
+        if i is None:
+            raise KeyError(k)
+        return i
+
+    def __len__(self) -> int:
+        return self.n
+
+
 def _build_big(name: str, facts: RawFacts, sem: Semantics, arrays) -> LoadedGraph:
     u, v, w = arrays
+    del arrays
     if not facts.ids_numeric:
         raise ValueError("large files must have integer node ids")
-    ids, inv = np.unique(np.concatenate([u, v]), return_inverse=True)
-    a = inv[: len(u)]; b = inv[len(u):]
+    nmax = int(max(u.max(), v.max())); nmin = int(min(u.min(), v.min()))
+    contiguous = nmin == 0 and nmax + 1 == facts.n_distinct_ids
+    if contiguous:
+        N = nmax + 1
+        a, b = u, v
+        del u, v
+    else:
+        ids, inv = np.unique(np.concatenate([u, v]), return_inverse=True)
+        N = len(ids)
+        a = inv[: len(u)].astype(np.int64); b = inv[len(u):].astype(np.int64)
+        del inv, u, v
     if not sem.directed:
         lo = np.minimum(a, b); hi = np.maximum(a, b); a, b = lo, hi
+        del lo, hi
     mask = a != b
-    a, b = a[mask], b[mask]
-    ww = w[mask] if w is not None else None
-    if not sem.multigraph:
-        N = len(ids)
+    if not mask.all():
+        a, b = a[mask], b[mask]
+        ww = w[mask] if w is not None else None
+    else:
+        ww = w
+    del mask, w
+    n_dedup = facts.n_rows_dedup_directed if sem.directed else facts.n_rows_dedup_undirected
+    if not sem.multigraph and n_dedup < facts.n_rows:
         key = a.astype(np.int64) * N + b
         _, first = np.unique(key, return_index=True)
+        del key
         a, b = a[first], b[first]
         ww = ww[first] if ww is not None else None
-    g = ig.Graph(n=len(ids), edges=np.stack([a, b], axis=1).tolist(), directed=sem.directed)
-    labels = [str(int(i)) for i in ids]
+        del first
+    # igraph accepts a numpy (m, 2) array directly; a Python list of 50M tuples would need ~6 GB on its own
+    dt = np.int32 if N < 2**31 else np.int64
+    edges = np.stack([a.astype(dt, copy=False), b.astype(dt, copy=False)], axis=1)
+    del a, b
+    # add edges in slices: one-shot construction from a 50M-row array transiently needs ~3x the final graph size
+    g = ig.Graph(n=N, directed=sem.directed)
+    for i in range(0, len(edges), 2_000_000):
+        g.add_edges(edges[i:i + 2_000_000])
+    del edges
+    if contiguous:
+        labels = np.arange(N).astype(str).tolist()
+        index: Any = _RangeIndex(N)
+    else:
+        labels = ids.astype(str).tolist()
+        index = {lab: i for i, lab in enumerate(labels)}
     g.vs["name"] = labels
     if sem.weighted and ww is not None:
         g.es["weight"] = ww.tolist()
-    index = {lab: i for i, lab in enumerate(labels)}
     return LoadedGraph(name=name, g=g, facts=facts, semantics=sem, labels=labels, index=index, lower_index=index)
 
 
