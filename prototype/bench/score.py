@@ -158,7 +158,7 @@ def score_answer(q: dict, res: dict, graphs: dict | None = None) -> tuple[float,
             return 1.0, "clarification accepted"
         if any(isinstance(w, (int, float)) and isinstance(v, (int, float)) and _close(float(v), float(w), tol) for w in c.get("wrong", [])):
             return 0.0, f"known wrong interpretation ({v})"
-        for var in variants:
+        for var in (variants if ans is not None else []):  # a variant earns credit only beside a primary answer
             vn = _first_scalar(var.get("answer"))
             if isinstance(vn, (int, float)) and _close(float(vn), float(gold), tol):
                 return 0.5, "correct only as a variant"
@@ -204,7 +204,7 @@ def score_answer(q: dict, res: dict, graphs: dict | None = None) -> tuple[float,
         ov = len(set(got[:k]) & set(gold)) / k if got else 0.0
         if ov >= c.get("min_overlap", 0.8):
             return 1.0, f"overlap@{k}={ov:.2f}"
-        for var in variants:
+        for var in (variants if ans is not None else []):  # a variant earns credit only beside a primary answer
             g2 = _node_list(var.get("answer"))
             ov2 = len(set(g2[:k]) & set(gold)) / k if g2 else 0
             if ov2 >= c.get("min_overlap", 0.8):
