@@ -58,13 +58,13 @@ def resolve_ref(ctx, v: Any) -> Any:
         return v
     step, field, idx = r
     val = ctx.values[step]
-    if idx is not None and isinstance(val, list):
-        val = val[idx]
     if field is not None:
         if isinstance(val, dict):
             val = val.get(field)
         elif isinstance(val, list) and val and isinstance(val[0], dict):
             val = [e.get(field) for e in val]
+    if idx is not None and isinstance(val, list):
+        val = val[idx]
     return val
 
 

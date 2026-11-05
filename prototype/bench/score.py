@@ -38,9 +38,27 @@ def _close(a: float, b: float, tol: float) -> bool:
     return abs(a - b) <= tol * max(abs(b), 1e-12)
 
 
+def _leaves(ans: Any) -> list[Any]:
+    """Leaf values of a (possibly nested) answer object, in document order."""
+    out: list[Any] = []
+    def walk(x):
+        if isinstance(x, dict):
+            for v in x.values():
+                walk(v)
+        elif isinstance(x, list) and x and all(isinstance(e, (dict, list)) for e in x):
+            for v in x:
+                walk(v)
+        else:
+            out.append(x)
+    walk(ans)
+    return out
+
+
 def _first_scalar(ans: Any) -> Any:
     """The scalar a system meant as its answer."""
     if isinstance(ans, dict):
+        if len(ans) >= 1 and all(not isinstance(v, (dict, list)) for v in ans.values()) and not any(k in ans for k in ("value", "answer", "result", "count", "length", "distance", "hops", "diameter", "n", "k")):
+            return list(ans.values())[0]
         for k in ("value", "answer", "result", "count", "length", "distance", "hops", "diameter", "n", "k"):
             if k in ans and isinstance(ans[k], (int, float, str, bool)):
                 return ans[k]
@@ -57,7 +75,8 @@ def _is_inf(x: Any) -> bool:
     if isinstance(x, dict):
         if x.get("reachable") is False or (x.get("path") == [] and x.get("length") in (None, "inf", "Infinity")):
             return True
-        return _is_inf(_first_scalar({k: v for k, v in x.items() if v is not None}) if any(v is not None for v in x.values()) else None)
+        fs = _first_scalar({k: v for k, v in x.items() if v is not None}) if any(v is not None for v in x.values()) else None
+        return False if isinstance(fs, dict) else _is_inf(fs)
     if isinstance(x, float) and math.isinf(x):
         return True
     s = str(x).lower()
@@ -71,6 +90,9 @@ def _node_list(ans: Any) -> list[str]:
                 ans = ans[k]
                 break
         else:
+            lists = [v for v in ans.values() if isinstance(v, list)]
+            if lists:
+                return _node_list(lists[0])
             if all(isinstance(v, (int, float)) for v in ans.values()) and len(ans) > 1:
                 return [str(k) for k, _ in sorted(ans.items(), key=lambda kv: -kv[1])]
     if isinstance(ans, list):
@@ -125,7 +147,12 @@ def score_answer(q: dict, res: dict, graphs: dict | None = None) -> tuple[float,
             elif isinstance(v, (int, float)) and _close(float(v), float(alt), tol):
                 return 1.0, "match (alternative form)"
         nums = _numbers_in(ans)
-        if any(_close(x, float(gold), tol) for x in nums) and len(nums) <= 4:
+        leaves = [x for x in _leaves(ans) if isinstance(x, (int, float)) and not isinstance(x, bool)]
+        if isinstance(ans, dict) and leaves and _close(float(leaves[0]), float(gold), tol):
+            return 1.0, "match (first value of multi-part answer)"
+        if any(_close(x, float(gold), tol) for x in nums) and (len(nums) <= 4 or (len(leaves) <= 8 and any(_close(float(x), float(gold), tol) for x in leaves))):
+            if c.get("requires_assumption") and not assumptions.get(c["requires_assumption"]) and not clar and not any(k for k in (ans.keys() if isinstance(ans, dict) else []) if "component" in str(k).lower()):
+                return 0.5, "value right but assumption not stated"
             return 1.0, "match inside answer object"
         if clar and c.get("accept_clarification"):
             return 1.0, "clarification accepted"
@@ -139,6 +166,10 @@ def score_answer(q: dict, res: dict, graphs: dict | None = None) -> tuple[float,
 
     if t == "bool":
         v = _first_scalar(ans)
+        if isinstance(ans, dict):
+            bools = [x for x in _leaves(ans) if isinstance(x, bool)]
+            if bools:
+                v = bools[0]
         if isinstance(v, str):
             v = v.strip().lower() in ("true", "yes")
         if isinstance(v, bool) and v == c["value"]:
@@ -210,7 +241,19 @@ def score_answer(q: dict, res: dict, graphs: dict | None = None) -> tuple[float,
         return 0.0, f"length {length} expected {c['length']}"
 
     if t == "choice":
-        if isinstance(ans, dict) and ans.get("greater") is not None:
+        def find_key(x, key):
+            if isinstance(x, dict):
+                if x.get(key) is not None and not isinstance(x[key], (dict, list)):
+                    return x[key]
+                for v in x.values():
+                    r = find_key(v, key)
+                    if r is not None:
+                        return r
+            return None
+        g = find_key(ans, "greater")
+        if g is not None:
+            ans = g
+        elif isinstance(ans, dict) and ans.get("greater") is not None:
             ans = ans["greater"]
         elif isinstance(ans, dict) and ans.get("node") is not None:
             ans = ans["node"]
@@ -232,6 +275,8 @@ def score_answer(q: dict, res: dict, graphs: dict | None = None) -> tuple[float,
 
     if t == "clarify":
         got = _node_list(ans)[: c["k"]]
+        if not got and isinstance(ans, dict):
+            got = [str(x) for x in _leaves(ans) if isinstance(x, str) and x in set(str(a) for a in c["acceptable"])][: c["k"]]
         acceptable = set(str(x) for x in c["acceptable"])
         in_acc = all(g in acceptable for g in got) and bool(got)
         measure_stated = bool(assumptions.get("measure"))
