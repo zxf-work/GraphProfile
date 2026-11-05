@@ -319,7 +319,11 @@ def triangle_count(ctx, graph="G"):
     g = _graph(ctx, graph)
     if g.is_directed():
         g = g.as_undirected(mode="collapse")
-    return int(sum(g.count_triangles()) // 3) if hasattr(g, "count_triangles") else int(len(g.cliques(min=3, max=3)))
+    if g.ecount() < 200_000:
+        return int(len(g.cliques(min=3, max=3)))
+    deg = np.array(g.degree(), dtype=float)
+    lcc = np.nan_to_num(np.array(g.transitivity_local_undirected(mode="zero"), dtype=float))
+    return int(round(float((lcc * deg * (deg - 1) / 2).sum() / 3)))
 
 
 @op("average_clustering", "Average local clustering coefficient (nodes with degree<2 count as 0).", {"graph": "Graph"}, "Scalar", "O(m^1.5)")
