@@ -1,0 +1,20 @@
+{
+ "ba_10m": {
+  "path": "/home/user/GraphProfile/prototype/bench/big/ba_10m.txt",
+  "directed": false,
+  "weighted": false,
+  "skip_in_scoring": true
+ },
+ "ba_12m_directed": {
+  "path": "/home/user/GraphProfile/prototype/bench/big/ba_12m_directed.txt",
+  "directed": true,
+  "weighted": false,
+  "skip_in_scoring": true
+ },
+ "ba_50m": {
+  "path": "/home/user/GraphProfile/prototype/bench/big/ba_50m.txt",
+  "directed": false,
+  "weighted": false,
+  "skip_in_scoring": true
+ }
+}

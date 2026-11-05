@@ -21,7 +21,9 @@ sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.join(HERE, "bench"))
 from score import score_answer, score_plan  # noqa: E402
 
-QUESTIONS = json.load(open(os.path.join(HERE, "bench", "questions.json")))
+QFILE = os.environ.get("T2R_QUESTIONS", "questions.json")
+DFILE = os.environ.get("T2R_DATASETS", "datasets.json")
+QUESTIONS = json.load(open(os.path.join(HERE, "bench", QFILE)))
 RESULTS = os.path.join(HERE, os.environ.get("T2R_RESULTS", "results"))
 RAW = os.path.join(RESULTS, "raw")
 SYSTEMS_ALL = ["full", "no_verify", "no_interp", "flat", "codegen"]
@@ -30,7 +32,7 @@ SYSTEMS_ALL = ["full", "no_verify", "no_interp", "flat", "codegen"]
 def run_one_subprocess(system: str, q: dict, timeout: int, model: str) -> dict:
     out = os.path.join(RAW, system, f"{q['id']}.json")
     os.makedirs(os.path.dirname(out), exist_ok=True)
-    cmd = [sys.executable, os.path.join(HERE, "run_one.py"), "--system", system, "--qid", q["id"], "--out", out, "--model", model]
+    cmd = [sys.executable, os.path.join(HERE, "run_one.py"), "--system", system, "--qid", q["id"], "--out", out, "--model", model, "--questions", QFILE]
     t0 = time.time()
     try:
         p = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, cwd=HERE)
@@ -43,10 +45,13 @@ def run_one_subprocess(system: str, q: dict, timeout: int, model: str) -> dict:
 
 def load_graphs():
     from t2r.graphs import load_graph
-    ds = json.load(open(os.path.join(HERE, "bench", "datasets.json")))
+    ds = json.load(open(os.path.join(HERE, "bench", DFILE)))
     graphs = {}
     for name, d in ds.items():
-        graphs[name] = load_graph(name, os.path.normpath(os.path.join(HERE, d["path"])), "", override={"directed": d["directed"], "weighted": d["weighted"]})
+        if d.get("skip_in_scoring"):
+            continue
+        path = d["path"] if os.path.isabs(d["path"]) else os.path.normpath(os.path.join(HERE, d["path"]))
+        graphs[name] = load_graph(name, path, "", override={k: d[k] for k in ("directed", "weighted", "multigraph") if k in d})
     return graphs
 
 

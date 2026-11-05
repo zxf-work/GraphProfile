@@ -127,7 +127,7 @@ Write 2 to 5 sentences: the answer, the algorithm and interpretation used (direc
 
 
 def run_full(qid: str, lg_path: str, name: str, description: Optional[str], question: str, llm: LLM,
-             interp: bool = True, verifier: bool = True, budget_ops: float = 2e9, cache: Optional[dict] = None) -> Result:
+             interp: bool = True, verifier: bool = True, budget_ops: float = 1e10, cache: Optional[dict] = None) -> Result:
     t0 = time.time(); mark = _usage_mark(llm)
     res = Result(system="full" if (interp and verifier) else ("no_verify" if interp else "no_interp"), qid=qid)
     try:
@@ -180,7 +180,7 @@ def run_full(qid: str, lg_path: str, name: str, description: Optional[str], ques
             return _finish(res, llm, t0, mark)
         ctx, trace = execute(plan, lg, cache=cache)
         res.trace = trace
-        findings = verify(plan, ctx) if verifier else []
+        findings = verify(plan, ctx, question=question) if verifier else []
         bad = [f for f in findings if not f["ok"] and f["severity"] == "error"]
         if bad and verifier:
             fix = llm.chat(system, user + "\n\nThe plan executed but verification failed; return a corrected full plan:\n" +
@@ -191,7 +191,7 @@ def run_full(qid: str, lg_path: str, name: str, description: Optional[str], ques
                 ctx, trace = execute(plan2, lg, cache=cache)
                 plan, res.plan, res.trace = plan2, plan2.model_dump(), trace
                 res.ops_used = [s.op for s in plan.steps]
-                findings = verify(plan, ctx)
+                findings = verify(plan, ctx, question=question)
         res.findings = findings
         res.answer = _jsonable(extract_answer(plan, ctx))
         res.assumptions = dict(plan.interpretation)
@@ -339,7 +339,8 @@ def _run_script(code: str, timeout: int) -> tuple[str, str, int]:
         with open(p, "w") as f:
             f.write(code)
         try:
-            r = subprocess.run([sys.executable, "-I", p], capture_output=True, text=True, timeout=timeout, cwd=d)
+            mem_kb = int(os.environ.get("T2R_SCRIPT_MEM_MB", "8000")) * 1024
+            r = subprocess.run(["bash", "-c", f"ulimit -v {mem_kb}; exec {sys.executable} -I {p}"], capture_output=True, text=True, timeout=timeout, cwd=d)
             return r.stdout, r.stderr, r.returncode
         except subprocess.TimeoutExpired as e:
             return (e.stdout or b"").decode() if isinstance(e.stdout, bytes) else (e.stdout or ""), f"timeout after {timeout}s", 124

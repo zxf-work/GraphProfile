@@ -1,0 +1,657 @@
+[
+ {
+  "id": "H1",
+  "family": "interpretation",
+  "dataset": "roads",
+  "file": "/home/user/GraphProfile/prototype/bench/data_hard/roads.csv",
+  "description": null,
+  "question": "What is the shortest route from J0 to J299, and how long is it?",
+  "checker": {
+   "type": "scalar",
+   "value": 67.24,
+   "tol": 0.01,
+   "wrong": [
+    10
+   ]
+  },
+  "expected_ops": [
+   [
+    "shortest_path"
+   ]
+  ],
+  "expected_assumptions": {
+   "use_weights": true
+  }
+ },
+ {
+  "id": "H2",
+  "family": "interpretation",
+  "dataset": "roads",
+  "file": "/home/user/GraphProfile/prototype/bench/data_hard/roads.csv",
+  "description": null,
+  "question": "Which junction is the most central in terms of lying on the most shortest routes?",
+  "checker": {
+   "type": "choice",
+   "value": "J288"
+  },
+  "expected_ops": [
+   [
+    "betweenness"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "H3",
+  "family": "metric",
+  "dataset": "roads",
+  "file": "/home/user/GraphProfile/prototype/bench/data_hard/roads.csv",
+  "description": null,
+  "question": "How many junctions and road segments are there?",
+  "checker": {
+   "type": "facts",
+   "facts": {
+    "n": 300,
+    "m": 605
+   }
+  },
+  "expected_ops": [
+   [
+    "node_count",
+    "edge_count"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "H4",
+  "family": "clarification",
+  "dataset": "similarity",
+  "file": "/home/user/GraphProfile/prototype/bench/data_hard/similarity.csv",
+  "description": null,
+  "question": "What is the shortest path length between P0 and P7?",
+  "checker": {
+   "type": "scalar",
+   "value": 2,
+   "tol": 0,
+   "accept_clarification": true,
+   "requires_assumption": "use_weights"
+  },
+  "expected_ops": [
+   [
+    "shortest_path"
+   ],
+   [
+    "distance"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "H5",
+  "family": "metric",
+  "dataset": "similarity",
+  "file": "/home/user/GraphProfile/prototype/bench/data_hard/similarity.csv",
+  "description": null,
+  "question": "What is the average degree?",
+  "checker": {
+   "type": "scalar",
+   "value": 10.0,
+   "tol": 0.01
+  },
+  "expected_ops": [
+   [
+    "degree_stats"
+   ],
+   [
+    "degree",
+    "map_stats"
+   ],
+   [
+    "edge_count",
+    "node_count"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "H6",
+  "family": "interpretation",
+  "dataset": "emails",
+  "file": "/home/user/GraphProfile/prototype/bench/data_hard/emails.csv",
+  "description": null,
+  "question": "How many emails are in this dataset, and between how many distinct sender-recipient pairs?",
+  "checker": {
+   "type": "facts",
+   "facts": {
+    "emails": 2957,
+    "pairs": 1194
+   }
+  },
+  "expected_ops": [
+   [
+    "edge_count",
+    "distinct_edge_count"
+   ],
+   [
+    "edge_count"
+   ]
+  ],
+  "expected_assumptions": {
+   "multigraph": true
+  }
+ },
+ {
+  "id": "H7",
+  "family": "interpretation",
+  "dataset": "emails",
+  "file": "/home/user/GraphProfile/prototype/bench/data_hard/emails.csv",
+  "description": null,
+  "question": "How many emails did E186 send to E114?",
+  "checker": {
+   "type": "scalar",
+   "value": 28,
+   "tol": 0,
+   "wrong": [
+    1
+   ]
+  },
+  "expected_ops": [
+   [
+    "edge_multiplicity"
+   ]
+  ],
+  "expected_assumptions": {
+   "multigraph": true,
+   "directed": true
+  }
+ },
+ {
+  "id": "H8",
+  "family": "interpretation",
+  "dataset": "emails",
+  "file": "/home/user/GraphProfile/prototype/bench/data_hard/emails.csv",
+  "description": null,
+  "question": "Who sent the most emails?",
+  "checker": {
+   "type": "choice",
+   "value": "E186",
+   "other": "E286"
+  },
+  "expected_ops": [
+   [
+    "strength"
+   ],
+   [
+    "degree"
+   ]
+  ],
+  "expected_assumptions": {
+   "directed": true
+  }
+ },
+ {
+  "id": "H9",
+  "family": "interpretation",
+  "dataset": "emails",
+  "file": "/home/user/GraphProfile/prototype/bench/data_hard/emails.csv",
+  "description": null,
+  "question": "Who received emails from the largest number of different people?",
+  "checker": {
+   "type": "choice",
+   "value": "E0"
+  },
+  "expected_ops": [
+   [
+    "degree"
+   ],
+   [
+    "simplify",
+    "degree"
+   ]
+  ],
+  "expected_assumptions": {
+   "directed": true,
+   "mode": "in"
+  }
+ },
+ {
+  "id": "H10",
+  "family": "interpretation",
+  "dataset": "indexed",
+  "file": "/home/user/GraphProfile/prototype/bench/data_hard/indexed_edges.txt",
+  "description": null,
+  "question": "How many nodes and edges does this graph have?",
+  "checker": {
+   "type": "facts",
+   "facts": {
+    "n": 34,
+    "m": 78
+   }
+  },
+  "expected_ops": [
+   [
+    "node_count",
+    "edge_count"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "H11",
+  "family": "interpretation",
+  "dataset": "indexed",
+  "file": "/home/user/GraphProfile/prototype/bench/data_hard/indexed_edges.txt",
+  "description": null,
+  "question": "Which node has the highest degree?",
+  "checker": {
+   "type": "choice",
+   "value": "33"
+  },
+  "expected_ops": [
+   [
+    "degree",
+    "top_k"
+   ],
+   [
+    "degree",
+    "argmax"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "H12",
+  "family": "interpretation",
+  "dataset": "purchases",
+  "file": "/home/user/GraphProfile/prototype/bench/data_hard/purchases.csv",
+  "description": null,
+  "question": "Which product was bought by the most customers?",
+  "checker": {
+   "type": "choice",
+   "value": "I27"
+  },
+  "expected_ops": [
+   [
+    "degree"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "H13",
+  "family": "interpretation",
+  "dataset": "purchases",
+  "file": "/home/user/GraphProfile/prototype/bench/data_hard/purchases.csv",
+  "description": null,
+  "question": "Which two customers have the most products in common, and how many?",
+  "checker": {
+   "type": "pair_distance",
+   "distance": 4,
+   "pairs": [
+    [
+     "U102",
+     "U78"
+    ]
+   ]
+  },
+  "expected_ops": [
+   [
+    "project_bipartite"
+   ],
+   [
+    "neighbours"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "H14",
+  "family": "metric",
+  "dataset": "purchases",
+  "file": "/home/user/GraphProfile/prototype/bench/data_hard/purchases.csv",
+  "description": null,
+  "question": "Is this a bipartite graph?",
+  "checker": {
+   "type": "bool",
+   "value": true
+  },
+  "expected_ops": [
+   [
+    "is_bipartite"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "H15",
+  "family": "interpretation",
+  "dataset": "purchases",
+  "file": "/home/user/GraphProfile/prototype/bench/data_hard/purchases.csv",
+  "description": null,
+  "question": "How many communities of customers are there, if you connect customers who bought the same product?",
+  "checker": {
+   "type": "scalar",
+   "value": 6,
+   "tol": 0.5,
+   "accept_clarification": true,
+   "wrong": [
+    9
+   ]
+  },
+  "expected_ops": [
+   [
+    "project_bipartite",
+    "communities"
+   ],
+   [
+    "communities"
+   ]
+  ],
+  "expected_assumptions": {}
+ },
+ {
+  "id": "H16",
+  "family": "interpretation",
+  "dataset": "follows",
+  "file": "/home/user/GraphProfile/prototype/bench/data_hard/follows.txt",
+  "description": null,
+  "question": "How many edges does this graph have?",
+  "checker": {
+   "type": "scalar",
+   "value": 23988,
+   "tol": 0,
+   "wrong": [
+    19990
+   ],
+   "accept_clarification": true
+  },
+  "expected_ops": [
+   [
+    "edge_count"
+   ]
+  ],
+  "expected_assumptions": {
+   "directed": true
+  }
+ },
+ {
+  "id": "H17",
+  "family": "interpretation",
+  "dataset": "follows",
+  "file": "/home/user/GraphProfile/prototype/bench/data_hard/follows.txt",
+  "description": null,
+  "question": "How many accounts does 7 follow, and how many follow 7?",
+  "checker": {
+   "type": "facts",
+   "facts": {
+    "out": 102,
+    "in": 501
+   }
+  },
+  "expected_ops": [
+   [
+    "node_degree"
+   ],
+   [
+    "degree"
+   ]
+  ],
+  "expected_assumptions": {
+   "directed": true
+  }
+ },
+ {
+  "id": "H18",
+  "family": "interpretation",
+  "dataset": "follows",
+  "file": "/home/user/GraphProfile/prototype/bench/data_hard/follows.txt",
+  "description": null,
+  "question": "Can account 0 reach account 4999 by following follow-links?",
+  "checker": {
+   "type": "bool",
+   "value": true
+  },
+  "expected_ops": [
+   [
+    "is_reachable"
+   ],
+   [
+    "distance"
+   ],
+   [
+    "reachable_set"
+   ]
+  ],
+  "expected_assumptions": {
+   "directed": true
+  }
+ },
+ {
+  "id": "H19",
+  "family": "interpretation",
+  "dataset": "follows",
+  "file": "/home/user/GraphProfile/prototype/bench/data_hard/follows.txt",
+  "description": null,
+  "question": "What fraction of follow relationships are mutual?",
+  "checker": {
+   "type": "scalar",
+   "value": 0.3333333333333333,
+   "tol": 0.02
+  },
+  "expected_ops": [
+   [
+    "reciprocity"
+   ]
+  ],
+  "expected_assumptions": {
+   "directed": true
+  }
+ },
+ {
+  "id": "H20",
+  "family": "topk",
+  "dataset": "follows",
+  "file": "/home/user/GraphProfile/prototype/bench/data_hard/follows.txt",
+  "description": null,
+  "question": "Which 5 accounts have the most followers?",
+  "checker": {
+   "type": "ranking",
+   "value": [
+    "1",
+    "0",
+    "2",
+    "8",
+    "4"
+   ],
+   "min_overlap": 0.8
+  },
+  "expected_ops": [
+   [
+    "degree",
+    "top_k"
+   ]
+  ],
+  "expected_assumptions": {
+   "directed": true,
+   "mode": "in"
+  }
+ },
+ {
+  "id": "H21",
+  "family": "interpretation",
+  "dataset": "trust",
+  "file": "/home/user/GraphProfile/prototype/bench/data_hard/trust.csv",
+  "description": null,
+  "question": "How many steps does it take to get from T5 to T0 through trust links?",
+  "checker": {
+   "type": "scalar",
+   "value": 1,
+   "tol": 0,
+   "accept_clarification": true
+  },
+  "expected_ops": [
+   [
+    "distance"
+   ],
+   [
+    "shortest_path"
+   ]
+  ],
+  "expected_assumptions": {
+   "use_weights": false,
+   "directed": true
+  }
+ },
+ {
+  "id": "H22",
+  "family": "interpretation",
+  "dataset": "trust",
+  "file": "/home/user/GraphProfile/prototype/bench/data_hard/trust.csv",
+  "description": null,
+  "question": "Whom does T10 trust the most?",
+  "checker": {
+   "type": "choice",
+   "value": "T4"
+  },
+  "expected_ops": [
+   [
+    "neighbours"
+   ],
+   [
+    "strength"
+   ]
+  ],
+  "expected_assumptions": {
+   "directed": true,
+   "weighted": true
+  }
+ },
+ {
+  "id": "H23",
+  "family": "interpretation",
+  "dataset": "citations",
+  "file": "/home/user/GraphProfile/prototype/bench/data_hard/citations.csv",
+  "description": null,
+  "question": "Which paper is cited the most?",
+  "checker": {
+   "type": "choice",
+   "value": "paper1"
+  },
+  "expected_ops": [
+   [
+    "degree"
+   ]
+  ],
+  "expected_assumptions": {
+   "directed": true,
+   "mode": "in"
+  }
+ },
+ {
+  "id": "H24",
+  "family": "interpretation",
+  "dataset": "citations",
+  "file": "/home/user/GraphProfile/prototype/bench/data_hard/citations.csv",
+  "description": null,
+  "question": "How many papers does paper1999 cite, and how many cite it?",
+  "checker": {
+   "type": "facts",
+   "facts": {
+    "cites": 5,
+    "cited_by": 0
+   }
+  },
+  "expected_ops": [
+   [
+    "node_degree"
+   ],
+   [
+    "degree"
+   ]
+  ],
+  "expected_assumptions": {
+   "directed": true
+  }
+ },
+ {
+  "id": "H25",
+  "family": "interpretation",
+  "dataset": "citations",
+  "file": "/home/user/GraphProfile/prototype/bench/data_hard/citations.csv",
+  "description": null,
+  "question": "How many papers are cited by nothing?",
+  "checker": {
+   "type": "scalar",
+   "value": 1096,
+   "tol": 0
+  },
+  "expected_ops": [
+   [
+    "degree",
+    "filter_nodes",
+    "set_size"
+   ],
+   [
+    "degree"
+   ]
+  ],
+  "expected_assumptions": {
+   "directed": true,
+   "mode": "in"
+  }
+ },
+ {
+  "id": "H26",
+  "family": "interpretation",
+  "dataset": "bothways",
+  "file": "/home/user/GraphProfile/prototype/bench/data_hard/friends_bothways.txt",
+  "description": null,
+  "question": "How many friendships are in this network?",
+  "checker": {
+   "type": "scalar",
+   "value": 88234,
+   "tol": 0,
+   "wrong": [
+    176468
+   ],
+   "accept_clarification": true
+  },
+  "expected_ops": [
+   [
+    "edge_count"
+   ]
+  ],
+  "expected_assumptions": {
+   "directed": false
+  }
+ },
+ {
+  "id": "H27",
+  "family": "interpretation",
+  "dataset": "bothways",
+  "file": "/home/user/GraphProfile/prototype/bench/data_hard/friends_bothways.txt",
+  "description": null,
+  "question": "What is the average number of friends per person?",
+  "checker": {
+   "type": "scalar",
+   "value": 43.69101262688784,
+   "tol": 0.01,
+   "wrong": [
+    87.38202525377568
+   ]
+  },
+  "expected_ops": [
+   [
+    "degree_stats"
+   ],
+   [
+    "degree",
+    "map_stats"
+   ]
+  ],
+  "expected_assumptions": {
+   "directed": false
+  }
+ }
+]

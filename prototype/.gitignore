@@ -2,5 +2,8 @@ results*/raw/
 results*/run.log
 results*/check_gold.log
 results_haiku.log
+bench/big/*.txt
+bench/big/*.log
+bench/make_scale.log
 __pycache__/
 *.pyc

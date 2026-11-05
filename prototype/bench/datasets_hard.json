@@ -1,0 +1,51 @@
+{
+ "roads": {
+  "path": "/home/user/GraphProfile/prototype/bench/data_hard/roads.csv",
+  "directed": false,
+  "weighted": true,
+  "weight_semantics": "distance"
+ },
+ "similarity": {
+  "path": "/home/user/GraphProfile/prototype/bench/data_hard/similarity.csv",
+  "directed": false,
+  "weighted": true,
+  "weight_semantics": null
+ },
+ "emails": {
+  "path": "/home/user/GraphProfile/prototype/bench/data_hard/emails.csv",
+  "directed": true,
+  "weighted": false,
+  "multigraph": true
+ },
+ "indexed": {
+  "path": "/home/user/GraphProfile/prototype/bench/data_hard/indexed_edges.txt",
+  "directed": false,
+  "weighted": false
+ },
+ "purchases": {
+  "path": "/home/user/GraphProfile/prototype/bench/data_hard/purchases.csv",
+  "directed": false,
+  "weighted": false
+ },
+ "follows": {
+  "path": "/home/user/GraphProfile/prototype/bench/data_hard/follows.txt",
+  "directed": true,
+  "weighted": false
+ },
+ "trust": {
+  "path": "/home/user/GraphProfile/prototype/bench/data_hard/trust.csv",
+  "directed": true,
+  "weighted": true,
+  "weight_semantics": "strength"
+ },
+ "citations": {
+  "path": "/home/user/GraphProfile/prototype/bench/data_hard/citations.csv",
+  "directed": true,
+  "weighted": false
+ },
+ "bothways": {
+  "path": "/home/user/GraphProfile/prototype/bench/data_hard/friends_bothways.txt",
+  "directed": false,
+  "weighted": false
+ }
+}

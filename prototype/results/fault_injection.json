@@ -1,0 +1,970 @@
+[
+ {
+  "qid": "P1",
+  "mutation": "flip_directed",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "P1",
+  "mutation": "drop_lcc",
+  "harmful": false,
+  "caught": false,
+  "stage": "none",
+  "detail": ""
+ },
+ {
+  "qid": "P1",
+  "mutation": "method_swap",
+  "harmful": true,
+  "caught": false,
+  "stage": "none",
+  "detail": ""
+ },
+ {
+  "qid": "P2",
+  "mutation": "flip_directed",
+  "harmful": true,
+  "caught": true,
+  "stage": "validator",
+  "detail": "step s6: strong components are undefined on an undirected graph"
+ },
+ {
+  "qid": "P2",
+  "mutation": "mode_flip",
+  "harmful": true,
+  "caught": false,
+  "stage": "none",
+  "detail": ""
+ },
+ {
+  "qid": "P2",
+  "mutation": "method_swap",
+  "harmful": true,
+  "caught": false,
+  "stage": "none",
+  "detail": ""
+ },
+ {
+  "qid": "P3",
+  "mutation": "flip_directed",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "P3",
+  "mutation": "swap_measure",
+  "harmful": true,
+  "caught": false,
+  "stage": "none",
+  "detail": ""
+ },
+ {
+  "qid": "P3",
+  "mutation": "drop_lcc",
+  "harmful": false,
+  "caught": false,
+  "stage": "none",
+  "detail": ""
+ },
+ {
+  "qid": "P3",
+  "mutation": "method_swap",
+  "harmful": true,
+  "caught": false,
+  "stage": "none",
+  "detail": ""
+ },
+ {
+  "qid": "S1",
+  "mutation": "flip_directed",
+  "harmful": false,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "S2",
+  "mutation": "flip_directed",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "S2",
+  "mutation": "drop_lcc",
+  "harmful": false,
+  "caught": false,
+  "stage": "none",
+  "detail": ""
+ },
+ {
+  "qid": "S3",
+  "mutation": "flip_directed",
+  "harmful": false,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "S4",
+  "mutation": "flip_directed",
+  "harmful": false,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "S5",
+  "mutation": "flip_directed",
+  "harmful": true,
+  "caught": true,
+  "stage": "validator",
+  "detail": "step s1: strong components are undefined on an undirected graph"
+ },
+ {
+  "qid": "S5",
+  "mutation": "method_swap",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: question: asks for strongly connected components but plan uses weak"
+ },
+ {
+  "qid": "S6",
+  "mutation": "flip_directed",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "S7",
+  "mutation": "flip_directed",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "S8",
+  "mutation": "flip_directed",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "S9",
+  "mutation": "flip_directed",
+  "harmful": false,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "S10",
+  "mutation": "flip_directed",
+  "harmful": true,
+  "caught": true,
+  "stage": "validator",
+  "detail": "step s1: reciprocity requires a directed graph but the graph is undirected"
+ },
+ {
+  "qid": "S11",
+  "mutation": "flip_directed",
+  "harmful": false,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "S12",
+  "mutation": "flip_directed",
+  "harmful": false,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "S13",
+  "mutation": "flip_directed",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "S14",
+  "mutation": "flip_directed",
+  "harmful": false,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "T1",
+  "mutation": "flip_directed",
+  "harmful": false,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "T1",
+  "mutation": "swap_measure",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: stated measure not computed; error: question: named measure not computed"
+ },
+ {
+  "qid": "T2",
+  "mutation": "flip_directed",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "T2",
+  "mutation": "swap_measure",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: stated measure not computed; error: question: named measure not computed"
+ },
+ {
+  "qid": "T3",
+  "mutation": "flip_directed",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "T3",
+  "mutation": "swap_measure",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: stated measure not computed; error: question: named measure not computed"
+ },
+ {
+  "qid": "T4",
+  "mutation": "flip_directed",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data; warn: s1: in/out mode on an undirected graph"
+ },
+ {
+  "qid": "T4",
+  "mutation": "swap_measure",
+  "harmful": true,
+  "caught": true,
+  "stage": "validator",
+  "detail": "step s1: exact closeness estimated at 3.9e+10 operations exceeds budget 2e+09; use tier=approx"
+ },
+ {
+  "qid": "T4",
+  "mutation": "mode_flip",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "warn: top-k agreement pagerank vs degree; warn: question: asks for incoming relations but plan uses out/all mode"
+ },
+ {
+  "qid": "T5",
+  "mutation": "flip_directed",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data; warn: s3: in/out mode on an undirected graph"
+ },
+ {
+  "qid": "T5",
+  "mutation": "swap_measure",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: stated measure not computed; error: question: named measure not computed"
+ },
+ {
+  "qid": "T5",
+  "mutation": "mode_flip",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "warn: top-k agreement pagerank vs degree"
+ },
+ {
+  "qid": "T6",
+  "mutation": "flip_directed",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "T6",
+  "mutation": "swap_measure",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: stated measure not computed; error: question: named measure not computed"
+ },
+ {
+  "qid": "T7",
+  "mutation": "flip_directed",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "T7",
+  "mutation": "swap_measure",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: stated measure not computed; error: question: named measure not computed"
+ },
+ {
+  "qid": "C1",
+  "mutation": "flip_directed",
+  "harmful": false,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "C1",
+  "mutation": "method_swap",
+  "harmful": true,
+  "caught": false,
+  "stage": "none",
+  "detail": ""
+ },
+ {
+  "qid": "C2",
+  "mutation": "flip_directed",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "C2",
+  "mutation": "method_swap",
+  "harmful": true,
+  "caught": false,
+  "stage": "none",
+  "detail": ""
+ },
+ {
+  "qid": "C3",
+  "mutation": "flip_directed",
+  "harmful": false,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "C3",
+  "mutation": "wrong_node",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "warn: s2: node '28' is not mentioned in the question"
+ },
+ {
+  "qid": "C3",
+  "mutation": "method_swap",
+  "harmful": true,
+  "caught": false,
+  "stage": "none",
+  "detail": ""
+ },
+ {
+  "qid": "C4",
+  "mutation": "flip_directed",
+  "harmful": false,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "C4",
+  "mutation": "method_swap",
+  "harmful": true,
+  "caught": false,
+  "stage": "none",
+  "detail": ""
+ },
+ {
+  "qid": "PA1",
+  "mutation": "flip_directed",
+  "harmful": false,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "PA1",
+  "mutation": "wrong_node",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "warn: s1: node '1638' is not mentioned in the question"
+ },
+ {
+  "qid": "PA2",
+  "mutation": "flip_directed",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "PA2",
+  "mutation": "wrong_node",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "warn: s1: node 'Mabeuf' is not mentioned in the question"
+ },
+ {
+  "qid": "PA2",
+  "mutation": "use_weights",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: weights used as path lengths but they are strengths"
+ },
+ {
+  "qid": "PA3",
+  "mutation": "flip_directed",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "PA3",
+  "mutation": "wrong_node",
+  "harmful": false,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "warn: s1: node '22258' is not mentioned in the question"
+ },
+ {
+  "qid": "PA4",
+  "mutation": "flip_directed",
+  "harmful": false,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "PA4",
+  "mutation": "wrong_node",
+  "harmful": false,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "warn: s1: node '12464' is not mentioned in the question"
+ },
+ {
+  "qid": "PA5",
+  "mutation": "flip_directed",
+  "harmful": false,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "PA5",
+  "mutation": "wrong_node",
+  "harmful": false,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "warn: s1: node '32322' is not mentioned in the question"
+ },
+ {
+  "qid": "N1",
+  "mutation": "flip_directed",
+  "harmful": false,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "N1",
+  "mutation": "wrong_node",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "warn: s1: node '2249' is not mentioned in the question"
+ },
+ {
+  "qid": "N2",
+  "mutation": "flip_directed",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data; warn: s1: in/out mode on an undirected graph; warn: s2: in/out mode on an undirected graph"
+ },
+ {
+  "qid": "N2",
+  "mutation": "mode_flip",
+  "harmful": true,
+  "caught": false,
+  "stage": "none",
+  "detail": ""
+ },
+ {
+  "qid": "N2",
+  "mutation": "wrong_node",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "warn: s1: node '4962' is not mentioned in the question"
+ },
+ {
+  "qid": "N3",
+  "mutation": "flip_directed",
+  "harmful": false,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "N3",
+  "mutation": "swap_measure",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: stated measure not computed"
+ },
+ {
+  "qid": "N3",
+  "mutation": "wrong_node",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "warn: s1: node '3544' is not mentioned in the question"
+ },
+ {
+  "qid": "N4",
+  "mutation": "flip_directed",
+  "harmful": false,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "N4",
+  "mutation": "wrong_node",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "warn: s1: node 'Bahorel' is not mentioned in the question"
+ },
+ {
+  "qid": "CM1",
+  "mutation": "flip_directed",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "CM1",
+  "mutation": "swap_measure",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: stated measure not computed; error: question: named measure not computed"
+ },
+ {
+  "qid": "CM1",
+  "mutation": "wrong_node",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "warn: s2: node '1645' is not mentioned in the question"
+ },
+ {
+  "qid": "CM2",
+  "mutation": "flip_directed",
+  "harmful": false,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "CO1",
+  "mutation": "flip_directed",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "CO1",
+  "mutation": "swap_measure",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: stated measure not computed; error: question: named measure not computed"
+ },
+ {
+  "qid": "CO2",
+  "mutation": "flip_directed",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "CO3",
+  "mutation": "flip_directed",
+  "harmful": false,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "CO4",
+  "mutation": "flip_directed",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data; warn: s1: in/out mode on an undirected graph"
+ },
+ {
+  "qid": "CO4",
+  "mutation": "swap_measure",
+  "harmful": true,
+  "caught": true,
+  "stage": "validator",
+  "detail": "step s1: exact closeness estimated at 3.9e+10 operations exceeds budget 2e+09; use tier=approx"
+ },
+ {
+  "qid": "CO4",
+  "mutation": "mode_flip",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "warn: question: asks for incoming relations but plan uses out/all mode"
+ },
+ {
+  "qid": "CO5",
+  "mutation": "flip_directed",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "CO5",
+  "mutation": "swap_measure",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: stated measure not computed; error: question: named measure not computed"
+ },
+ {
+  "qid": "CO5",
+  "mutation": "wrong_node",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "warn: s1: node 'Gueulemer' is not mentioned in the question"
+ },
+ {
+  "qid": "I1",
+  "mutation": "flip_directed",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "I2",
+  "mutation": "flip_directed",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "I3",
+  "mutation": "flip_directed",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "I3",
+  "mutation": "wrong_node",
+  "harmful": false,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "warn: s1: node '15440' is not mentioned in the question"
+ },
+ {
+  "qid": "I4",
+  "mutation": "flip_directed",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data; warn: s1: in/out mode on an undirected graph"
+ },
+ {
+  "qid": "I4",
+  "mutation": "mode_flip",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "warn: question: asks for incoming relations but plan uses out/all mode"
+ },
+ {
+  "qid": "I4",
+  "mutation": "wrong_node",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "warn: s1: node '23794' is not mentioned in the question"
+ },
+ {
+  "qid": "I5",
+  "mutation": "flip_directed",
+  "harmful": false,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "I5",
+  "mutation": "wrong_node",
+  "harmful": false,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "warn: s1: node 'Gillenormand' is not mentioned in the question"
+ },
+ {
+  "qid": "I5",
+  "mutation": "use_weights",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: weights used as path lengths but they are strengths"
+ },
+ {
+  "qid": "I6",
+  "mutation": "flip_directed",
+  "harmful": false,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data; warn: question: asks for incoming relations but plan uses out/all mode"
+ },
+ {
+  "qid": "I6",
+  "mutation": "wrong_node",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "warn: s1: node '3038' is not mentioned in the question"
+ },
+ {
+  "qid": "I7",
+  "mutation": "flip_directed",
+  "harmful": false,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "CL1",
+  "mutation": "flip_directed",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "warn: top-k agreement betweenness vs degree; error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "CL1",
+  "mutation": "swap_measure",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: stated measure not computed"
+ },
+ {
+  "qid": "CL2",
+  "mutation": "flip_directed",
+  "harmful": false,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "CL2",
+  "mutation": "drop_lcc",
+  "harmful": false,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "warn: s3: diameter over a disconnected graph"
+ },
+ {
+  "qid": "CL3",
+  "mutation": "flip_directed",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data; warn: s2: in/out mode on an undirected graph; warn: s3: in/out mode on an undirected graph"
+ },
+ {
+  "qid": "CL3",
+  "mutation": "mode_flip",
+  "harmful": true,
+  "caught": false,
+  "stage": "none",
+  "detail": ""
+ },
+ {
+  "qid": "CL3",
+  "mutation": "wrong_node",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "warn: s1: node '11705' is not mentioned in the question"
+ },
+ {
+  "qid": "CL4",
+  "mutation": "flip_directed",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "CL4",
+  "mutation": "swap_measure",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: stated measure not computed"
+ },
+ {
+  "qid": "NR1",
+  "mutation": "flip_directed",
+  "harmful": false,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "NR1",
+  "mutation": "wrong_node",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "warn: s1: node 'Anzelma' is not mentioned in the question"
+ },
+ {
+  "qid": "NR2",
+  "mutation": "flip_directed",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "NR2",
+  "mutation": "wrong_node",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "warn: s1: node 'Brujon' is not mentioned in the question"
+ },
+ {
+  "qid": "NR2",
+  "mutation": "use_weights",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: weights used as path lengths but they are strengths"
+ },
+ {
+  "qid": "NR3",
+  "mutation": "flip_directed",
+  "harmful": false,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "NR3",
+  "mutation": "wrong_node",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "warn: s1: node 'Jondrette' is not mentioned in the question"
+ },
+ {
+  "qid": "NR4",
+  "mutation": "flip_directed",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "NR4",
+  "mutation": "swap_measure",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: stated measure not computed; error: question: named measure not computed"
+ },
+ {
+  "qid": "NR4",
+  "mutation": "wrong_node",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "warn: s2: node 'MlleGillenormand' is not mentioned in the question"
+ },
+ {
+  "qid": "NR5",
+  "mutation": "flip_directed",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: directedness contradicts the data"
+ },
+ {
+  "qid": "NR5",
+  "mutation": "swap_measure",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "error: interpretation: stated measure not computed; error: question: named measure not computed"
+ },
+ {
+  "qid": "NR5",
+  "mutation": "wrong_node",
+  "harmful": true,
+  "caught": true,
+  "stage": "verifier",
+  "detail": "warn: s2: node 'Bossuet' is not mentioned in the question"
+ }
+]

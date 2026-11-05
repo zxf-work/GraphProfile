@@ -154,7 +154,7 @@ def validate(plan: Plan, lg: LoadedGraph, budget_ops: float = 2e9) -> list[str]:
         cost = estimate_cost(st.op, st.args, n, m)
         if cost > budget_ops and "approx" in spec.tiers and st.args.get("tier", "exact") == "exact":
             problems.append(f"step {st.id}: exact {st.op} estimated at {cost:.1e} operations exceeds budget {budget_ops:.0e}; use tier=approx")
-        elif cost > budget_ops * 10:
+        elif cost > budget_ops * 50:
             problems.append(f"step {st.id}: {st.op} estimated at {cost:.1e} operations, too expensive for this graph")
         types[st.id] = spec.returns
     if plan.answer is not None:
@@ -181,6 +181,13 @@ def auto_tier(plan: Plan, lg: LoadedGraph, budget_ops: float = 2e9) -> list[str]
             if estimate_cost(st.op, st.args, n, m) > budget_ops:
                 st.args["tier"] = "approx"
                 notes.append(f"{st.id}: {st.op} switched to approximate tier (graph too large for exact within budget)")
+        if st.op in CATALOGUE and st.args.get("tier") == "approx":
+            k = int(st.args.get("k", 500) or 500)
+            while k > 50 and estimate_cost(st.op, {**st.args, "k": k}, n, m) > budget_ops:
+                k //= 2
+            if k != int(st.args.get("k", 500) or 500):
+                st.args["k"] = k
+                notes.append(f"{st.id}: {st.op} pivots reduced to {k} to stay within budget")
     return notes
 
 

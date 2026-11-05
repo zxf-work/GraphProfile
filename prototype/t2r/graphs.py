@@ -37,6 +37,11 @@ class RawFacts:
     weight_min: Optional[float]
     weight_max: Optional[float]
     sha1: str
+    weight_column_name: Optional[str] = None
+    columns_used: tuple[int, int, Optional[int]] = (0, 1, None)   # (source col, target col, weight col)
+    row_index_column: bool = False          # first column is a running row number, not a node id
+    weight_has_fractions: bool = False
+    id_ranges_disjoint: bool = False        # source ids and target ids never overlap (bipartite file)
 
 
 def _is_number(s: str) -> bool:
@@ -47,38 +52,142 @@ def _is_number(s: str) -> bool:
         return False
 
 
+SRC_NAMES = {"source", "src", "from", "u", "node1", "a", "head", "user", "person", "from_id", "src_id", "i", "sender", "citing", "follower", "buyer", "parent", "from_junction", "customer"}
+TGT_NAMES = {"target", "tgt", "to", "v", "node2", "b", "tail", "item", "to_id", "dst", "dst_id", "j", "recipient", "cited", "followed", "seller", "child", "to_junction", "product"}
+NOT_WEIGHT = ("time", "date", "stamp", "id", "year", "label", "type", "name")
+WEIGHT_NAMES = {"weight", "w", "count", "n", "distance", "dist", "km", "length", "cost", "time", "minutes", "strength", "value", "freq", "frequency", "times", "distance_km", "travel_time_min"}
+INDEX_NAMES = {"id", "row", "idx", "index", "edge_id", "eid", "#"}
+
+
+def _pick_columns(header: Optional[list[str]], raw: list[list[str]]) -> tuple[int, int, Optional[int], bool]:
+    """Decide which columns are source, target, weight. Returns (s, t, w, row_index_detected)."""
+    ncol = max(len(r) for r in raw) if raw else (len(header) if header else 2)
+    if header:
+        low = [c.strip().lower() for c in header]
+        si = next((i for i, c in enumerate(low) if c in SRC_NAMES), None)
+        ti = next((i for i, c in enumerate(low) if c in TGT_NAMES and i != si), None)
+        wi = next((i for i, c in enumerate(low) if c in WEIGHT_NAMES and i not in (si, ti)), None)
+        idx = next((i for i, c in enumerate(low) if c in INDEX_NAMES), None)
+        if si is None or ti is None:
+            cands = [i for i in range(len(low)) if i != idx]
+            si = cands[0] if si is None else si
+            ti = next(i for i in cands if i != si) if ti is None else ti
+        if wi is None and ncol > 2:
+            wi = next((i for i in range(ncol) if i not in (si, ti, idx) and i < len(low) and not any(k in low[i] for k in NOT_WEIGHT)), None)
+        return si, ti, wi, idx is not None
+    # no header: detect a running row index in column 0 when there are 3+ columns
+    if ncol >= 3 and len(raw) >= 20:
+        c0 = [r[0] for r in raw[:200] if len(r) >= 3]
+        if all(_is_number(x) for x in c0):
+            vals = [int(float(x)) for x in c0]
+            if all(vals[i + 1] - vals[i] == 1 for i in range(len(vals) - 1)):
+                wi = 3 if ncol >= 4 else None
+                return 1, 2, wi, True
+    return 0, 1, (2 if ncol > 2 else None), False
+
+
+BIG_FILE_BYTES = 60_000_000
+
+
+def read_raw_fast(path: str) -> tuple[RawFacts, Any]:
+    """Large-file path: pandas load, numpy statistics, sampled reciprocity. Returns (facts, (u, v, w) arrays)."""
+    import pandas as pd
+    h = hashlib.sha1()
+    with open(path, "rb") as f:
+        h.update(f.read(1 << 20)); h.update(str(os.path.getsize(path)).encode())
+    with open(path, "r") as f:
+        first = f.readline()
+    delim = "," if "," in first else r"\s+"
+    toks = [x.strip() for x in (first.strip().split(",") if delim == "," else first.split())]
+    header = toks if (len(toks) >= 2 and not all(_is_number(x) for x in toks[:2]) and not first.startswith("#")) else None
+    df = pd.read_csv(path, sep=delim, header=0 if header else None, comment="#", engine="c", dtype=str if header else None)
+    raw_sample = df.head(200).astype(str).values.tolist()
+    si, ti, wi, row_index = _pick_columns(header, raw_sample)
+    cols = list(df.columns)
+    u = df[cols[si]].to_numpy(); v = df[cols[ti]].to_numpy()
+    try:
+        u = u.astype(np.int64); v = v.astype(np.int64); numeric = True
+    except (ValueError, TypeError):
+        numeric = False
+    w = None
+    if wi is not None and wi < len(cols):
+        try:
+            w = pd.to_numeric(df[cols[wi]], errors="coerce").to_numpy(dtype=float)
+            if np.isnan(w).any():
+                w = None
+        except Exception:
+            w = None
+    n_rows = len(u)
+    if numeric:
+        N = int(max(u.max(), v.max())) + 1
+        key_d = u * N + v
+        uniq_d = np.unique(key_d)
+        lo = np.minimum(u, v); hi = np.maximum(u, v)
+        uniq_u = np.unique(lo * N + hi)
+        rng = np.random.default_rng(0)
+        idx = rng.choice(n_rows, size=min(200_000, n_rows), replace=False)
+        su, sv = u[idx], v[idx]
+        nonloop = su != sv
+        rev = sv[nonloop] * N + su[nonloop]
+        pos = np.searchsorted(uniq_d, rev)
+        pos[pos >= len(uniq_d)] = 0
+        recip = float(np.mean(uniq_d[pos] == rev)) if nonloop.any() else 0.0
+        n_ids = len(np.unique(np.concatenate([u, v])))
+        self_loops = int((u == v).sum())
+        srcs_tgts_disjoint = len(np.intersect1d(np.unique(u), np.unique(v))) == 0
+        n_dedup_d, n_dedup_u = len(uniq_d), len(uniq_u)
+    else:
+        n_ids = len(set(u) | set(v)); self_loops = int((u == v).sum()); recip = 0.0
+        n_dedup_d = n_rows; n_dedup_u = n_rows; srcs_tgts_disjoint = False
+    facts = RawFacts(
+        path=path, n_lines=n_rows + (1 if header else 0), header=header, n_columns=len(cols), sample_rows=raw_sample[:5],
+        ids_numeric=numeric, n_distinct_ids=n_ids, n_rows=n_rows, n_rows_dedup_directed=n_dedup_d, n_rows_dedup_undirected=n_dedup_u,
+        n_self_loops=self_loops, reciprocity=recip, weight_column_numeric=w is not None,
+        weight_values_distinct=int(len(np.unique(w))) if w is not None else 0,
+        weight_min=float(w.min()) if w is not None else None, weight_max=float(w.max()) if w is not None else None,
+        sha1=h.hexdigest()[:12], weight_column_name=(header[wi] if (header and wi is not None and wi < len(header)) else None),
+        columns_used=(si, ti, wi), row_index_column=row_index,
+        weight_has_fractions=bool(w is not None and (w != np.floor(w)).any()), id_ranges_disjoint=srcs_tgts_disjoint,
+    )
+    return facts, (u, v, w)
+
+
 def read_raw(path: str) -> tuple[RawFacts, list[tuple[str, str, Optional[float]]]]:
     rows: list[tuple[str, str, Optional[float]]] = []
     header = None
     sample: list[list[str]] = []
     h = hashlib.sha1()
     n_lines = 0
+    raw: list[list[str]] = []
     with open(path, "r", newline="") as f:
         first = f.readline()
         n_lines += 1
         h.update(first.encode())
-        delim = "," if "," in first else None
-        toks = first.strip().split(delim)
-        if toks and not _is_number(toks[0]) and not _is_number(toks[-1]) and len(toks) >= 2 and toks[0].lower() in {"source", "src", "from", "u", "node1", "a"}:
+        delim = "," if "," in first else ("\t" if "\t" in first and not " " in first.strip() else None)
+        toks = [x.strip() for x in first.strip().split(delim)]
+        if toks and len(toks) >= 2 and not all(_is_number(x) for x in toks[:2]) and not first.startswith("#"):
             header = toks
-        else:
-            if len(toks) >= 2 and not first.startswith("#"):
-                rows.append((toks[0], toks[1], float(toks[2]) if len(toks) > 2 and _is_number(toks[2]) else None))
-                sample.append(toks)
+        elif len(toks) >= 2 and not first.startswith("#"):
+            raw.append(toks)
         for line in f:
             n_lines += 1
             h.update(line.encode())
             if not line.strip() or line.startswith("#"):
                 continue
-            t = line.strip().split(delim)
+            t = [x.strip() for x in line.strip().split(delim)]
             if len(t) < 2:
                 continue
-            rows.append((t[0], t[1], float(t[2]) if len(t) > 2 and _is_number(t[2]) else None))
-            if len(sample) < 5:
-                sample.append(t)
-    ids = set()
-    for u, v, _ in rows:
-        ids.add(u); ids.add(v)
+            raw.append(t)
+    si, ti, wi, row_index = _pick_columns(header, raw)
+    for t in raw:
+        if len(t) <= max(si, ti):
+            continue
+        w = float(t[wi]) if (wi is not None and len(t) > wi and _is_number(t[wi])) else None
+        rows.append((t[si], t[ti], w))
+        if len(sample) < 5:
+            sample.append(t)
+    srcs = set(u for u, _, _ in rows); tgts = set(v for _, v, _ in rows)
+    ids = srcs | tgts
     ids_numeric = all(_is_number(x) for x in list(ids)[:1000])
     directed_set = set((u, v) for u, v, _ in rows)
     undirected_set = set(frozenset((u, v)) if u != v else frozenset((u,)) for u, v, _ in rows)
@@ -97,6 +206,10 @@ def read_raw(path: str) -> tuple[RawFacts, list[tuple[str, str, Optional[float]]
         weight_values_distinct=len(set(weights)) if weights else 0,
         weight_min=min(weights) if weights else None, weight_max=max(weights) if weights else None,
         sha1=h.hexdigest()[:12],
+        weight_column_name=(header[wi].strip() if (header and wi is not None and wi < len(header)) else None),
+        columns_used=(si, ti, wi), row_index_column=row_index,
+        weight_has_fractions=any(not float(w).is_integer() for w in weights[:10000]) if weights else False,
+        id_ranges_disjoint=bool(rows) and not (srcs & tgts),
     )
     return facts, rows
 
@@ -140,6 +253,13 @@ def infer_semantics(facts: RawFacts, description: str = "") -> Semantics:
     else:
         directed, c = True, 0.85
         ev["directed"] = f"{facts.reciprocity:.1%} of rows are reciprocated: partial reciprocity is the signature of a directed graph"
+    hdr_l = [c.lower() for c in facts.header] if facts.header else []
+    DIRECTED_HDR = {"sender", "recipient", "citing", "cited", "follower", "followed", "buyer", "seller", "parent", "child", "trust", "rating", "payer", "payee", "caller", "callee"}
+    hits = [c for c in hdr_l if c in DIRECTED_HDR]
+    if hits and facts.reciprocity < 0.98:
+        directed, c = True, max(c, 0.85)
+        ev["directed"] = ev["directed"] + f"; column names {hits} denote an asymmetric relation"
+        ask = [a for a in ask if a != "directed"]
     if "undirected" in desc or "symmetric" in desc:
         directed, c, ev["directed"] = False, max(c, 0.9), ev["directed"] + "; description says undirected"
         ask = [a for a in ask if a != "directed"]
@@ -153,11 +273,22 @@ def infer_semantics(facts: RawFacts, description: str = "") -> Semantics:
     wsem = None
     if weighted:
         conf["weighted"] = 0.9
-        ev["weighted"] = f"third numeric column with {facts.weight_values_distinct} distinct values in [{facts.weight_min}, {facts.weight_max}]"
-        if any(k in desc for k in ("distance", "cost", "length", "km", "time")):
+        wname = (facts.weight_column_name or "").lower()
+        ev["weighted"] = f"numeric column '{facts.weight_column_name or 'col ' + str(facts.columns_used[2])}' with {facts.weight_values_distinct} distinct values in [{facts.weight_min}, {facts.weight_max}]"
+        if any(k in wname for k in ("dist", "km", "length", "cost", "time", "min", "sec", "hour", "metre", "meter", "mile")):
+            wsem, conf["weight_semantics"] = "distance", 0.9
+            ev["weight_semantics"] = f"column name '{facts.weight_column_name}' denotes a distance or cost"
+        elif any(k in wname for k in ("count", "freq", "times", "strength", "n_", "num", "share", "co")):
+            wsem, conf["weight_semantics"] = "strength", 0.9
+            ev["weight_semantics"] = f"column name '{facts.weight_column_name}' denotes a count or strength"
+        elif any(k in desc for k in ("distance", "cost", "length", "km", "time")):
             wsem, conf["weight_semantics"] = "distance", 0.85
         elif any(k in desc for k in ("count", "strength", "co-", "frequency", "number of", "times")):
             wsem, conf["weight_semantics"] = "strength", 0.85
+        elif facts.weight_has_fractions:
+            wsem, conf["weight_semantics"] = None, 0.4
+            ev["weight_semantics"] = "fractional weights under an uninformative name: could be distances or similarities"
+            ask.append("weight_semantics")
         elif facts.weight_min is not None and facts.weight_min >= 1 and float(facts.weight_min).is_integer() and float(facts.weight_max).is_integer():
             wsem, conf["weight_semantics"] = "strength", 0.6
             ev["weight_semantics"] = "integer counts starting at 1 look like interaction counts (strength), not distances"
@@ -172,20 +303,31 @@ def infer_semantics(facts: RawFacts, description: str = "") -> Semantics:
     # multigraph
     dup = facts.n_rows - (facts.n_rows_dedup_directed if directed else facts.n_rows_dedup_undirected)
     multigraph = False
+    hdr = " ".join(facts.header).lower() if facts.header else ""
     if dup > 0:
         if not directed and facts.reciprocity > 0.98 and abs(dup - facts.n_rows / 2) < 0.01 * facts.n_rows:
             ev["multigraph"] = "duplicates are exactly the reverse copies of an undirected graph stored both ways; collapsed"
             conf["multigraph"] = 0.95
+        elif dup / facts.n_rows > 0.05 or any(k in hdr for k in ("time", "date", "event", "msg", "message", "email", "call", "transaction")):
+            multigraph = True
+            conf["multigraph"] = 0.8
+            ev["multigraph"] = f"{dup} repeated rows ({dup / facts.n_rows:.1%}): rows look like events (repeated interactions), kept as parallel edges; use distinct_edge_count for unique pairs"
+            if not any(k in hdr for k in ("time", "date", "event", "msg", "message", "email", "call", "transaction")):
+                ask.append("multigraph")
         else:
             ev["multigraph"] = f"{dup} duplicate rows ({dup / facts.n_rows:.1%}); treated as noise and collapsed"
             conf["multigraph"] = 0.7
-            if dup / facts.n_rows > 0.05:
-                ask.append("multigraph")
     else:
         conf["multigraph"] = 0.95
         ev["multigraph"] = "no duplicate rows"
 
     labelled = not facts.ids_numeric
+    if facts.row_index_column:
+        ev["columns"] = f"first column is a running row number; edges read from columns {facts.columns_used[0]} and {facts.columns_used[1]}"
+        conf["columns"] = 0.9
+    if facts.id_ranges_disjoint:
+        ev["bipartite"] = "source ids and target ids never overlap: the file looks bipartite (two node types); one-mode questions need a projection"
+        conf["bipartite"] = 0.85
     return Semantics(directed=directed, weighted=weighted, weight_semantics=wsem,
                      multigraph=multigraph, labelled=labelled, confidence=conf, evidence=ev,
                      needs_clarification=ask)
@@ -229,7 +371,12 @@ class LoadedGraph:
 
 def load_graph(name: str, path: str, description: str = "", override: Optional[dict] = None) -> LoadedGraph:
     """Load an edge list and build an igraph.Graph according to inferred (or overridden) semantics."""
-    facts, rows = read_raw(path)
+    big = os.path.getsize(path) > BIG_FILE_BYTES
+    if big:
+        facts, arrays = read_raw_fast(path)
+        rows = None
+    else:
+        facts, rows = read_raw(path)
     sem = infer_semantics(facts, description)
     if override:
         for k, v in override.items():
@@ -237,6 +384,8 @@ def load_graph(name: str, path: str, description: str = "", override: Optional[d
             sem.confidence[k] = 1.0
             sem.evidence[k] = "declared by user"
         sem.needs_clarification = [a for a in sem.needs_clarification if a not in override]
+    if big:
+        return _build_big(name, facts, sem, arrays)
     # vertex index
     if facts.ids_numeric:
         ids = sorted({int(float(u)) for u, v, _ in rows} | {int(float(v)) for u, v, _ in rows})
@@ -246,24 +395,52 @@ def load_graph(name: str, path: str, description: str = "", override: Optional[d
     index = {lab: i for i, lab in enumerate(labels)}
     def key(x: str) -> str:
         return str(int(float(x))) if facts.ids_numeric else x
-    edges: dict[tuple[int, int], float] = {}
+    elist: list[tuple[int, int]] = []
+    wlist: list[float] = []
+    seen: set[tuple[int, int]] = set()
     for u, v, w in rows:
         a, b = index[key(u)], index[key(v)]
         if a == b:
             continue
         if not sem.directed and a > b:
             a, b = b, a
-        if (a, b) in edges:
-            if sem.multigraph:
-                pass
+        if (a, b) in seen and not sem.multigraph:
             continue
-        edges[(a, b)] = w if (w is not None and sem.weighted) else 1.0
-    g = ig.Graph(n=len(labels), edges=list(edges.keys()), directed=sem.directed)
+        seen.add((a, b))
+        elist.append((a, b))
+        wlist.append(w if (w is not None and sem.weighted) else 1.0)
+    g = ig.Graph(n=len(labels), edges=elist, directed=sem.directed)
     g.vs["name"] = labels
     if sem.weighted:
-        g.es["weight"] = list(edges.values())
+        g.es["weight"] = wlist
     return LoadedGraph(name=name, g=g, facts=facts, semantics=sem, labels=labels, index=index,
                        lower_index={l.lower(): i for l, i in index.items()})
+
+
+def _build_big(name: str, facts: RawFacts, sem: Semantics, arrays) -> LoadedGraph:
+    u, v, w = arrays
+    if not facts.ids_numeric:
+        raise ValueError("large files must have integer node ids")
+    ids, inv = np.unique(np.concatenate([u, v]), return_inverse=True)
+    a = inv[: len(u)]; b = inv[len(u):]
+    if not sem.directed:
+        lo = np.minimum(a, b); hi = np.maximum(a, b); a, b = lo, hi
+    mask = a != b
+    a, b = a[mask], b[mask]
+    ww = w[mask] if w is not None else None
+    if not sem.multigraph:
+        N = len(ids)
+        key = a.astype(np.int64) * N + b
+        _, first = np.unique(key, return_index=True)
+        a, b = a[first], b[first]
+        ww = ww[first] if ww is not None else None
+    g = ig.Graph(n=len(ids), edges=np.stack([a, b], axis=1).tolist(), directed=sem.directed)
+    labels = [str(int(i)) for i in ids]
+    g.vs["name"] = labels
+    if sem.weighted and ww is not None:
+        g.es["weight"] = ww.tolist()
+    index = {lab: i for i, lab in enumerate(labels)}
+    return LoadedGraph(name=name, g=g, facts=facts, semantics=sem, labels=labels, index=index, lower_index=index)
 
 
 # --------------------------------------------------------------------------- profile card
@@ -289,6 +466,15 @@ def profile_card(lg: LoadedGraph, with_inference: bool = True) -> dict[str, Any]
         card["n_components_strong"] = len(scc)
         card["largest_scc_fraction"] = round(max(scc.sizes()) / g.vcount(), 4)
         card["reciprocity"] = round(g.reciprocity(), 4)
+    if g.ecount() and g.ecount() < 5_000_000:
+        card["is_bipartite"] = bool(g.is_bipartite())
+    card["size_class"] = "small" if g.ecount() < 1_000_000 else ("large" if g.ecount() < 20_000_000 else "very large")
+    if lg.semantics.multigraph:
+        card["n_edges_distinct_pairs"] = len(set((min(e.source, e.target), max(e.source, e.target)) if not g.is_directed() else (e.source, e.target) for e in g.es))
+    if lg.facts.header:
+        card["columns"] = {"header": lg.facts.header, "source_col": lg.facts.columns_used[0], "target_col": lg.facts.columns_used[1], "weight_col": lg.facts.columns_used[2]}
+    elif lg.facts.row_index_column:
+        card["columns"] = {"note": "first column is a row index; edges read from columns 1 and 2"}
     if with_inference:
         s = lg.semantics
         card["semantics"] = {
@@ -306,4 +492,6 @@ def raw_card(facts: RawFacts) -> dict[str, Any]:
         "file": os.path.basename(facts.path), "n_lines": facts.n_lines, "header": facts.header,
         "n_columns": facts.n_columns, "sample_rows": facts.sample_rows,
         "n_distinct_ids": facts.n_distinct_ids, "ids_numeric": facts.ids_numeric,
+        "n_rows": facts.n_rows, "n_distinct_directed_pairs": facts.n_rows_dedup_directed, "n_distinct_undirected_pairs": facts.n_rows_dedup_undirected,
+        "reciprocity_of_rows": round(facts.reciprocity, 4), "weight_column_numeric": facts.weight_column_numeric,
     }

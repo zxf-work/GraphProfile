@@ -119,6 +119,59 @@ def edge_count(ctx, graph="G"):
     return _graph(ctx, graph).ecount()
 
 
+@op("distinct_edge_count", "Number of distinct node pairs connected (collapses parallel edges in a multigraph).", {"graph": "Graph"}, "Scalar", "O(m)")
+def distinct_edge_count(ctx, graph="G"):
+    g = _graph(ctx, graph)
+    return len(set((e.source, e.target) if g.is_directed() else (min(e.source, e.target), max(e.source, e.target)) for e in g.es))
+
+
+@op("edge_multiplicity", "Number of parallel edges (repeated interactions) between two nodes in a multigraph; 0 if none.", {"graph": "Graph", "source": "NodeRef", "target": "NodeRef"}, "Scalar", "O(deg)")
+def edge_multiplicity(ctx, source, target, graph="G"):
+    g = _graph(ctx, graph)
+    return g.count_multiple(g.get_eids([(_vid(ctx, g, source), _vid(ctx, g, target))], error=False)) [0] if g.get_eid(_vid(ctx, g, source), _vid(ctx, g, target), error=False) >= 0 else 0
+
+
+@op("simplify", "Collapse parallel edges and self-loops into a simple graph (parallel edges summed into a 'weight' attribute).", {"graph": "Graph"}, "Graph", "O(m)")
+def simplify(ctx, graph="G"):
+    g = _graph(ctx, graph).copy()
+    if "weight" not in g.es.attributes():
+        g.es["weight"] = 1.0
+    g.simplify(multiple=True, loops=True, combine_edges={"weight": "sum"})
+    return g
+
+
+@op("is_bipartite", "Whether the graph is bipartite (two node types with edges only between types).", {"graph": "Graph"}, "Bool", "O(n+m)")
+def is_bipartite(ctx, graph="G"):
+    return bool(_graph(ctx, graph).is_bipartite())
+
+
+@op("project_bipartite", "One-mode projection of a bipartite graph onto the side containing `side_node` (or side 'source'/'target' of the file). Two nodes of that side are linked when they share a neighbour; edge weight = number of shared neighbours.",
+    {"graph": "Graph", "side": "str: 'source'|'target'|a node id on the wanted side"}, "Graph", "O(sum deg^2)")
+def project_bipartite(ctx, side="source", graph="G"):
+    g = _graph(ctx, graph)
+    ok, types = g.is_bipartite(return_types=True)
+    if not ok:
+        raise ValueError("graph is not bipartite")
+    if side in ("source", "target"):
+        wanted = {u for u, _, _ in _rows_cache(ctx)} if side == "source" else {v for _, v, _ in _rows_cache(ctx)}
+        # the type that covers the wanted ids
+        t_true = sum(1 for i, t in enumerate(types) if t and g.vs[i]["name"] in wanted)
+        t_false = sum(1 for i, t in enumerate(types) if not t and g.vs[i]["name"] in wanted)
+        want_type = t_true >= t_false
+    else:
+        want_type = types[_vid(ctx, g, side)]
+    p1, p2 = g.bipartite_projection(types=types, multiplicity=True)
+    proj = p2 if want_type else p1
+    return proj
+
+
+def _rows_cache(ctx):
+    if not hasattr(ctx, "_rows"):
+        from .graphs import read_raw
+        ctx._rows = read_raw(ctx.lg.facts.path)[1]
+    return ctx._rows
+
+
 @op("density", "Edge density: m / possible edges.", {"graph": "Graph"}, "Scalar", "O(1)")
 def density(ctx, graph="G"):
     return _graph(ctx, graph).density()
@@ -138,6 +191,13 @@ def degree_stats(ctx, graph="G", mode="all"):
 def degree(ctx, graph="G", mode="all"):
     g = _graph(ctx, graph)
     return _nodemap(ctx, g.degree(mode=mode), g)
+
+
+@op("strength", "Weighted degree (sum of edge weights, or number of parallel edges in a multigraph) per node as NodeMap.", {"graph": "Graph", "mode": "str"}, "NodeMap", "O(n+m)")
+def strength(ctx, graph="G", mode="all"):
+    g = _graph(ctx, graph)
+    w = "weight" if "weight" in g.es.attributes() else None
+    return _nodemap(ctx, g.strength(mode=mode, weights=w), g)
 
 
 @op("node_degree", "Degree of one node. mode in {all,in,out}.", {"graph": "Graph", "node": "NodeRef", "mode": "str"}, "Scalar", "O(1)")
