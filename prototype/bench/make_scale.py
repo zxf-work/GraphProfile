@@ -31,6 +31,10 @@ DESC = {
 }
 json.dump(DS, open(os.path.join(HERE, "datasets_scale.json"), "w"), indent=1)
 Q: list[dict] = []
+PARTIAL = os.path.join(HERE, "questions_scale.partial.json")
+if os.path.exists(PARTIAL):
+    Q = json.load(open(PARTIAL))
+DONE = {q["dataset"] for q in Q}
 
 
 def add(qid, family, ds, question, checker, expected_ops, expected_assumptions=None):
@@ -43,39 +47,45 @@ def timed(label, fn):
 
 
 # ---------------------------------------------------------------- 10M undirected
-t = time.time(); lg = load_graph("ba_10m", DS["ba_10m"]["path"], "", override={"directed": False, "weighted": False}); print("loaded 10m", round(time.time() - t))
-g = lg.g; ctx = Ctx(lg)
-add("X1", "metric", "ba_10m", "How many nodes and edges are there?", {"type": "facts", "facts": {"n": g.vcount(), "m": g.ecount()}}, [["node_count", "edge_count"]])
-deg = timed("degree", lambda: CATALOGUE["degree"].fn(ctx))
-top10 = [n for n, _ in sorted(deg.items(), key=lambda kv: -kv[1])[:10]]
-add("X2", "topk", "ba_10m", "Which 10 nodes have the highest degree?", {"type": "ranking", "value": top10, "min_overlap": 0.9}, [["degree", "top_k"]])
-tri = timed("triangles", lambda: CATALOGUE["triangle_count"].fn(ctx))
-add("X3", "metric", "ba_10m", "How many triangles does the graph contain?", {"type": "scalar", "value": tri, "tol": 0}, [["triangle_count"]])
-pr = timed("pagerank", lambda: CATALOGUE["pagerank"].fn(ctx))
-top_pr = [n for n, _ in sorted(pr.items(), key=lambda kv: -kv[1])[:10]]
-add("X4", "topk", "ba_10m", "Who are the top 10 nodes by PageRank?", {"type": "ranking", "value": top_pr, "min_overlap": 0.8}, [["pagerank", "top_k"]])
-diam = timed("diameter approx k=60", lambda: CATALOGUE["diameter"].fn(ctx, tier="approx", k=60))
-add("X5", "metric", "ba_10m", "What is the diameter of the network (an estimate is acceptable)?", {"type": "scalar", "value": diam, "tol": 0.15}, [["diameter"]])
-bc = timed("betweenness approx k=800", lambda: CATALOGUE["betweenness"].fn(ctx, tier="approx", k=800))
-top_bc = [n for n, _ in sorted(bc.items(), key=lambda kv: -kv[1])[:10]]
-add("X6", "topk", "ba_10m", "List the 10 nodes with the highest betweenness centrality (an approximation is acceptable).", {"type": "ranking", "value": top_bc, "min_overlap": 0.6}, [["betweenness", "top_k"]])
-core = timed("max_core", lambda: CATALOGUE["max_core"].fn(ctx))
-add("X7", "metric", "ba_10m", "What is the largest k for which a non-empty k-core exists?", {"type": "scalar", "value": core["k"], "tol": 0}, [["max_core"], ["core_number"]])
-del lg, g, ctx, deg, pr, bc
-json.dump(Q, open(os.path.join(HERE, "questions_scale.partial.json"), "w"), indent=1, default=str)
+if "ba_10m" in DONE:
+    print("skip ba_10m (cached)")
+else:
+  t = time.time(); lg = load_graph("ba_10m", DS["ba_10m"]["path"], "", override={"directed": False, "weighted": False}); print("loaded 10m", round(time.time() - t))
+  g = lg.g; ctx = Ctx(lg)
+  add("X1", "metric", "ba_10m", "How many nodes and edges are there?", {"type": "facts", "facts": {"n": g.vcount(), "m": g.ecount()}}, [["node_count", "edge_count"]])
+  deg = timed("degree", lambda: CATALOGUE["degree"].fn(ctx))
+  top10 = [n for n, _ in sorted(deg.items(), key=lambda kv: -kv[1])[:10]]
+  add("X2", "topk", "ba_10m", "Which 10 nodes have the highest degree?", {"type": "ranking", "value": top10, "min_overlap": 0.9}, [["degree", "top_k"]])
+  tri = timed("triangles", lambda: CATALOGUE["triangle_count"].fn(ctx))
+  add("X3", "metric", "ba_10m", "How many triangles does the graph contain?", {"type": "scalar", "value": tri, "tol": 0}, [["triangle_count"]])
+  pr = timed("pagerank", lambda: CATALOGUE["pagerank"].fn(ctx))
+  top_pr = [n for n, _ in sorted(pr.items(), key=lambda kv: -kv[1])[:10]]
+  add("X4", "topk", "ba_10m", "Who are the top 10 nodes by PageRank?", {"type": "ranking", "value": top_pr, "min_overlap": 0.8}, [["pagerank", "top_k"]])
+  diam = timed("diameter approx k=60", lambda: CATALOGUE["diameter"].fn(ctx, tier="approx", k=60))
+  add("X5", "metric", "ba_10m", "What is the diameter of the network (an estimate is acceptable)?", {"type": "scalar", "value": diam, "tol": 0.15}, [["diameter"]])
+  bc = timed("betweenness approx k=800", lambda: CATALOGUE["betweenness"].fn(ctx, tier="approx", k=800))
+  top_bc = [n for n, _ in sorted(bc.items(), key=lambda kv: -kv[1])[:10]]
+  add("X6", "topk", "ba_10m", "List the 10 nodes with the highest betweenness centrality (an approximation is acceptable).", {"type": "ranking", "value": top_bc, "min_overlap": 0.6}, [["betweenness", "top_k"]])
+  core = timed("max_core", lambda: CATALOGUE["max_core"].fn(ctx))
+  add("X7", "metric", "ba_10m", "What is the largest k for which a non-empty k-core exists?", {"type": "scalar", "value": core["k"], "tol": 0}, [["max_core"], ["core_number"]])
+  del lg, g, ctx, deg, pr, bc
+  json.dump(Q, open(os.path.join(HERE, "questions_scale.partial.json"), "w"), indent=1, default=str)
 
+if "ba_12m_directed" in DONE:
+    print("skip ba_12m_directed (cached)")
+else:
 # ---------------------------------------------------------------- 12M directed
-t = time.time(); lg = load_graph("ba_12m_directed", DS["ba_12m_directed"]["path"], "", override={"directed": True, "weighted": False}); print("loaded 12m dir", round(time.time() - t))
-g = lg.g; ctx = Ctx(lg)
-indeg = timed("in-degree", lambda: CATALOGUE["degree"].fn(ctx, mode="in"))
-top_in = [n for n, _ in sorted(indeg.items(), key=lambda kv: -kv[1])[:10]]
-add("X8", "topk", "ba_12m_directed", "Which 10 nodes have the most incoming arcs?", {"type": "ranking", "value": top_in, "min_overlap": 0.9}, [["degree", "top_k"]], {"directed": True, "mode": "in"})
-reach = timed("reachable from 2999999", lambda: len(CATALOGUE["reachable_set"].fn(ctx, source="2999999")))
-add("X9", "interpretation", "ba_12m_directed", "How many nodes can node 2999999 reach by following arcs?", {"type": "scalar", "value": reach, "tol": 0}, [["reachable_set"], ["components"]], {"directed": True})
-scc = timed("scc", lambda: CATALOGUE["components"].fn(ctx, mode="strong"))
-add("X10", "metric", "ba_12m_directed", "How many strongly connected components are there?", {"type": "scalar", "value": scc["count"], "tol": 0}, [["components"]], {"directed": True, "mode": "strong"})
-del lg, g, ctx, indeg, scc
-json.dump(Q, open(os.path.join(HERE, "questions_scale.partial.json"), "w"), indent=1, default=str)
+  t = time.time(); lg = load_graph("ba_12m_directed", DS["ba_12m_directed"]["path"], "", override={"directed": True, "weighted": False}); print("loaded 12m dir", round(time.time() - t))
+  g = lg.g; ctx = Ctx(lg)
+  indeg = timed("in-degree", lambda: CATALOGUE["degree"].fn(ctx, mode="in"))
+  top_in = [n for n, _ in sorted(indeg.items(), key=lambda kv: -kv[1])[:10]]
+  add("X8", "topk", "ba_12m_directed", "Which 10 nodes have the most incoming arcs?", {"type": "ranking", "value": top_in, "min_overlap": 0.9}, [["degree", "top_k"]], {"directed": True, "mode": "in"})
+  reach = timed("reachable from 2999999", lambda: len(CATALOGUE["reachable_set"].fn(ctx, source="2999999")))
+  add("X9", "interpretation", "ba_12m_directed", "How many nodes can node 2999999 reach by following arcs?", {"type": "scalar", "value": reach, "tol": 0}, [["reachable_set"], ["components"]], {"directed": True})
+  scc = timed("scc", lambda: CATALOGUE["components"].fn(ctx, mode="strong"))
+  add("X10", "metric", "ba_12m_directed", "How many strongly connected components are there?", {"type": "scalar", "value": scc["count"], "tol": 0}, [["components"]], {"directed": True, "mode": "strong"})
+  del lg, g, ctx, indeg, scc
+  json.dump(Q, open(os.path.join(HERE, "questions_scale.partial.json"), "w"), indent=1, default=str)
 
 # ---------------------------------------------------------------- 50M undirected
 t = time.time(); lg = load_graph("ba_50m", DS["ba_50m"]["path"], "", override={"directed": False, "weighted": False}); print("loaded 50m", round(time.time() - t))
